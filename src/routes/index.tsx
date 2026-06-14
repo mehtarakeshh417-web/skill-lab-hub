@@ -283,9 +283,10 @@ function FeatureBento() {
 
         <div className="mt-14 grid gap-5 md:grid-cols-3 md:grid-rows-2">
           {/* Big card */}
-          <div className="group relative col-span-2 row-span-2 overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-elegant">
-            <img src={classroomImg} alt="Students learning to code" loading="lazy" width={1024} height={1024} className="absolute inset-0 h-full w-full object-cover opacity-30 transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-tr from-background via-background/80 to-transparent" />
+          <div className="group relative col-span-2 row-span-2 min-h-[420px] overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-elegant">
+            <img src={classroomImg} alt="Students learning to code" loading="lazy" width={1024} height={1024} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" />
             <div className="relative flex h-full flex-col justify-end">
               <div className="inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                 <Users className="h-3.5 w-3.5" /> Built for schools
