@@ -25,9 +25,6 @@ import {
   Cpu,
   Play,
 } from "lucide-react";
-import heroImg from "@/assets/hero-3d.jpg";
-import classroomImg from "@/assets/classroom.jpg";
-import studentImg from "@/assets/student-portrait.jpg";
 import auroraImg from "@/assets/aurora.jpg";
 
 // High-quality Unsplash imagery (CDN — no install)
