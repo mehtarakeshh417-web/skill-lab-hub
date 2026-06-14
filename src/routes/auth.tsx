@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import heroImg from "@/assets/hero-3d.jpg";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Avartan Skill Lab" }] }),
@@ -50,7 +51,10 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden flex-col justify-between overflow-hidden bg-gradient-hero p-12 text-primary-foreground lg:flex">
+        <img src={heroImg} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-25 mix-blend-screen" />
         <div className="absolute inset-0 dot-grid opacity-20" />
+        <div className="absolute -top-40 -left-20 h-[460px] w-[460px] rounded-full bg-accent/40 blur-3xl animate-blob" />
+        <div className="absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-primary-glow/50 blur-3xl animate-blob" style={{ animationDelay: "-8s" }} />
         <Link to="/" className="relative flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 backdrop-blur">
             <Sparkles className="h-5 w-5" />
@@ -58,18 +62,28 @@ function AuthPage() {
           <div className="font-display text-lg font-bold">Avartan Skill Lab</div>
         </Link>
         <div className="relative space-y-6">
-          <h2 className="font-display text-4xl font-bold leading-tight">
-            Where curiosity meets code.
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Welcome back
+          </div>
+          <h2 className="font-display text-5xl font-bold leading-[1.05]">
+            Where curiosity <span className="block text-accent">meets code.</span>
           </h2>
           <p className="max-w-md text-primary-foreground/80">
             Sign in to access role-based dashboards, interactive technology modules, and
             real-time progress tracking.
           </p>
-          <div className="rounded-2xl border border-white/15 bg-white/5 p-5 backdrop-blur">
-            <div className="text-xs uppercase tracking-widest text-primary-foreground/70">Demo credentials</div>
-            <div className="mt-3 grid gap-2 font-mono text-sm">
-              <div className="flex justify-between"><span>admin</span><span className="text-primary-foreground/70">admin123</span></div>
-              <div className="flex justify-between"><span>manager</span><span className="text-primary-foreground/70">manager123</span></div>
+          <div className="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl shadow-glow">
+            <div className="flex items-center justify-between">
+              <div className="text-xs uppercase tracking-widest text-primary-foreground/70">Demo credentials</div>
+              <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent">try it</span>
+            </div>
+            <div className="mt-4 space-y-2 font-mono text-sm">
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                <span>admin</span><span className="text-primary-foreground/80">admin123</span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                <span>manager</span><span className="text-primary-foreground/80">manager123</span>
+              </div>
             </div>
           </div>
         </div>

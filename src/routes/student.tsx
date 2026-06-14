@@ -15,6 +15,8 @@ import {
   Table2,
   Presentation,
   ArrowRight,
+  Sparkles,
+  Play,
 } from "lucide-react";
 
 export const Route = createFileRoute("/student")({
@@ -38,6 +40,30 @@ const TECHS = [
 function StudentDashboard() {
   return (
     <AppShell requireRole="student" title="My Skill Lab">
+      {/* Hero banner */}
+      <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-hero p-8 text-primary-foreground shadow-glow md:p-10">
+        <div className="absolute inset-0 dot-grid opacity-20" />
+        <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-accent/40 blur-3xl animate-blob" />
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5" /> Ready to build something today?
+            </div>
+            <h2 className="mt-4 font-display text-3xl font-bold tracking-tight md:text-4xl">
+              Welcome back to your lab.
+            </h2>
+            <p className="mt-2 max-w-xl text-primary-foreground/80">
+              Pick a technology, write some code, and watch it come to life instantly.
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-3">
+            <a href="#practice" className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-primary shadow-elevated transition-transform hover:scale-[1.02]">
+              <Play className="h-4 w-4" /> Start practicing
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Technologies started" value={0} icon={BookOpen} />
         <StatCard label="Lessons completed" value={0} icon={Trophy} />
@@ -45,7 +71,7 @@ function StudentDashboard() {
         <StatCard label="Pending assignments" value={0} icon={ClipboardList} />
       </div>
 
-      <div className="mt-10">
+      <div id="practice" className="mt-10 scroll-mt-20">
         <div className="flex items-end justify-between">
           <div>
             <h2 className="font-display text-2xl font-bold tracking-tight">Practice technologies</h2>

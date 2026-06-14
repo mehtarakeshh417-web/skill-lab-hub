@@ -176,3 +176,59 @@
   background-image: radial-gradient(oklch(0.62 0.21 272 / 0.15) 1px, transparent 1px);
   background-size: 24px 24px;
 }
+
+@utility grid-lines {
+  background-image:
+    linear-gradient(to right, oklch(0.62 0.21 272 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.62 0.21 272 / 0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+@utility text-gradient {
+  background-image: var(--gradient-hero);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@utility glass {
+  background: color-mix(in oklab, var(--card) 65%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -40px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+@keyframes shimmer-x {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.62 0.21 272 / 0.5); }
+  50% { box-shadow: 0 0 0 14px oklch(0.62 0.21 272 / 0); }
+}
+
+.animate-float { animation: float-y 6s ease-in-out infinite; }
+.animate-blob { animation: blob 18s ease-in-out infinite; }
+.animate-marquee { animation: marquee 40s linear infinite; }
+.animate-pulse-glow { animation: pulse-glow 2.4s ease-out infinite; }
+
+.shimmer-text {
+  background: linear-gradient(90deg, var(--foreground) 0%, var(--primary) 50%, var(--foreground) 100%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer-x 4s linear infinite;
+}
