@@ -246,18 +246,18 @@
 
 /* Animated conic gradient border (for premium hero card) */
 @keyframes spin-slow { to { transform: rotate(1turn); } }
-.conic-border { position: relative; isolation: isolate; }
+.conic-border { position: relative; isolation: isolate; overflow: hidden; }
 .conic-border::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: -40%;
   border-radius: inherit;
   background: conic-gradient(from 0deg, transparent 0deg, oklch(0.62 0.205 274) 60deg, oklch(0.78 0.16 200) 140deg, transparent 220deg, oklch(0.62 0.205 274) 300deg, transparent 360deg);
   animation: spin-slow 8s linear infinite;
   z-index: -1;
-  filter: blur(2px);
-  opacity: 0.7;
+  opacity: 0.6;
 }
+.conic-border > * { position: relative; z-index: 1; }
 
 /* Code snippet typewriter caret */
 @keyframes caret-blink { 50% { opacity: 0; } }
