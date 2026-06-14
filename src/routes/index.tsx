@@ -25,10 +25,18 @@ import {
   Cpu,
   Play,
 } from "lucide-react";
-import heroImg from "@/assets/hero-3d.jpg";
-import classroomImg from "@/assets/classroom.jpg";
-import studentImg from "@/assets/student-portrait.jpg";
 import auroraImg from "@/assets/aurora.jpg";
+
+// High-quality Unsplash imagery (CDN — no install)
+const UNSPLASH = {
+  code1: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
+  code2: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80",
+  laptop: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
+  terminal: "https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=1200&q=80",
+  girl: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&q=80",
+  guy: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+  woman: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -149,17 +157,8 @@ function Hero() {
 
           {/* Visual */}
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
-            <div className="absolute -inset-6 rounded-[2rem] bg-gradient-hero opacity-30 blur-2xl" />
-            <div className="relative overflow-hidden rounded-[1.75rem] border border-border/60 bg-card shadow-elevated">
-              <img
-                src={heroImg}
-                alt="Glassmorphic floating coding panels"
-                width={1536}
-                height={1024}
-                className="h-auto w-full"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-accent/20 mix-blend-overlay" />
-            </div>
+            <div className="absolute -inset-8 rounded-[2rem] bg-gradient-hero opacity-40 blur-3xl" />
+            <CodeSnippetCard />
 
             {/* Floating cards */}
             <div className="absolute -left-4 top-10 hidden animate-float rounded-2xl border border-border bg-card/95 p-3 shadow-elegant backdrop-blur md:flex md:items-center md:gap-3">
@@ -171,7 +170,7 @@ function Hero() {
                 <div className="font-display text-lg font-bold">1,284</div>
               </div>
             </div>
-            <div className="absolute -right-4 bottom-10 hidden animate-float rounded-2xl border border-border bg-card/95 p-3 shadow-elegant backdrop-blur md:flex md:items-center md:gap-3" style={{ animationDelay: "-3s" }}>
+            <div className="absolute -right-4 -bottom-4 hidden animate-float rounded-2xl border border-border bg-card/95 p-3 shadow-elegant backdrop-blur md:flex md:items-center md:gap-3" style={{ animationDelay: "-3s" }}>
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-accent text-accent-foreground">
                 <Zap className="h-5 w-5" />
               </div>
@@ -203,6 +202,53 @@ function Hero() {
         </div>
       </div>
     </section>
+  );
+}
+
+function CodeSnippetCard() {
+  const lines = [
+    { c: "text-muted-foreground", t: "// Welcome to Avartan Skill Lab" },
+    { c: "", t: <><span className="text-[#c792ea]">const</span> <span className="text-[#82aaff]">student</span> = <span className="text-[#c3e88d]">"future builder"</span>;</> },
+    { c: "", t: <><span className="text-[#c792ea]">function</span> <span className="text-[#82aaff]">learn</span>(<span className="text-[#f78c6c]">tech</span>) {"{"}</> },
+    { c: "pl-4", t: <><span className="text-[#c792ea]">return</span> <span className="text-[#c3e88d]">`I just shipped ${"${"}tech{"}"}`</span>;</> },
+    { c: "", t: "}" },
+    { c: "text-success", t: "// ▶ Output: I just shipped HTML" },
+  ];
+  return (
+    <div className="conic-border relative rounded-[1.75rem]">
+      <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0b0f19]/95 shadow-elevated backdrop-blur-md">
+        {/* Window chrome */}
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-destructive/70" />
+            <span className="h-3 w-3 rounded-full bg-warning/70" />
+            <span className="h-3 w-3 rounded-full bg-success/70" />
+          </div>
+          <div className="font-mono text-xs text-muted-foreground">avartan ~ main.ts</div>
+          <div className="flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> live
+          </div>
+        </div>
+        {/* Code body */}
+        <pre className="overflow-hidden p-5 font-mono text-[13px] leading-relaxed text-foreground/90">
+          {lines.map((l, i) => (
+            <div key={i} className={`flex ${l.c}`}>
+              <span className="mr-4 select-none text-muted-foreground/50">{(i + 1).toString().padStart(2, "0")}</span>
+              <span>{l.t}</span>
+              {i === lines.length - 1 && <span className="caret ml-1 h-4" />}
+            </div>
+          ))}
+        </pre>
+        {/* Toolbar */}
+        <div className="flex items-center justify-between border-t border-white/10 bg-white/[0.02] px-4 py-2.5">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-0.5 text-primary"><Sparkles className="h-3 w-3" /> AI hints</span>
+            <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-success"><CheckCircle2 className="h-3 w-3" /> auto-save</span>
+          </div>
+          <div className="font-mono text-[11px] text-muted-foreground">ts · 6 lines · 0 errors</div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -284,9 +330,9 @@ function FeatureBento() {
         <div className="mt-14 grid gap-5 md:grid-cols-3 md:grid-rows-2">
           {/* Big card */}
           <div className="group relative col-span-2 row-span-2 min-h-[420px] overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-elegant">
-            <img src={classroomImg} alt="Students learning to code" loading="lazy" width={1024} height={1024} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" />
+            <img src={UNSPLASH.laptop} alt="Developer workspace" loading="lazy" width={1200} height={800} className="absolute inset-0 h-full w-full object-cover opacity-70 transition-transform duration-700 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/20 to-transparent" />
             <div className="relative flex h-full flex-col justify-end">
               <div className="inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                 <Users className="h-3.5 w-3.5" /> Built for schools
@@ -298,13 +344,24 @@ function FeatureBento() {
                 Run a full digital-literacy program from a browser. Onboard classes, assign
                 projects, evaluate work — all in one place.
               </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {["Live preview", "Auto-save", "Role dashboards", "Auth & RLS"].map((c) => (
+                  <span key={c} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-muted-foreground backdrop-blur">{c}</span>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-border bg-gradient-brand p-6 text-primary-foreground shadow-glow">
-            <Zap className="h-7 w-7" />
-            <div className="mt-6 font-display text-2xl font-bold leading-tight">Instant live preview</div>
-            <p className="mt-2 text-sm text-primary-foreground/80">HTML & CSS render in real time as students type.</p>
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-brand p-6 text-primary-foreground shadow-glow">
+            <img src={UNSPLASH.terminal} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-25 mix-blend-overlay" />
+            <div className="relative">
+              <Zap className="h-7 w-7" />
+              <div className="mt-6 font-display text-2xl font-bold leading-tight">Instant live preview</div>
+              <p className="mt-2 text-sm text-primary-foreground/80">HTML & CSS render in real time as students type.</p>
+              <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium backdrop-blur">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" /> &lt; 16ms render
+              </div>
+            </div>
           </div>
 
           <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-elegant">
@@ -312,6 +369,12 @@ function FeatureBento() {
             <BarChart3 className="h-7 w-7 text-primary" />
             <div className="mt-6 font-display text-2xl font-bold leading-tight">Measurable progress</div>
             <p className="mt-2 text-sm text-muted-foreground">Dashboards for admins, schools, teachers and students.</p>
+            {/* Mini sparkline */}
+            <div className="mt-4 flex items-end gap-1">
+              {[30, 50, 40, 70, 55, 80, 95].map((h, i) => (
+                <div key={i} className="w-2 rounded-sm bg-gradient-to-t from-primary/30 to-primary" style={{ height: `${h * 0.3}px` }} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -321,9 +384,9 @@ function FeatureBento() {
 
 function Testimonials() {
   const items = [
-    { quote: "Our teachers finally have one place to assign, grade and track everything.", name: "Priya Menon", role: "Coordinator, Greenwood Intl.", img: studentImg },
-    { quote: "The live preview hooked my class on HTML in a single period.", name: "Arjun Rao", role: "CS Teacher, Vidya Public", img: studentImg },
-    { quote: "Setup took an afternoon. Students were practicing the same day.", name: "Sara Khan", role: "Principal, Northstar Academy", img: studentImg },
+    { quote: "Our teachers finally have one place to assign, grade and track everything.", name: "Priya Menon", role: "Coordinator, Greenwood Intl.", img: UNSPLASH.woman },
+    { quote: "The live preview hooked my class on HTML in a single period.", name: "Arjun Rao", role: "CS Teacher, Vidya Public", img: UNSPLASH.guy },
+    { quote: "Setup took an afternoon. Students were practicing the same day.", name: "Sara Khan", role: "Principal, Northstar Academy", img: UNSPLASH.girl },
   ];
   return (
     <section className="relative overflow-hidden border-t border-border bg-gradient-surface py-24">
