@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useSyncExternalStore, useRef, useEffect, createContext, useContext, useCallback } from "react";
+import { toast } from "sonner";
+import { ThemeToggle } from "@/lib/theme";
+import { QuickTourTrigger } from "@/components/quick-tour";
 import {
   Bell, ShieldCheck, Users, School2, GraduationCap, Briefcase,
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
