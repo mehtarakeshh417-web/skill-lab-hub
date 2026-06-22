@@ -3523,6 +3523,10 @@ function ExcelLab() {
   }));
   const [sel, setSel] = useState("D6");
   const setCell = (addr: string, v: string) => setGrid((g) => ({ ...g, [addr]: v }));
+  useRegisterSnapshot(() => ({
+    kind: "excel", labName: "Spreadsheet",
+    payload: { grid }, preview: JSON.stringify(grid), previewKind: "grid", bytes: approxBytes(grid),
+  }), [grid]);
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-2">
@@ -3589,6 +3593,11 @@ function PowerPointLab() {
     { id: "s2", title: "What I Learned", body: "• HTML\n• CSS\n• Logic", theme: SLIDE_THEMES[1] },
   ]);
   const [active, setActive] = useState("s1");
+  useRegisterSnapshot(() => ({
+    kind: "ppt", labName: "Presentation",
+    payload: { slides }, preview: slides.map((s) => s.title).join(" · "),
+    previewKind: "slides", bytes: approxBytes(slides),
+  }), [slides]);
   const cur = slides.find((s) => s.id === active) ?? slides[0];
   const update = (patch: Partial<Slide>) => setSlides((s) => s.map((x) => x.id === active ? { ...x, ...patch } : x));
   const add = () => { const id = `s${Date.now()}`; setSlides((s) => [...s, { id, title: "New Slide", body: "Click to edit", theme: SLIDE_THEMES[s.length % SLIDE_THEMES.length] }]); setActive(id); };
@@ -3638,6 +3647,10 @@ function PaintLab() {
   const [color, setColor] = useState("#6366f1");
   const [size, setSize] = useState(4);
   const COLORS = ["#0f172a","#ef4444","#f59e0b","#10b981","#06b6d4","#6366f1","#d946ef","#ffffff"];
+  useRegisterSnapshot(() => {
+    const url = ref.current?.toDataURL("image/png") ?? "";
+    return { kind: "paint", labName: "Paint Studio", payload: { dataUrl: url, tool, color, size }, preview: url, previewKind: "image", bytes: Math.round(url.length * 0.75) };
+  }, []);
 
   useEffect(() => {
     const c = ref.current; if (!c) return;
