@@ -8,6 +8,7 @@ import {
   Pencil, Check, Plus, Layers, BookOpen, Save, Link2,
   UserPlus, Mail, Phone, Power, PowerOff,
   Upload, FileSpreadsheet, Loader2, Calendar as CalendarIcon, UserCircle2,
+  ClipboardList, FolderKanban, Send, FileText, Target, Users2, Clock, Archive, FileCheck2, Hash, Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -297,6 +298,7 @@ function ConsolePage() {
             ) : role === "teacher" ? (
               <div className="space-y-4">
                 <StudentManagementPanel canEdit />
+                <TaskManagementPanel />
               </div>
             ) : (
               <PlaceholderPanel role={role} />
@@ -1802,6 +1804,557 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
               )}
             </tbody>
           </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// =========================================================================
+// Task Management Panel (Teacher) — Projects & Assignments
+// =========================================================================
+
+type TaskType = "project" | "assignment";
+type TaskStatus = "active" | "draft" | "archived";
+type TaskTargets = {
+  classGrades: number[];
+  sectionIds: string[];
+  studentIds: string[];
+  groups: string[];
+};
+export type Task = {
+  id: string;
+  type: TaskType;
+  title: string;
+  instructions: string;
+  maxMarks: number;
+  deadline: string; // YYYY-MM-DD
+  status: TaskStatus;
+  targets: TaskTargets;
+  totalRecipients: number;
+  submissions: number;
+  pendingEval: number;
+  createdAt: string;
+};
+
+const STUDENT_GROUPS = ["Coding Club", "Robotics Squad", "Design Studio", "Math Olympiad"] as const;
+
+function daysUntil(date: string): number {
+  const t = new Date(date).getTime();
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  return Math.ceil((t - now.getTime()) / 86400000);
+}
+
+let _tasks: Task[] = [
+  {
+    id: "tk1", type: "assignment", title: "HTML Form Validation Worksheet",
+    instructions: "Build a sign-up form with client-side validation. Submit the HTML file with comments.",
+    maxMarks: 20, deadline: new Date(Date.now() + 4 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [9], sectionIds: ["c9-A"], studentIds: [], groups: [] },
+    totalRecipients: 25, submissions: 14, pendingEval: 9, createdAt: "2026-06-18",
+  },
+  {
+    id: "tk2", type: "project", title: "Scratch — Interactive Story Capstone",
+    instructions: "Design a 3-scene interactive story with at least 4 sprites and sound effects.",
+    maxMarks: 50, deadline: new Date(Date.now() + 12 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [1], sectionIds: ["c1-A", "c1-B"], studentIds: [], groups: ["Coding Club"] },
+    totalRecipients: 42, submissions: 11, pendingEval: 11, createdAt: "2026-06-15",
+  },
+  {
+    id: "tk3", type: "assignment", title: "Python — Loops Practice Set",
+    instructions: "Complete the 10 loop exercises. Paste outputs as screenshots.",
+    maxMarks: 30, deadline: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [6], sectionIds: ["c6-A"], studentIds: [], groups: [] },
+    totalRecipients: 22, submissions: 19, pendingEval: 4, createdAt: "2026-06-10",
+  },
+  {
+    id: "tk4", type: "project", title: "MySQL Mini-DB Schema (Draft)",
+    instructions: "Design schema for a school library system. ER diagram + DDL.",
+    maxMarks: 40, deadline: new Date(Date.now() + 20 * 86400000).toISOString().slice(0, 10),
+    status: "draft",
+    targets: { classGrades: [9], sectionIds: ["c9-A"], studentIds: [], groups: [] },
+    totalRecipients: 0, submissions: 0, pendingEval: 0, createdAt: "2026-06-20",
+  },
+];
+const taskListeners = new Set<() => void>();
+function setTasks(updater: (t: Task[]) => Task[]) {
+  _tasks = updater(_tasks);
+  taskListeners.forEach((l) => l());
+}
+function useTasks() {
+  return useSyncExternalStore(
+    (cb) => { taskListeners.add(cb); return () => taskListeners.delete(cb); },
+    () => _tasks,
+    () => _tasks,
+  );
+}
+
+function TaskManagementPanel() {
+  const tasks = useTasks();
+  const students = useStudents();
+  const classes = useMemo(() => buildInitialClasses(), []);
+
+  const blank = () => ({
+    type: "assignment" as TaskType,
+    title: "",
+    instructions: "",
+    maxMarks: 20,
+    deadline: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
+    targets: { classGrades: [] as number[], sectionIds: [] as string[], studentIds: [] as string[], groups: [] as string[] },
+  });
+  const [form, setForm] = useState(blank);
+  const [tab, setTab] = useState<TaskStatus>("active");
+  const [flash, setFlash] = useState<string | null>(null);
+
+  const sectionLabel = (sid: string) => {
+    for (const c of classes) {
+      const s = c.sections.find((x) => x.id === sid);
+      if (s) return `Gr ${c.grade}-${s.label}`;
+    }
+    return sid;
+  };
+  const sectionsForSelectedGrades = useMemo(() => {
+    const grades = form.targets.classGrades.length ? form.targets.classGrades : classes.map((c) => c.grade);
+    return classes.filter((c) => grades.includes(c.grade));
+  }, [classes, form.targets.classGrades]);
+
+  const recipientsCount = useMemo(() => {
+    const fromSections = students.filter((s) => form.targets.sectionIds.includes(s.sectionId)).length;
+    const fromClasses = students.filter((s) => form.targets.classGrades.includes(s.classGrade) && !form.targets.sectionIds.includes(s.sectionId)).length;
+    const fromIds = form.targets.studentIds.length;
+    const fromGroups = form.targets.groups.length * 8; // mock group size
+    return Math.max(0, fromSections + fromClasses + fromIds + fromGroups);
+  }, [students, form.targets]);
+
+  const toggleIn = <T,>(arr: T[], val: T): T[] => (arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
+
+  const publish = (status: TaskStatus) => {
+    if (!form.title.trim()) { setFlash("Title is required."); setTimeout(() => setFlash(null), 1800); return; }
+    const id = `tk${Date.now()}`;
+    const total = status === "draft" ? 0 : recipientsCount;
+    setTasks((t) => [
+      {
+        id, type: form.type, title: form.title.trim(),
+        instructions: form.instructions.trim(), maxMarks: form.maxMarks,
+        deadline: form.deadline, status,
+        targets: { ...form.targets },
+        totalRecipients: total, submissions: 0, pendingEval: 0,
+        createdAt: new Date().toISOString().slice(0, 10),
+      },
+      ...t,
+    ]);
+    setForm(blank());
+    setFlash(status === "draft" ? "Saved as draft." : `Published to ${total} recipient${total === 1 ? "" : "s"}.`);
+    setTimeout(() => setFlash(null), 2200);
+  };
+
+  const removeTask = (id: string) => setTasks((t) => t.filter((x) => x.id !== id));
+  const archiveTask = (id: string) => setTasks((t) => t.map((x) => x.id === id ? { ...x, status: "archived" } : x));
+  const publishDraft = (id: string) => setTasks((t) => t.map((x) => x.id === id ? { ...x, status: "active", totalRecipients: Math.max(x.totalRecipients, 1) } : x));
+
+  const filtered = useMemo(() => {
+    if (tab === "archived") {
+      return tasks.filter((t) => t.status === "archived" || (t.status === "active" && daysUntil(t.deadline) < 0));
+    }
+    if (tab === "draft") return tasks.filter((t) => t.status === "draft");
+    return tasks.filter((t) => t.status === "active" && daysUntil(t.deadline) >= 0);
+  }, [tasks, tab]);
+
+  const counts = {
+    active: tasks.filter((t) => t.status === "active" && daysUntil(t.deadline) >= 0).length,
+    draft: tasks.filter((t) => t.status === "draft").length,
+    archived: tasks.filter((t) => t.status === "archived" || (t.status === "active" && daysUntil(t.deadline) < 0)).length,
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-sm font-semibold tracking-tight">Project &amp; Assignment Engine</h2>
+          <p className="text-[11px] text-muted-foreground">Create, target and track learning tasks across your classroom.</p>
+        </div>
+        <div className="hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5"><Sparkles className="h-3 w-3 text-indigo-300" /> Live sync · students</span>
+        </div>
+      </div>
+
+      {/* Creation Panel */}
+      <section className="relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 via-slate-900/40 to-indigo-950/30 p-4 shadow-[0_10px_40px_-20px_rgba(99,102,241,0.45)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-3xl" />
+
+        <div className="relative grid gap-4 lg:grid-cols-[1.15fr_1fr]">
+          {/* Left: form */}
+          <div className="space-y-3">
+            {/* Type toggle */}
+            <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 p-1 backdrop-blur">
+              {([
+                { id: "assignment" as const, label: "Assignment", icon: ClipboardList },
+                { id: "project" as const, label: "Project", icon: FolderKanban },
+              ]).map(({ id, label, icon: Icon }) => {
+                const active = form.type === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setForm((f) => ({ ...f, type: id }))}
+                    className={cn(
+                      "relative inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-300",
+                      active
+                        ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-[0_6px_20px_-6px_rgba(99,102,241,0.7)]"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" /> {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid gap-2">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Title</label>
+              <input
+                value={form.title}
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                placeholder={form.type === "project" ? "e.g. Scratch — Interactive Story Capstone" : "e.g. HTML Form Validation Worksheet"}
+                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none transition-all focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Instructions / Guidelines</label>
+              <textarea
+                value={form.instructions}
+                onChange={(e) => setForm((f) => ({ ...f, instructions: e.target.value }))}
+                rows={4}
+                placeholder="Describe deliverables, rubric and submission format…"
+                className="w-full resize-none rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none transition-all focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-2">
+                <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Max Marks</label>
+                <div className="relative">
+                  <Award className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-indigo-300" />
+                  <input
+                    type="number" min={1} max={100}
+                    value={form.maxMarks}
+                    onChange={(e) => setForm((f) => ({ ...f, maxMarks: Math.max(1, Number(e.target.value) || 0) }))}
+                    className="w-full rounded-lg border border-border/60 bg-background/70 pl-8 pr-3 py-2 text-sm outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Deadline</label>
+                <div className="relative">
+                  <CalendarIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-indigo-300" />
+                  <input
+                    type="date"
+                    value={form.deadline}
+                    onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
+                    className="w-full rounded-lg border border-border/60 bg-background/70 pl-8 pr-3 py-2 text-sm outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: distribution */}
+          <div className="space-y-3 rounded-xl border border-border/60 bg-background/40 p-3 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold">
+                <Target className="h-3.5 w-3.5 text-indigo-300" /> Targeted Distribution
+              </div>
+              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-200">
+                <Users2 className="h-3 w-3" /> {recipientsCount} recipient{recipientsCount === 1 ? "" : "s"}
+              </span>
+            </div>
+
+            {/* Classes */}
+            <div>
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Classes</div>
+              <div className="flex flex-wrap gap-1">
+                {classes.map((c) => {
+                  const active = form.targets.classGrades.includes(c.grade);
+                  return (
+                    <button
+                      key={c.grade}
+                      onClick={() => setForm((f) => ({ ...f, targets: { ...f.targets, classGrades: toggleIn(f.targets.classGrades, c.grade) } }))}
+                      className={cn(
+                        "rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-all",
+                        active
+                          ? "border-indigo-400/60 bg-indigo-500/20 text-indigo-100 shadow-[0_0_12px_-2px_rgba(99,102,241,0.6)]"
+                          : "border-border/60 bg-background/60 text-muted-foreground hover:border-indigo-400/40 hover:text-foreground"
+                      )}
+                    >
+                      Gr {c.grade}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Sections */}
+            <div>
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Sections</div>
+              <div className="flex flex-wrap gap-1">
+                {sectionsForSelectedGrades.flatMap((c) =>
+                  c.sections.map((s) => {
+                    const active = form.targets.sectionIds.includes(s.id);
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => setForm((f) => ({ ...f, targets: { ...f.targets, sectionIds: toggleIn(f.targets.sectionIds, s.id) } }))}
+                        className={cn(
+                          "rounded-md border px-2 py-0.5 text-[10px] font-medium transition-all",
+                          active
+                            ? "border-fuchsia-400/60 bg-fuchsia-500/15 text-fuchsia-100"
+                            : "border-border/60 bg-background/60 text-muted-foreground hover:border-fuchsia-400/40 hover:text-foreground"
+                        )}
+                      >
+                        {c.grade}-{s.label}
+                      </button>
+                    );
+                  })
+                )}
+                {sectionsForSelectedGrades.length === 0 && (
+                  <span className="text-[10px] text-muted-foreground italic">Pick a class to see sections.</span>
+                )}
+              </div>
+            </div>
+
+            {/* Groups */}
+            <div>
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Specialised Groups</div>
+              <div className="flex flex-wrap gap-1">
+                {STUDENT_GROUPS.map((g) => {
+                  const active = form.targets.groups.includes(g);
+                  return (
+                    <button
+                      key={g}
+                      onClick={() => setForm((f) => ({ ...f, targets: { ...f.targets, groups: toggleIn(f.targets.groups, g) } }))}
+                      className={cn(
+                        "rounded-full border px-2 py-0.5 text-[10px] transition-all",
+                        active
+                          ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-100"
+                          : "border-border/60 bg-background/60 text-muted-foreground hover:border-emerald-400/40 hover:text-foreground"
+                      )}
+                    >
+                      {g}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Individual students */}
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Individual Students</div>
+                {form.targets.studentIds.length > 0 && (
+                  <button
+                    onClick={() => setForm((f) => ({ ...f, targets: { ...f.targets, studentIds: [] } }))}
+                    className="text-[10px] text-rose-300 hover:underline"
+                  >Clear</button>
+                )}
+              </div>
+              <div className="max-h-28 overflow-y-auto rounded-md border border-border/60 bg-background/60 p-1">
+                {students.length === 0 && <div className="px-2 py-1 text-[10px] text-muted-foreground">No students yet.</div>}
+                {students.map((s) => {
+                  const active = form.targets.studentIds.includes(s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => setForm((f) => ({ ...f, targets: { ...f.targets, studentIds: toggleIn(f.targets.studentIds, s.id) } }))}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded px-2 py-1 text-[11px] transition-colors",
+                        active ? "bg-indigo-500/15 text-indigo-100" : "hover:bg-muted/40"
+                      )}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        <Hash className="h-3 w-3 text-muted-foreground" />
+                        <span className="font-medium">{s.name}</span>
+                        <span className="text-muted-foreground">· {sectionLabel(s.sectionId)}</span>
+                      </span>
+                      {active && <Check className="h-3 w-3 text-indigo-300" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="relative mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
+          <div className="text-[11px] text-muted-foreground">
+            {flash ? (
+              <span className="inline-flex items-center gap-1 text-emerald-300"><Check className="h-3 w-3" /> {flash}</span>
+            ) : (
+              <>Targeting <strong className="text-foreground">{recipientsCount}</strong> {form.type === "project" ? "project" : "assignment"} recipient{recipientsCount === 1 ? "" : "s"}.</>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => publish("draft")}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/60 px-3 py-1.5 text-[11px] font-medium hover:border-indigo-400/50"
+            >
+              <FileText className="h-3.5 w-3.5" /> Save Draft
+            </button>
+            <button
+              onClick={() => publish("active")}
+              className="group inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(99,102,241,0.7)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Send className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /> Publish Now
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Tabs + tracking */}
+      <section className="rounded-xl border border-border/60 bg-background/40 p-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-2">
+          <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 p-1">
+            {([
+              { id: "active" as const, label: "Active Tasks", icon: Sparkles, count: counts.active },
+              { id: "draft" as const, label: "Drafts", icon: FileText, count: counts.draft },
+              { id: "archived" as const, label: "Overdue / Archived", icon: Archive, count: counts.archived },
+            ]).map(({ id, label, icon: Icon, count }) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all",
+                    active
+                      ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" /> {label}
+                  <span className={cn("ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold", active ? "bg-white/20" : "bg-muted/60 text-foreground")}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((t) => {
+            const dleft = daysUntil(t.deadline);
+            const overdue = dleft < 0;
+            const rate = t.totalRecipients > 0 ? Math.min(100, Math.round((t.submissions / t.totalRecipients) * 100)) : 0;
+            const typeMeta = t.type === "project"
+              ? { label: "Project", icon: FolderKanban, cls: "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" }
+              : { label: "Assignment", icon: ClipboardList, cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200" };
+            const TypeIcon = typeMeta.icon;
+            return (
+              <article
+                key={t.id}
+                className="group relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 to-slate-900/30 p-3 shadow-[0_8px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_12px_40px_-15px_rgba(99,102,241,0.5)]"
+              >
+                <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn("inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide", typeMeta.cls)}>
+                        <TypeIcon className="h-3 w-3" /> {typeMeta.label}
+                      </span>
+                      {t.status === "draft" && (
+                        <span className="inline-flex items-center rounded-full border border-amber-400/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-amber-200">Draft</span>
+                      )}
+                      {overdue && t.status !== "draft" && (
+                        <span className="inline-flex items-center rounded-full border border-rose-400/40 bg-rose-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-rose-200">Overdue</span>
+                      )}
+                    </div>
+                    <h3 className="mt-1.5 truncate text-sm font-semibold">{t.title}</h3>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="text-[10px] text-muted-foreground">Max</div>
+                    <div className="text-sm font-bold text-indigo-200">{t.maxMarks}</div>
+                  </div>
+                </div>
+
+                <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{t.instructions || "No instructions provided."}</p>
+
+                {/* Progress */}
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1"><FileCheck2 className="h-3 w-3" /> {t.submissions}/{t.totalRecipients} Submitted</span>
+                    <span className="font-semibold text-foreground">{rate}%</span>
+                  </div>
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted/40">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-[width] duration-700"
+                      style={{ width: `${rate}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Micro metrics */}
+                <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
+                  <div className="rounded-md border border-border/60 bg-background/40 p-1.5 text-center">
+                    <div className="text-muted-foreground">Pending Eval</div>
+                    <div className="text-sm font-bold text-amber-300">{t.pendingEval}</div>
+                  </div>
+                  <div className="rounded-md border border-border/60 bg-background/40 p-1.5 text-center">
+                    <div className="text-muted-foreground">Days Left</div>
+                    <div className={cn("text-sm font-bold inline-flex items-center justify-center gap-1", overdue ? "text-rose-300" : dleft <= 2 ? "text-amber-300" : "text-emerald-300")}>
+                      <Clock className="h-3 w-3" /> {overdue ? `${Math.abs(dleft)}d ago` : `${dleft}d`}
+                    </div>
+                  </div>
+                  <div className="rounded-md border border-border/60 bg-background/40 p-1.5 text-center">
+                    <div className="text-muted-foreground">Recipients</div>
+                    <div className="text-sm font-bold text-indigo-200">{t.totalRecipients}</div>
+                  </div>
+                </div>
+
+                {/* Targets pills */}
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {t.targets.classGrades.map((g) => (
+                    <span key={`g${g}`} className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] text-indigo-200">Gr {g}</span>
+                  ))}
+                  {t.targets.sectionIds.slice(0, 3).map((sid) => (
+                    <span key={sid} className="rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-1.5 py-0.5 text-[9px] text-fuchsia-200">{sectionLabel(sid)}</span>
+                  ))}
+                  {t.targets.groups.map((g) => (
+                    <span key={g} className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] text-emerald-200">{g}</span>
+                  ))}
+                </div>
+
+                {/* Actions */}
+                <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2">
+                  <div className="text-[10px] text-muted-foreground">Due {t.deadline}</div>
+                  <div className="flex items-center gap-1">
+                    {t.status === "draft" && (
+                      <button onClick={() => publishDraft(t.id)} className="inline-flex items-center gap-1 rounded-md border border-indigo-400/40 bg-indigo-500/10 px-2 py-1 text-[10px] font-semibold text-indigo-200 hover:bg-indigo-500/20">
+                        <Send className="h-3 w-3" /> Publish
+                      </button>
+                    )}
+                    {t.status !== "archived" && (
+                      <button onClick={() => archiveTask(t.id)} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-[10px] hover:border-amber-400/50 hover:text-amber-200">
+                        <Archive className="h-3 w-3" /> Archive
+                      </button>
+                    )}
+                    <button onClick={() => removeTask(t.id)} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-[10px] hover:border-rose-500/50 hover:text-rose-300">
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+
+          {filtered.length === 0 && (
+            <div className="col-span-full rounded-xl border border-dashed border-border/60 bg-background/30 p-8 text-center text-[12px] text-muted-foreground">
+              No tasks in this view yet. Create one above to get started.
+            </div>
+          )}
         </div>
       </section>
     </div>
