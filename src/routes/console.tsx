@@ -3138,6 +3138,10 @@ function HtmlCssLab() {
   const [srcDoc, setSrcDoc] = useState("");
   const run = () => setSrcDoc(`${html}\n<style>${css}</style>`);
   useEffect(() => { run(); /* eslint-disable-next-line */ }, []);
+  useRegisterSnapshot(() => {
+    const doc = `${html}\n<style>${css}</style>`;
+    return { kind: "html", labName: "HTML & CSS", payload: { html, css }, preview: doc, previewKind: "html", bytes: approxBytes(doc) };
+  }, [html, css]);
   return (
     <div className="grid gap-3 lg:grid-cols-2">
       <div className="space-y-2">
