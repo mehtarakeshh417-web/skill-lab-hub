@@ -291,6 +291,11 @@ function ConsolePage() {
               <div className="space-y-4">
                 <SchoolAdminPanel />
                 <TeacherManagementPanel maskPII={false} />
+                <StudentManagementPanel canEdit />
+              </div>
+            ) : role === "teacher" ? (
+              <div className="space-y-4">
+                <StudentManagementPanel canEdit />
               </div>
             ) : (
               <PlaceholderPanel role={role} />
