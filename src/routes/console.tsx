@@ -2863,31 +2863,95 @@ const LABS: { id: LabId; name: string; tag: string; icon: typeof Code2; tint: st
   { id: "paint",     name: "Paint Studio",     tag: "Canvas",            icon: Palette,      tint: "from-fuchsia-500/30 to-violet-500/20"},
 ];
 
-function PracticeLabsPanel({ studentName }: { studentName: string }) {
+function PracticeLabsPanel({ student }: { student: Student }) {
   const [active, setActive] = useState<LabId | null>(null);
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
   const tasks = useTasks();
-  const activeAssignment = tasks.find((t) => t.status === "active" && daysUntil(t.deadline) >= 0);
+  const portfolio = usePortfolio();
+  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
 
-  const flash = (msg: string) => { setSavedFlash(msg); setTimeout(() => setSavedFlash(null), 2200); };
-  const saveProgress = () => flash("Lab progress saved to your portfolio.");
-  const submitLab = () => {
-    if (activeAssignment) {
-      setTasks((all) => all.map((t) =>
-        t.id === activeAssignment.id
-          ? { ...t, submissions: Math.min(t.totalRecipients, t.submissions + 1), pendingEval: t.pendingEval + 1 }
-          : t
-      ));
-      flash(`Submitted to “${activeAssignment.title}”.`);
-    } else {
-      flash("No active assignment — saved as practice attempt.");
-    }
+  const getterRef = useRef<SnapshotGetter | null>(null);
+  const register = useCallback((g: SnapshotGetter | null) => { getterRef.current = g; }, []);
+
+  const submittedSet = useMemo(
+    () => new Set(portfolio.filter((p) => p.studentId === student.id && (p.status === "submitted" || p.status === "evaluated") && p.taskId).map((p) => p.taskId!)),
+    [portfolio, student.id]
+  );
+  const eligibleTasks = useMemo(
+    () => tasks.filter((t) =>
+      t.status === "active"
+      && !submittedSet.has(t.id)
+      && (t.targets.studentIds.includes(student.id)
+        || t.targets.sectionIds.includes(student.sectionId)
+        || t.targets.classGrades.includes(student.classGrade))
+    ),
+    [tasks, submittedSet, student]
+  );
+
+  useEffect(() => {
+    if (selectedTaskId && !eligibleTasks.some((t) => t.id === selectedTaskId)) setSelectedTaskId("");
+    if (!selectedTaskId && eligibleTasks[0]) setSelectedTaskId(eligibleTasks[0].id);
+  }, [eligibleTasks, selectedTaskId]);
+
+  const flash = (msg: string) => { setSavedFlash(msg); setTimeout(() => setSavedFlash(null), 2400); };
+
+  const captureSnapshot = (): LabSnapshot | null => {
+    const snap = getterRef.current?.();
+    if (!snap) return null;
+    return snap;
+  };
+
+  const saveDraft = () => {
+    const snap = captureSnapshot();
+    if (!snap) { flash("Open a lab first to save a draft."); return; }
+    setPortfolio((p) => [{
+      id: `pf${Date.now()}`, studentId: student.id, status: "draft",
+      createdAt: Date.now(), snapshot: snap,
+    }, ...p]);
+    flash("Draft saved to your portfolio.");
+  };
+
+  const attachAsset = () => {
+    if (!selectedTaskId) { flash("Pick an assignment to attach to."); return; }
+    const snap = captureSnapshot();
+    if (!snap) { flash("Open a lab first to attach."); return; }
+    const task = tasks.find((t) => t.id === selectedTaskId);
+    setPortfolio((p) => [{
+      id: `pf${Date.now()}`, studentId: student.id,
+      taskId: selectedTaskId, taskTitle: task?.title,
+      status: "draft", createdAt: Date.now(), snapshot: snap,
+    }, ...p]);
+    flash(`Attached to “${task?.title ?? selectedTaskId}”.`);
+  };
+
+  const submitAssignment = () => {
+    if (!selectedTaskId) { flash("Pick an assignment to submit to."); return; }
+    const snap = captureSnapshot();
+    if (!snap) { flash("Open a lab to capture your work first."); return; }
+    const task = tasks.find((t) => t.id === selectedTaskId);
+    setPortfolio((p) => [{
+      id: `pf${Date.now()}`, studentId: student.id,
+      taskId: selectedTaskId, taskTitle: task?.title,
+      status: "submitted", createdAt: Date.now(), snapshot: snap,
+    }, ...p]);
+    setTasks((all) => all.map((t) =>
+      t.id === selectedTaskId
+        ? { ...t, submissions: Math.min(t.totalRecipients, t.submissions + 1), pendingEval: t.pendingEval + 1 }
+        : t
+    ));
+    flash(`✓ Submitted “${task?.title ?? "assignment"}” to teacher inbox.`);
   };
 
   const activeMeta = active ? LABS.find((l) => l.id === active) : null;
+  const selectedTask = tasks.find((t) => t.id === selectedTaskId);
 
   return (
     <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+    <LabSnapshotCtx.Provider value={{ register }}>
+      <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+      {/* (replaced wrapper open tag above; original wrapper closed below) */}
+      {null}
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
