@@ -3211,6 +3211,11 @@ function SqlLab() {
   const [q, setQ] = useState("SELECT * FROM students WHERE marks > 80;");
   const [result, setResult] = useState(() => runSql("SELECT * FROM students;"));
   const exec = () => setResult(runSql(q));
+  useRegisterSnapshot(() => ({
+    kind: "sql", labName: "SQL Lab",
+    payload: { query: q, cols: result.cols, rows: result.rows, error: result.error },
+    preview: q, previewKind: "grid", bytes: approxBytes({ q, result }),
+  }), [q, result]);
   return (
     <div className="space-y-3">
       <div className="rounded-lg border border-white/10 bg-slate-900/80">
