@@ -2767,3 +2767,694 @@ function StudentDashboardPanel() {
     </div>
   );
 }
+
+// =========================================================================
+// Practice Labs — 10 interactive workspaces
+// =========================================================================
+
+type LabId = "html" | "sql" | "java" | "scratch" | "scratchjr" | "word" | "excel" | "ppt" | "paint";
+
+const LABS: { id: LabId; name: string; tag: string; icon: typeof Code2; tint: string }[] = [
+  { id: "html",      name: "HTML & CSS Lab",   tag: "Web Playground",    icon: Code2,        tint: "from-orange-500/30 to-rose-500/20"   },
+  { id: "sql",       name: "SQL Lab",          tag: "Query Console",     icon: Database,     tint: "from-sky-500/30 to-indigo-500/20"    },
+  { id: "java",      name: "Java Lab",         tag: "Compiler",          icon: Coffee,       tint: "from-amber-500/30 to-orange-500/20"  },
+  { id: "scratch",   name: "Scratch Lab",      tag: "Block Sandbox",     icon: Cat,          tint: "from-amber-400/30 to-yellow-500/20"  },
+  { id: "scratchjr", name: "Scratch Jr Lab",   tag: "Junior Blocks",     icon: Baby,         tint: "from-pink-500/30 to-fuchsia-500/20"  },
+  { id: "word",      name: "Word Processor",   tag: "Rich Text",         icon: FileType2,    tint: "from-blue-500/30 to-indigo-500/20"   },
+  { id: "excel",     name: "Spreadsheet",      tag: "Formula Engine",    icon: Sheet,        tint: "from-emerald-500/30 to-teal-500/20"  },
+  { id: "ppt",       name: "Presentation",     tag: "Slide Studio",      icon: Presentation, tint: "from-rose-500/30 to-orange-500/20"   },
+  { id: "paint",     name: "Paint Studio",     tag: "Canvas",            icon: Palette,      tint: "from-fuchsia-500/30 to-violet-500/20"},
+];
+
+function PracticeLabsPanel({ studentName }: { studentName: string }) {
+  const [active, setActive] = useState<LabId | null>(null);
+  const [savedFlash, setSavedFlash] = useState<string | null>(null);
+  const tasks = useTasks();
+  const activeAssignment = tasks.find((t) => t.status === "active" && daysUntil(t.deadline) >= 0);
+
+  const flash = (msg: string) => { setSavedFlash(msg); setTimeout(() => setSavedFlash(null), 2200); };
+  const saveProgress = () => flash("Lab progress saved to your portfolio.");
+  const submitLab = () => {
+    if (activeAssignment) {
+      setTasks((all) => all.map((t) =>
+        t.id === activeAssignment.id
+          ? { ...t, submissions: Math.min(t.totalRecipients, t.submissions + 1), pendingEval: t.pendingEval + 1 }
+          : t
+      ));
+      flash(`Submitted to “${activeAssignment.title}”.`);
+    } else {
+      flash("No active assignment — saved as practice attempt.");
+    }
+  };
+
+  const activeMeta = active ? LABS.find((l) => l.id === active) : null;
+
+  return (
+    <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200">
+            <Sparkles className="h-3 w-3" /> Technology Practice Labs
+          </div>
+          <h3 className="mt-1 font-display text-base font-bold tracking-tight">Hey {studentName.split(" ")[0]} — pick a lab and build something live.</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          {savedFlash && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-200">
+              <Check className="h-3 w-3" /> {savedFlash}
+            </span>
+          )}
+          <button
+            onClick={saveProgress}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition-all hover:border-indigo-400/40 hover:bg-white/[0.07]"
+          >
+            <Save className="h-3.5 w-3.5" /> Save Progress
+          </button>
+          <button
+            onClick={submitLab}
+            className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+          >
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+            <Send className="relative h-3.5 w-3.5" />
+            <span className="relative">Submit Lab</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Selector */}
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        {LABS.map((lab) => {
+          const Icon = lab.icon;
+          const sel = active === lab.id;
+          return (
+            <button
+              key={lab.id}
+              onClick={() => setActive(lab.id)}
+              className={cn(
+                "group relative overflow-hidden rounded-xl border p-3 text-left transition-all duration-300",
+                sel
+                  ? "border-indigo-400/60 bg-indigo-500/10 shadow-[0_10px_30px_-10px_rgba(99,102,241,0.6)]"
+                  : "border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-indigo-400/40 hover:bg-white/[0.05]"
+              )}
+            >
+              <div className={cn("pointer-events-none absolute -inset-12 rounded-full bg-gradient-to-br blur-3xl transition-opacity", lab.tint, sel ? "opacity-100" : "opacity-0 group-hover:opacity-60")} />
+              <div className="relative flex items-center gap-2">
+                <div className={cn("inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-950/60 backdrop-blur", sel && "ring-1 ring-indigo-400/60")}>
+                  <Icon className="h-4 w-4 text-indigo-200" />
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-[12px] font-semibold">{lab.name}</div>
+                  <div className="truncate text-[10px] text-muted-foreground">{lab.tag}</div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Workspace */}
+      <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 backdrop-blur">
+        {!active && (
+          <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-full bg-indigo-500/20 blur-2xl" />
+              <Rocket className="relative h-8 w-8 text-indigo-300" />
+            </div>
+            <p className="mt-3 text-sm font-semibold">Pick a lab above to launch its workspace.</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Every lab runs live in your browser — no install needed.</p>
+          </div>
+        )}
+        {active && activeMeta && (
+          <div>
+            <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
+              <div className="inline-flex items-center gap-2 text-[12px] font-semibold">
+                <activeMeta.icon className="h-3.5 w-3.5 text-indigo-300" /> {activeMeta.name}
+              </div>
+              <button onClick={() => setActive(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Close ×</button>
+            </div>
+            <div className="p-3">
+              {active === "html" && <HtmlCssLab />}
+              {active === "sql" && <SqlLab />}
+              {active === "java" && <JavaLab />}
+              {active === "scratch" && <ScratchLab />}
+              {active === "scratchjr" && <ScratchJrLab />}
+              {active === "word" && <WordLab />}
+              {active === "excel" && <ExcelLab />}
+              {active === "ppt" && <PowerPointLab />}
+              {active === "paint" && <PaintLab />}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ---------- HTML & CSS Lab ----------
+function HtmlCssLab() {
+  const [html, setHtml] = useState(`<!doctype html>\n<html>\n  <body>\n    <h1>Hello, Avartan!</h1>\n    <p class="tag">Edit the code on the left to update this preview.</p>\n    <button onclick="alert('It works!')">Click me</button>\n  </body>\n</html>`);
+  const [css, setCss] = useState(`body { font-family: system-ui; background: #0b1020; color: #e2e8f0; padding: 24px; }\nh1 { color: #a5b4fc; }\n.tag { color: #c4b5fd; }\nbutton { background: linear-gradient(90deg,#6366f1,#d946ef); color: white; border: 0; padding: 8px 14px; border-radius: 8px; cursor: pointer; }`);
+  const [srcDoc, setSrcDoc] = useState("");
+  const run = () => setSrcDoc(`${html}\n<style>${css}</style>`);
+  useEffect(() => { run(); /* eslint-disable-next-line */ }, []);
+  return (
+    <div className="grid gap-3 lg:grid-cols-2">
+      <div className="space-y-2">
+        <div>
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>HTML</span><span className="text-indigo-300">index.html</span></div>
+          <textarea value={html} onChange={(e) => setHtml(e.target.value)} rows={10} spellCheck={false} className="w-full resize-none rounded-lg border border-white/10 bg-slate-900/80 p-3 font-mono text-[11px] text-emerald-200 outline-none focus:border-indigo-400/50" />
+        </div>
+        <div>
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>CSS</span><span className="text-fuchsia-300">styles.css</span></div>
+          <textarea value={css} onChange={(e) => setCss(e.target.value)} rows={8} spellCheck={false} className="w-full resize-none rounded-lg border border-white/10 bg-slate-900/80 p-3 font-mono text-[11px] text-sky-200 outline-none focus:border-fuchsia-400/50" />
+        </div>
+        <button onClick={run} className="group inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-2 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.02]">
+          <Play className="h-3.5 w-3.5" /> Run Web Code
+        </button>
+      </div>
+      <div>
+        <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>Live Preview</span><span>iframe sandbox</span></div>
+        <iframe title="preview" srcDoc={srcDoc} sandbox="allow-scripts allow-modals" className="h-[420px] w-full rounded-lg border border-white/10 bg-white" />
+      </div>
+    </div>
+  );
+}
+
+// ---------- SQL Lab ----------
+type SqlRow = Record<string, string | number>;
+const SQL_TABLES: Record<string, SqlRow[]> = {
+  students: [
+    { id: 1, name: "Ira Khanna",  class: "VIII-A", marks: 92 },
+    { id: 2, name: "Veer Singh",  class: "IX-B",   marks: 78 },
+    { id: 3, name: "Tara Mehta",  class: "VI-A",   marks: 65 },
+    { id: 4, name: "Arjun Nair",  class: "I-A",    marks: 88 },
+    { id: 5, name: "Sara Joseph", class: "I-B",    marks: 95 },
+  ],
+  teachers: [
+    { id: 1, name: "Anita Rao",    subject: "Python" },
+    { id: 2, name: "Rakesh Verma", subject: "HTML" },
+    { id: 3, name: "Priya Sharma", subject: "Java" },
+  ],
+};
+
+function runSql(q: string): { cols: string[]; rows: SqlRow[]; error?: string } {
+  const s = q.trim().replace(/;$/, "");
+  const m = /^select\s+(.+?)\s+from\s+(\w+)(?:\s+where\s+(\w+)\s*(=|>|<|>=|<=)\s*('([^']*)'|"([^"]*)"|(\S+)))?$/i.exec(s);
+  if (!m) return { cols: [], rows: [], error: "Only basic: SELECT <cols|*> FROM <table> [WHERE col OP value]" };
+  const colsRaw = m[1].trim();
+  const table = m[2].toLowerCase();
+  const data = SQL_TABLES[table];
+  if (!data) return { cols: [], rows: [], error: `Unknown table “${table}”. Try students, teachers.` };
+  let rows = [...data];
+  if (m[3]) {
+    const col = m[3], op = m[4]; const raw = m[6] ?? m[7] ?? m[8];
+    const num = Number(raw); const isNum = !isNaN(num) && raw !== "" && !m[6] && !m[7];
+    rows = rows.filter((r) => {
+      const v = r[col]; if (v === undefined) return false;
+      const left = isNum ? Number(v) : String(v);
+      const right = isNum ? num : String(raw);
+      switch (op) { case "=": return left === right; case ">": return left > right; case "<": return left < right; case ">=": return left >= right; case "<=": return left <= right; }
+      return false;
+    });
+  }
+  const cols = colsRaw === "*" ? Object.keys(data[0]) : colsRaw.split(",").map((c) => c.trim());
+  rows = rows.map((r) => Object.fromEntries(cols.map((c) => [c, r[c]])));
+  return { cols, rows };
+}
+
+function SqlLab() {
+  const [q, setQ] = useState("SELECT * FROM students WHERE marks > 80;");
+  const [result, setResult] = useState(() => runSql("SELECT * FROM students;"));
+  const exec = () => setResult(runSql(q));
+  return (
+    <div className="space-y-3">
+      <div className="rounded-lg border border-white/10 bg-slate-900/80">
+        <div className="flex items-center justify-between border-b border-white/5 px-3 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+          <span>Query Console · tables: students, teachers</span>
+          <button onClick={exec} className="inline-flex items-center gap-1 rounded bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-1 text-[10px] font-semibold text-white">
+            <Play className="h-3 w-3" /> Run Query
+          </button>
+        </div>
+        <textarea value={q} onChange={(e) => setQ(e.target.value)} rows={3} spellCheck={false} className="w-full resize-none bg-transparent p-3 font-mono text-[12px] text-emerald-200 outline-none" />
+      </div>
+      <div className="overflow-x-auto rounded-lg border border-white/10 bg-slate-950/60">
+        {result.error ? (
+          <div className="px-3 py-3 text-[12px] text-rose-300">⚠ {result.error}</div>
+        ) : result.rows.length === 0 ? (
+          <div className="px-3 py-6 text-center text-[12px] text-muted-foreground">No rows match.</div>
+        ) : (
+          <table className="w-full text-[11px]">
+            <thead className="bg-white/[0.04] text-[10px] uppercase tracking-wider text-indigo-200">
+              <tr>{result.cols.map((c) => <th key={c} className="px-3 py-2 text-left">{c}</th>)}</tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {result.rows.map((r, i) => (
+                <tr key={i} className="hover:bg-white/[0.03]">
+                  {result.cols.map((c) => <td key={c} className="px-3 py-1.5 font-mono">{String(r[c] ?? "")}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Java Lab (embedded + mock terminal fallback) ----------
+function JavaLab() {
+  const [mode, setMode] = useState<"embed" | "mock">("embed");
+  const [code, setCode] = useState(`public class Main {\n  public static void main(String[] args) {\n    for (int i = 1; i <= 3; i++) {\n      System.out.println("Hello Avartan #" + i);\n    }\n  }\n}`);
+  const [out, setOut] = useState<string[]>([]);
+  const [running, setRunning] = useState(false);
+
+  const compile = () => {
+    setRunning(true); setOut(["» javac Main.java", "» java Main"]);
+    setTimeout(() => {
+      const lines: string[] = [];
+      const re = /System\.out\.println\(([^)]+)\)/g; let m: RegExpExecArray | null;
+      while ((m = re.exec(code))) {
+        const arg = m[1].trim();
+        const forMatch = /for\s*\(\s*int\s+(\w+)\s*=\s*(\d+)\s*;\s*\1\s*<=\s*(\d+)\s*;\s*\1\+\+\s*\)/.exec(code);
+        if (forMatch && arg.includes(forMatch[1])) {
+          const [, v, a, b] = forMatch;
+          for (let i = Number(a); i <= Number(b); i++) {
+            lines.push(arg.replace(/"([^"]*)"/g, "$1").replace(new RegExp("\\+\\s*" + v), "").trim() + i);
+          }
+        } else {
+          lines.push(arg.replace(/"([^"]*)"/g, "$1").replace(/\s*\+\s*/g, ""));
+        }
+      }
+      if (!lines.length) lines.push("(no output)");
+      setOut((o) => [...o, ...lines, "» Program finished with exit code 0"]);
+      setRunning(false);
+    }, 700);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1 text-[10px]">
+        {(["embed", "mock"] as const).map((m) => (
+          <button key={m} onClick={() => setMode(m)} className={cn("rounded-full px-2.5 py-1 font-semibold transition", mode === m ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white" : "text-muted-foreground")}>
+            {m === "embed" ? "Online Compiler" : "Local Mock Terminal"}
+          </button>
+        ))}
+      </div>
+      {mode === "embed" ? (
+        <iframe title="java-compiler" src="https://onecompiler.com/embed/java?hideCompleteMenu=true&hideTitle=true&theme=dark" className="h-[440px] w-full rounded-lg border border-white/10 bg-slate-900" />
+      ) : (
+        <div className="grid gap-2 lg:grid-cols-2">
+          <textarea value={code} onChange={(e) => setCode(e.target.value)} rows={14} spellCheck={false} className="resize-none rounded-lg border border-white/10 bg-slate-900/80 p-3 font-mono text-[11px] text-amber-200 outline-none" />
+          <div className="rounded-lg border border-white/10 bg-black p-3 font-mono text-[11px] text-emerald-300 shadow-inner">
+            <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground"><span>~/lab/java $</span><button onClick={compile} disabled={running} className="inline-flex items-center gap-1 rounded bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-semibold text-white disabled:opacity-60">{running ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />} Compile &amp; Run</button></div>
+            <div className="max-h-72 overflow-y-auto whitespace-pre-wrap">{out.length === 0 ? "(terminal ready)" : out.join("\n")}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- Scratch Lab ----------
+function ScratchLab() {
+  return (
+    <div className="space-y-2">
+      <p className="text-[11px] text-muted-foreground">Live Scratch sandbox — drag blocks, hit the green flag inside.</p>
+      <iframe
+        title="scratch"
+        src="https://scratch.mit.edu/projects/104/embed"
+        allowTransparency
+        allowFullScreen
+        className="h-[420px] w-full rounded-lg border border-white/10 bg-slate-900"
+      />
+    </div>
+  );
+}
+
+// ---------- Scratch Jr Lab ----------
+type JrBlock = { id: string; kind: "right" | "left" | "up" | "down" | "grow" | "shrink" | "say" };
+const JR_PALETTE: { kind: JrBlock["kind"]; label: string; cls: string }[] = [
+  { kind: "right",  label: "→ Right",  cls: "from-sky-500 to-indigo-500" },
+  { kind: "left",   label: "← Left",   cls: "from-sky-500 to-indigo-500" },
+  { kind: "up",     label: "↑ Up",     cls: "from-sky-500 to-indigo-500" },
+  { kind: "down",   label: "↓ Down",   cls: "from-sky-500 to-indigo-500" },
+  { kind: "grow",   label: "+ Grow",   cls: "from-fuchsia-500 to-rose-500" },
+  { kind: "shrink", label: "− Shrink", cls: "from-fuchsia-500 to-rose-500" },
+  { kind: "say",    label: "💬 Say Hi", cls: "from-amber-400 to-orange-500" },
+];
+
+function ScratchJrLab() {
+  const [program, setProgram] = useState<JrBlock[]>([{ id: "b1", kind: "right" }, { id: "b1b", kind: "right" }, { id: "b2", kind: "grow" }, { id: "b3", kind: "say" }]);
+  const [pos, setPos] = useState({ x: 20, y: 60, s: 1, msg: "" });
+  const [playing, setPlaying] = useState(false);
+
+  const run = async () => {
+    setPlaying(true); setPos({ x: 20, y: 60, s: 1, msg: "" });
+    for (const b of program) {
+      await new Promise((r) => setTimeout(r, 380));
+      setPos((p) => {
+        const np = { ...p, msg: "" };
+        if (b.kind === "right")  np.x = Math.min(280, p.x + 30);
+        if (b.kind === "left")   np.x = Math.max(0,   p.x - 30);
+        if (b.kind === "up")     np.y = Math.max(10,  p.y - 25);
+        if (b.kind === "down")   np.y = Math.min(140, p.y + 25);
+        if (b.kind === "grow")   np.s = Math.min(2.4, p.s + 0.25);
+        if (b.kind === "shrink") np.s = Math.max(0.5, p.s - 0.25);
+        if (b.kind === "say")    np.msg = "Hi there!";
+        return np;
+      });
+    }
+    setPlaying(false);
+  };
+
+  const add = (k: JrBlock["kind"]) => setProgram((p) => [...p, { id: `b${Date.now()}`, kind: k }]);
+  const remove = (id: string) => setProgram((p) => p.filter((b) => b.id !== id));
+
+  return (
+    <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr]">
+      <div className="space-y-2">
+        <div className="rounded-lg border border-white/10 bg-slate-900/60 p-2">
+          <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Block palette · tap to add</div>
+          <div className="flex flex-wrap gap-1.5">
+            {JR_PALETTE.map((b) => (
+              <button key={b.kind} onClick={() => add(b.kind)} className={cn("rounded-md bg-gradient-to-r px-2 py-1 text-[11px] font-semibold text-white shadow transition-transform hover:scale-105", b.cls)}>{b.label}</button>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-lg border border-white/10 bg-slate-900/60 p-2">
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+            <span>Program</span><span>{program.length} blocks</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {program.map((b) => {
+              const meta = JR_PALETTE.find((x) => x.kind === b.kind)!;
+              return (
+                <button key={b.id} onClick={() => remove(b.id)} title="Remove" className={cn("rounded-md bg-gradient-to-r px-2 py-1 text-[11px] font-semibold text-white opacity-90 hover:opacity-100", meta.cls)}>{meta.label}</button>
+              );
+            })}
+            {program.length === 0 && <span className="text-[11px] text-muted-foreground italic">Tap a palette block to add.</span>}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={run} disabled={playing} className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.02] disabled:opacity-60">
+            <FlagTriangleRight className="h-3.5 w-3.5" /> Green Flag
+          </button>
+          <button onClick={() => { setProgram([]); setPos({ x: 20, y: 60, s: 1, msg: "" }); }} className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground">
+            <Square className="h-3 w-3" /> Reset
+          </button>
+        </div>
+      </div>
+      <div className="relative h-[280px] overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-sky-200/20 via-emerald-200/10 to-yellow-200/10">
+        <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-emerald-500/40 to-transparent" />
+        {pos.msg && (
+          <div className="absolute z-10 rounded-md border border-white/30 bg-white px-2 py-1 text-[10px] font-semibold text-slate-900 shadow" style={{ left: pos.x + 30, top: pos.y - 18, transition: "all 350ms" }}>{pos.msg}</div>
+        )}
+        <div className="absolute text-3xl drop-shadow-lg" style={{ left: pos.x, top: pos.y, transform: `scale(${pos.s})`, transition: "all 350ms cubic-bezier(0.34,1.56,0.64,1)" }}>🐱</div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Word Processor Lab ----------
+function WordLab() {
+  const ref = useRef<HTMLDivElement>(null);
+  const cmd = (c: string, v?: string) => { document.execCommand(c, false, v); ref.current?.focus(); };
+  const btn = "inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-[11px] hover:border-indigo-400/40 hover:bg-white/[0.08]";
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-white/10 bg-slate-900/60 p-1.5">
+        <button title="Bold" onClick={() => cmd("bold")} className={btn}><Bold className="h-3.5 w-3.5" /></button>
+        <button title="Italic" onClick={() => cmd("italic")} className={btn}><Italic className="h-3.5 w-3.5" /></button>
+        <button title="Underline" onClick={() => cmd("underline")} className={btn}><UnderlineIcon className="h-3.5 w-3.5" /></button>
+        <div className="mx-1 h-5 w-px bg-white/10" />
+        <button title="Align left" onClick={() => cmd("justifyLeft")} className={btn}><AlignLeft className="h-3.5 w-3.5" /></button>
+        <button title="Align center" onClick={() => cmd("justifyCenter")} className={btn}><AlignCenter className="h-3.5 w-3.5" /></button>
+        <button title="Align right" onClick={() => cmd("justifyRight")} className={btn}><AlignRight className="h-3.5 w-3.5" /></button>
+        <div className="mx-1 h-5 w-px bg-white/10" />
+        <select onChange={(e) => cmd("fontSize", e.target.value)} defaultValue="3" className="h-7 rounded-md border border-white/10 bg-slate-950/60 px-1 text-[10px]">
+          {[1,2,3,4,5,6,7].map((n) => <option key={n} value={n}>Size {n}</option>)}
+        </select>
+        <input type="color" onChange={(e) => cmd("foreColor", e.target.value)} className="h-7 w-8 cursor-pointer rounded border border-white/10 bg-transparent" />
+      </div>
+      <div
+        ref={ref}
+        contentEditable
+        suppressContentEditableWarning
+        className="min-h-[320px] rounded-lg border border-white/10 bg-white p-6 text-[13px] leading-relaxed text-slate-900 shadow-inner outline-none"
+        style={{ fontFamily: "'Georgia', serif" }}
+        dangerouslySetInnerHTML={{ __html: "<h2>My Essay</h2><p>Start typing here. Select any text and use the ribbon to make it <b>bold</b>, <i>italic</i> or <u>underlined</u>. Try alignment too!</p>" }}
+      />
+    </div>
+  );
+}
+
+// ---------- Excel Lab ----------
+const EX_COLS = ["A","B","C","D","E","F","G","H","I","J"] as const;
+const EX_ROWS = 20;
+type ExGrid = Record<string, string>;
+
+function colIdx(letter: string) { return EX_COLS.indexOf(letter as typeof EX_COLS[number]); }
+function parseRef(ref: string) { const m = /^([A-J])(\d{1,2})$/i.exec(ref.trim()); if (!m) return null; const r = Number(m[2]); if (r < 1 || r > EX_ROWS) return null; return { col: m[1].toUpperCase(), row: r }; }
+function expandRange(a: string, b: string): string[] {
+  const A = parseRef(a), B = parseRef(b); if (!A || !B) return [];
+  const c1 = Math.min(colIdx(A.col), colIdx(B.col)), c2 = Math.max(colIdx(A.col), colIdx(B.col));
+  const r1 = Math.min(A.row, B.row), r2 = Math.max(A.row, B.row);
+  const out: string[] = [];
+  for (let c = c1; c <= c2; c++) for (let r = r1; r <= r2; r++) out.push(`${EX_COLS[c]}${r}`);
+  return out;
+}
+
+function evalCell(addr: string, grid: ExGrid, seen: Set<string> = new Set()): string {
+  if (seen.has(addr)) return "#CIRC";
+  seen.add(addr);
+  const raw = (grid[addr] ?? "").trim();
+  if (!raw) return "";
+  if (!raw.startsWith("=")) return raw;
+  const expr = raw.slice(1).trim();
+  try {
+    // SUM / AVG / MIN / MAX / COUNT
+    const fn = /^(SUM|AVG|AVERAGE|MIN|MAX|COUNT)\((.+)\)$/i.exec(expr);
+    if (fn) {
+      const args = fn[2].split(",").flatMap((a) => {
+        const range = /^([A-J]\d{1,2}):([A-J]\d{1,2})$/i.exec(a.trim());
+        return range ? expandRange(range[1], range[2]) : [a.trim()];
+      });
+      const nums = args.map((a) => {
+        const ref = parseRef(a);
+        const v = ref ? evalCell(`${ref.col}${ref.row}`, grid, new Set(seen)) : a;
+        const n = Number(v); return isNaN(n) ? 0 : n;
+      });
+      const op = fn[1].toUpperCase();
+      if (op === "SUM") return String(nums.reduce((s, n) => s + n, 0));
+      if (op === "AVG" || op === "AVERAGE") return String((nums.reduce((s, n) => s + n, 0) / nums.length).toFixed(2));
+      if (op === "MIN") return String(Math.min(...nums));
+      if (op === "MAX") return String(Math.max(...nums));
+      if (op === "COUNT") return String(nums.filter((n) => n !== 0).length);
+    }
+    // Substitute refs and evaluate basic arithmetic
+    const sub = expr.replace(/\b([A-J])(\d{1,2})\b/gi, (_, c, r) => {
+      const v = evalCell(`${c.toUpperCase()}${r}`, grid, new Set(seen));
+      const n = Number(v); return isNaN(n) ? "0" : String(n);
+    });
+    if (!/^[-+*/().\d\s]+$/.test(sub)) return "#ERR";
+    // eslint-disable-next-line no-new-func
+    const val = Function(`"use strict";return (${sub});`)();
+    return String(val);
+  } catch { return "#ERR"; }
+}
+
+function ExcelLab() {
+  const [grid, setGrid] = useState<ExGrid>(() => ({
+    A1: "Item", B1: "Qty", C1: "Price", D1: "Total",
+    A2: "Pencil",  B2: "5",  C2: "10", D2: "=B2*C2",
+    A3: "Eraser",  B3: "3",  C3: "8",  D3: "=B3*C3",
+    A4: "Notebook",B4: "2",  C4: "60", D4: "=B4*C4",
+    A6: "Sum",                       D6: "=SUM(D2:D4)",
+  }));
+  const [sel, setSel] = useState("D6");
+  const setCell = (addr: string, v: string) => setGrid((g) => ({ ...g, [addr]: v }));
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-2">
+        <div className="rounded-md border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[11px] text-indigo-200">{sel}</div>
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">fx</span>
+        <input
+          value={grid[sel] ?? ""}
+          onChange={(e) => setCell(sel, e.target.value)}
+          placeholder="=SUM(A1:A5) or value"
+          className="flex-1 rounded-md border border-white/10 bg-slate-950/60 px-2 py-1 font-mono text-[11px] outline-none focus:border-indigo-400/50"
+        />
+      </div>
+      <div className="overflow-x-auto rounded-lg border border-white/10">
+        <table className="w-full border-collapse text-[11px]">
+          <thead>
+            <tr>
+              <th className="w-8 border-b border-r border-white/5 bg-slate-900/70" />
+              {EX_COLS.map((c) => <th key={c} className="border-b border-r border-white/5 bg-slate-900/70 px-2 py-1 text-[10px] font-semibold text-indigo-200">{c}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: EX_ROWS }, (_, i) => i + 1).map((r) => (
+              <tr key={r}>
+                <td className="w-8 border-b border-r border-white/5 bg-slate-900/70 px-1 text-center text-[10px] text-muted-foreground">{r}</td>
+                {EX_COLS.map((c) => {
+                  const addr = `${c}${r}`;
+                  const raw = grid[addr] ?? "";
+                  const isFormula = raw.startsWith("=");
+                  const display = isFormula ? evalCell(addr, grid) : raw;
+                  const selected = sel === addr;
+                  return (
+                    <td key={addr} className={cn("border-b border-r border-white/5 p-0", selected && "ring-1 ring-inset ring-indigo-400/70 bg-indigo-500/10")}>
+                      <input
+                        value={selected ? raw : display}
+                        onFocus={() => setSel(addr)}
+                        onChange={(e) => setCell(addr, e.target.value)}
+                        className={cn("w-20 bg-transparent px-1.5 py-1 font-mono text-[11px] outline-none", isFormula && !selected && "text-emerald-300")}
+                      />
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] text-muted-foreground">Supports <code className="font-mono text-indigo-300">=SUM, =AVG, =MIN, =MAX, =COUNT</code>, ranges (A1:A5) and basic arithmetic.</p>
+    </div>
+  );
+}
+
+// ---------- PowerPoint Lab ----------
+type Slide = { id: string; title: string; body: string; theme: string };
+const SLIDE_THEMES = [
+  "from-indigo-600/80 via-fuchsia-600/70 to-rose-500/70",
+  "from-sky-600/80 via-cyan-500/70 to-emerald-500/60",
+  "from-amber-500/80 via-orange-500/70 to-rose-500/70",
+  "from-violet-600/80 via-purple-600/70 to-fuchsia-500/70",
+];
+
+function PowerPointLab() {
+  const [slides, setSlides] = useState<Slide[]>([
+    { id: "s1", title: "My Project", body: "By a future engineer", theme: SLIDE_THEMES[0] },
+    { id: "s2", title: "What I Learned", body: "• HTML\n• CSS\n• Logic", theme: SLIDE_THEMES[1] },
+  ]);
+  const [active, setActive] = useState("s1");
+  const cur = slides.find((s) => s.id === active) ?? slides[0];
+  const update = (patch: Partial<Slide>) => setSlides((s) => s.map((x) => x.id === active ? { ...x, ...patch } : x));
+  const add = () => { const id = `s${Date.now()}`; setSlides((s) => [...s, { id, title: "New Slide", body: "Click to edit", theme: SLIDE_THEMES[s.length % SLIDE_THEMES.length] }]); setActive(id); };
+  const remove = (id: string) => { setSlides((s) => { const next = s.filter((x) => x.id !== id); if (active === id && next[0]) setActive(next[0].id); return next.length ? next : s; }); };
+  return (
+    <div className="grid gap-3 lg:grid-cols-[200px_1fr]">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>Slides</span><span>{slides.length}</span></div>
+        <div className="space-y-1.5">
+          {slides.map((s, i) => (
+            <button key={s.id} onClick={() => setActive(s.id)} className={cn("group relative w-full overflow-hidden rounded-lg border text-left transition-all", active === s.id ? "border-indigo-400/60 shadow-[0_8px_20px_-10px_rgba(99,102,241,0.7)]" : "border-white/10 hover:border-indigo-400/40")}>
+              <div className={cn("h-16 w-full bg-gradient-to-br p-2", s.theme)}>
+                <div className="truncate text-[10px] font-bold text-white">{i + 1}. {s.title}</div>
+                <div className="mt-0.5 line-clamp-2 text-[8px] text-white/80">{s.body}</div>
+              </div>
+              <button onClick={(e) => { e.stopPropagation(); remove(s.id); }} className="absolute right-1 top-1 rounded bg-black/40 p-0.5 opacity-0 group-hover:opacity-100"><Trash2 className="h-2.5 w-2.5 text-white" /></button>
+            </button>
+          ))}
+        </div>
+        <button onClick={add} className="inline-flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-white/15 px-2 py-2 text-[11px] hover:border-indigo-400/40 hover:text-foreground">
+          <Plus className="h-3 w-3" /> Add Slide
+        </button>
+      </div>
+      <div className={cn("relative aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br p-8 shadow-2xl", cur.theme)}>
+        <input
+          value={cur.title}
+          onChange={(e) => update({ title: e.target.value })}
+          className="w-full bg-transparent text-2xl font-bold text-white outline-none placeholder:text-white/40"
+        />
+        <textarea
+          value={cur.body}
+          onChange={(e) => update({ body: e.target.value })}
+          rows={6}
+          className="mt-3 w-full resize-none bg-transparent text-base text-white/95 outline-none placeholder:text-white/40"
+        />
+        <div className="absolute bottom-3 right-4 text-[10px] text-white/60">Avartan Skill Lab · Slide</div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Paint Lab ----------
+function PaintLab() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const drawing = useRef(false);
+  const [tool, setTool] = useState<"pencil" | "brush" | "eraser">("pencil");
+  const [color, setColor] = useState("#6366f1");
+  const [size, setSize] = useState(4);
+  const COLORS = ["#0f172a","#ef4444","#f59e0b","#10b981","#06b6d4","#6366f1","#d946ef","#ffffff"];
+
+  useEffect(() => {
+    const c = ref.current; if (!c) return;
+    const ctx = c.getContext("2d"); if (!ctx) return;
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, c.width, c.height);
+  }, []);
+
+  const at = (e: React.PointerEvent) => {
+    const c = ref.current!; const r = c.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) };
+  };
+  const start = (e: React.PointerEvent) => {
+    drawing.current = true;
+    const ctx = ref.current!.getContext("2d")!;
+    const p = at(e);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.strokeStyle = tool === "eraser" ? "#ffffff" : color;
+    ctx.lineWidth = tool === "brush" ? size * 2 : tool === "eraser" ? size * 3 : size;
+  };
+  const move = (e: React.PointerEvent) => { if (!drawing.current) return; const ctx = ref.current!.getContext("2d")!; const p = at(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+  const end = () => { drawing.current = false; };
+  const clear = () => { const c = ref.current!; const ctx = c.getContext("2d")!; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, c.width, c.height); };
+  const save = () => { const url = ref.current!.toDataURL("image/png"); const a = document.createElement("a"); a.href = url; a.download = "paint.png"; a.click(); };
+
+  const tBtn = (t: typeof tool, Icon: typeof Brush, label: string) => (
+    <button key={t} onClick={() => setTool(t)} className={cn("inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold transition", tool === t ? "border-indigo-400/60 bg-indigo-500/15 text-indigo-100" : "border-white/10 text-muted-foreground hover:text-foreground")}>
+      <Icon className="h-3 w-3" /> {label}
+    </button>
+  );
+
+  return (
+    <div className="grid gap-3 lg:grid-cols-[180px_1fr]">
+      <div className="space-y-2 rounded-lg border border-white/10 bg-slate-900/60 p-2">
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Tools</div>
+        <div className="flex flex-wrap gap-1">
+          {tBtn("pencil", Pencil, "Pencil")}
+          {tBtn("brush",  Brush, "Brush")}
+          {tBtn("eraser", Eraser, "Eraser")}
+        </div>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Size · {size}px</div>
+        <input type="range" min={1} max={24} value={size} onChange={(e) => setSize(Number(e.target.value))} className="w-full accent-indigo-500" />
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Colour</div>
+        <div className="grid grid-cols-4 gap-1.5">
+          {COLORS.map((c) => (
+            <button key={c} onClick={() => setColor(c)} aria-label={c} className={cn("h-6 w-6 rounded-md border transition-transform hover:scale-110", color === c ? "ring-2 ring-indigo-400" : "border-white/20")} style={{ background: c }} />
+          ))}
+        </div>
+        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-7 w-full cursor-pointer rounded border border-white/10 bg-transparent" />
+        <div className="flex gap-1">
+          <button onClick={clear} className="flex-1 rounded-md border border-white/10 px-2 py-1 text-[10px] hover:border-rose-400/50 hover:text-rose-200">Clear</button>
+          <button onClick={save} className="flex-1 inline-flex items-center justify-center gap-1 rounded-md bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-1 text-[10px] font-semibold text-white">
+            <Download className="h-3 w-3" /> Save
+          </button>
+        </div>
+      </div>
+      <canvas
+        ref={ref}
+        width={780}
+        height={420}
+        onPointerDown={start}
+        onPointerMove={move}
+        onPointerUp={end}
+        onPointerLeave={end}
+        className="h-[420px] w-full touch-none rounded-lg border border-white/10 bg-white shadow-inner"
+      />
+    </div>
+  );
+}
