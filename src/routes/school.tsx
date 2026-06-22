@@ -645,7 +645,9 @@ function MonitorPanel({
         const total = 12;
         const done = 4 + (h % 9); // 4..12
         const marks = 55 + (h % 41); // 55..95
-        const teacher = teachers.find((t) => t.username === s.teacherUsername);
+        const teacher = teachers.find(
+          (t) => t.teacherId && s.teacherId && t.teacherId === s.teacherId
+        );
         return {
           account: s,
           total,
