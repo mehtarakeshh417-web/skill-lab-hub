@@ -2879,6 +2879,7 @@ function TaskManagementPanel() {
   const removeTask = (id: string) => setTasks((t) => t.filter((x) => x.id !== id));
   const archiveTask = (id: string) => setTasks((t) => t.map((x) => x.id === id ? { ...x, status: "archived" } : x));
   const publishDraft = (id: string) => setTasks((t) => t.map((x) => x.id === id ? { ...x, status: "active", totalRecipients: Math.max(x.totalRecipients, 1) } : x));
+  const [rubricTask, setRubricTask] = useState<Task | null>(null);
 
   const filtered = useMemo(() => {
     if (tab === "archived") {
