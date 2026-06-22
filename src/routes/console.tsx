@@ -283,6 +283,8 @@ function ConsolePage() {
                 setDrilldown={setDrilldown}
                 audit={audit}
               />
+            ) : role === "school" ? (
+              <SchoolAdminPanel />
             ) : (
               <PlaceholderPanel role={role} />
             )}
