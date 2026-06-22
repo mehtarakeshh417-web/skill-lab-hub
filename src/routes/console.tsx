@@ -4,6 +4,13 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/lib/theme";
 import { QuickTourTrigger } from "@/components/quick-tour";
 import {
+  useRegistrations,
+  setRegistrationStatus,
+  removeRegistration,
+  generatePassword,
+  type SchoolRegistration,
+} from "@/lib/registrations";
+import {
   Bell, ShieldCheck, Users, School2, GraduationCap, Briefcase,
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
   ToggleLeft, ToggleRight, History, Sparkles, AlertTriangle,
