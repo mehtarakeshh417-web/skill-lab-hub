@@ -631,6 +631,7 @@ type Mapping = { id: string; classGrade: number; sectionId: string; teacherId: s
 
 function SchoolAdminPanel() {
   const [classes, setClasses] = useState<ClassRec[]>(() => buildInitialClasses());
+  const teachers = useTeachers();
   const [activeGrade, setActiveGrade] = useState<number>(1);
   const [editingSec, setEditingSec] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
@@ -683,7 +684,7 @@ function SchoolAdminPanel() {
     const firstSec = activeClass.sections[0];
     setMappings((m) => [
       ...m,
-      { id: `m${Date.now()}`, classGrade: activeGrade, sectionId: firstSec.id, teacherId: SCHOOL_TEACHERS[0].id, tech: TECHS[0] },
+      { id: `m${Date.now()}`, classGrade: activeGrade, sectionId: firstSec.id, teacherId: teachers[0]?.id ?? "", tech: TECHS[0] },
     ]);
   };
   const updateMapping = (id: string, patch: Partial<Mapping>) =>
