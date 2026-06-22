@@ -118,7 +118,7 @@ function ConsolePage() {
 
   const isAdmin = role === "admin";
   const isManager = role === "portal_manager";
-  const showUnified = isAdmin || isManager;
+  const showUnified = isAdmin;
 
   const pendingCount = schools.filter((s) => s.status === "Pending").length;
   const stats = useMemo(() => ({
