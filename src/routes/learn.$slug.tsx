@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { ArrowLeft, Play, RotateCcw, Save } from "lucide-react";
 import { toast } from "sonner";
+import { LiveEditor, isLiveEditor, EDITOR_REGISTRY } from "@/components/coding-lab/editors";
 
 export const Route = createFileRoute("/learn/$slug")({
   head: () => ({ meta: [{ title: "Practice · Avartan Skill Lab" }] }),
@@ -58,6 +59,8 @@ const TECH_INFO: Record<string, { name: string; desc: string; sample: string; la
 
 function LearnPage() {
   const { slug } = useParams({ from: "/learn/$slug" });
+  const live = isLiveEditor(slug);
+  const liveTitle = live ? EDITOR_REGISTRY[slug].title : null;
   const info = TECH_INFO[slug] ?? { name: slug, desc: "Practice workspace", sample: "", lang: "other" as const };
   const [code, setCode] = useState(info.sample);
   const [output, setOutput] = useState("");
@@ -80,21 +83,27 @@ function LearnPage() {
   }
 
   return (
-    <AppShell requireRole="student" title={`Practice · ${info.name}`}>
+    <AppShell requireRole="student" title={`Practice · ${liveTitle ?? info.name}`}>
       <div className="mb-4 flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/student"><ArrowLeft className="h-4 w-4" /> Back to lab</Link>
         </Button>
         <div className="flex items-center gap-2">
+          {!live && (
+            <>
           <Button variant="outline" size="sm" onClick={reset}><RotateCcw className="h-4 w-4" /> Reset</Button>
           <Button variant="soft" size="sm" onClick={() => toast.success("Snippet saved")}><Save className="h-4 w-4" /> Save</Button>
           {info.lang !== "other" && (
             <Button variant="hero" size="sm" onClick={run}><Play className="h-4 w-4" /> Run</Button>
           )}
+            </>
+          )}
         </div>
       </div>
 
-      {info.lang === "other" ? (
+      {live ? (
+        <LiveEditor slug={slug} />
+      ) : info.lang === "other" ? (
         <div className="rounded-2xl border border-dashed border-border bg-card p-16 text-center">
           <div className="font-display text-2xl font-semibold">{info.name} workspace</div>
           <p className="mt-2 text-sm text-muted-foreground">{info.desc}</p>
