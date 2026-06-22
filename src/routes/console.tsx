@@ -142,7 +142,9 @@ function ConsolePage() {
               <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
             <div className="font-display text-sm font-bold tracking-tight">Avartan Lab</div>
-            <span className="ml-auto rounded-md border border-border/60 px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground">v1</span>
+            <span className="ml-auto inline-flex items-center gap-1 rounded-md border border-emerald-400/40 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] text-emerald-300">
+              <span className="h-1 w-1 rounded-full bg-emerald-400 shadow-[0_0_6px_1px_rgba(16,185,129,0.7)]" /> live
+            </span>
           </div>
 
           {/* Dev Role Selector */}
