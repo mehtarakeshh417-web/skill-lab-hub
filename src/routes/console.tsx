@@ -9,6 +9,7 @@ import {
   UserPlus, Mail, Phone, Power, PowerOff,
   Upload, FileSpreadsheet, Loader2, Calendar as CalendarIcon, UserCircle2,
   ClipboardList, FolderKanban, Send, FileText, Target, Users2, Clock, Archive, FileCheck2, Hash, Award,
+  BellRing, Megaphone, AlarmClock, MessageSquare, CheckCheck, Rocket, TrendingUp, Trophy, Flame,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -225,40 +226,11 @@ function ConsolePage() {
               </div>
 
               {/* Notifications */}
-              <div className="relative">
-                <Button variant="ghost" size="icon" className="relative h-8 w-8" onClick={() => setNotifsOpen((o) => !o)}>
-                  <Bell className="h-4 w-4" />
-                  {pendingCount > 0 && (
-                    <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
-                      {pendingCount}
-                    </span>
-                  )}
-                </Button>
-                {notifsOpen && (
-                  <div className="absolute right-0 top-10 z-50 w-80 overflow-hidden rounded-lg border border-border/60 bg-popover shadow-xl">
-                    <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
-                      <div className="text-xs font-semibold">Notifications</div>
-                      <button className="text-[10px] text-muted-foreground hover:text-foreground">Mark all read</button>
-                    </div>
-                    <div className="max-h-80 divide-y divide-border/60 overflow-y-auto">
-                      {seedNotifs.map((n) => (
-                        <div key={n.id} className="flex items-start gap-2 px-3 py-2 hover:bg-accent/40">
-                          <span className={cn(
-                            "mt-1 h-1.5 w-1.5 rounded-full",
-                            n.kind === "warn" && "bg-amber-400",
-                            n.kind === "ok" && "bg-emerald-400",
-                            n.kind === "info" && "bg-sky-400",
-                          )} />
-                          <div className="flex-1">
-                            <div className="text-xs leading-snug">{n.title}</div>
-                            <div className="mt-0.5 text-[10px] text-muted-foreground">{n.time}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <NotificationsBell
+                open={notifsOpen}
+                onOpenChange={setNotifsOpen}
+                pendingCount={pendingCount}
+              />
 
               <div className="flex items-center gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15">
@@ -300,6 +272,8 @@ function ConsolePage() {
                 <StudentManagementPanel canEdit />
                 <TaskManagementPanel />
               </div>
+            ) : role === "student" ? (
+              <StudentDashboardPanel />
             ) : (
               <PlaceholderPanel role={role} />
             )}
@@ -2353,6 +2327,434 @@ function TaskManagementPanel() {
           {filtered.length === 0 && (
             <div className="col-span-full rounded-xl border border-dashed border-border/60 bg-background/30 p-8 text-center text-[12px] text-muted-foreground">
               No tasks in this view yet. Create one above to get started.
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+// =========================================================================
+// Dynamic Notifications (derived from tasks)
+// =========================================================================
+
+type NotifKind = "new" | "deadline" | "evaluated" | "feedback";
+type SystemNotif = {
+  id: string;
+  kind: NotifKind;
+  title: string;
+  detail: string;
+  time: string;
+  unread: boolean;
+};
+
+function relTime(iso: string): string {
+  const t = new Date(iso).getTime();
+  const diff = Date.now() - t;
+  const d = Math.floor(diff / 86400000);
+  if (d <= 0) return "today";
+  if (d === 1) return "1d ago";
+  if (d < 7) return `${d}d ago`;
+  return `${Math.floor(d / 7)}w ago`;
+}
+
+function buildNotifications(tasks: Task[]): SystemNotif[] {
+  const out: SystemNotif[] = [];
+  tasks.forEach((t) => {
+    if (t.status === "draft") return;
+    const dleft = daysUntil(t.deadline);
+    // New publish (within 5d)
+    const sinceCreate = (Date.now() - new Date(t.createdAt).getTime()) / 86400000;
+    if (sinceCreate <= 5) {
+      out.push({
+        id: `n-new-${t.id}`,
+        kind: "new",
+        title: `New ${t.type === "project" ? "Project" : "Assignment"} Published`,
+        detail: `“${t.title}” · max ${t.maxMarks} marks`,
+        time: relTime(t.createdAt),
+        unread: sinceCreate <= 2,
+      });
+    }
+    // Approaching deadline
+    if (dleft >= 0 && dleft <= 3) {
+      out.push({
+        id: `n-due-${t.id}`,
+        kind: "deadline",
+        title: "Approaching Deadline",
+        detail: `“${t.title}” due in ${dleft === 0 ? "<1d" : `${dleft}d`}`,
+        time: dleft === 0 ? "today" : `${dleft}d left`,
+        unread: true,
+      });
+    }
+    // Evaluated (proxy: pendingEval = 0 && submissions > 0)
+    if (t.submissions > 0 && t.pendingEval === 0) {
+      out.push({
+        id: `n-eval-${t.id}`,
+        kind: "evaluated",
+        title: t.type === "project" ? "Project Evaluated" : "Assignment Evaluated",
+        detail: `“${t.title}” · ${t.submissions} submission${t.submissions === 1 ? "" : "s"} graded`,
+        time: relTime(t.createdAt),
+        unread: false,
+      });
+    }
+    // Feedback (proxy: half-graded items)
+    if (t.submissions > 0 && t.pendingEval > 0 && t.pendingEval < t.submissions) {
+      out.push({
+        id: `n-fb-${t.id}`,
+        kind: "feedback",
+        title: "Teacher Feedback Added",
+        detail: `Comments posted on “${t.title}”`,
+        time: relTime(t.createdAt),
+        unread: true,
+      });
+    }
+  });
+  return out.slice(0, 12);
+}
+
+const NOTIF_META: Record<NotifKind, { icon: typeof Bell; cls: string; ring: string }> = {
+  new:        { icon: Megaphone,     cls: "text-indigo-300 bg-indigo-500/15 border-indigo-400/30",  ring: "shadow-[0_0_14px_-2px_rgba(99,102,241,0.55)]" },
+  deadline:   { icon: AlarmClock,    cls: "text-amber-300 bg-amber-500/15 border-amber-400/30",     ring: "shadow-[0_0_14px_-2px_rgba(251,191,36,0.55)]" },
+  evaluated:  { icon: CheckCheck,    cls: "text-emerald-300 bg-emerald-500/15 border-emerald-400/30", ring: "shadow-[0_0_14px_-2px_rgba(16,185,129,0.55)]" },
+  feedback:   { icon: MessageSquare, cls: "text-fuchsia-300 bg-fuchsia-500/15 border-fuchsia-400/30", ring: "shadow-[0_0_14px_-2px_rgba(217,70,239,0.55)]" },
+};
+
+function NotificationsBell({
+  open, onOpenChange, pendingCount,
+}: { open: boolean; onOpenChange: (v: boolean) => void; pendingCount: number }) {
+  const tasks = useTasks();
+  const derived = useMemo(() => buildNotifications(tasks), [tasks]);
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const items = derived.filter((n) => !dismissed.has(n.id));
+  const unread = items.filter((n) => n.unread).length + pendingCount;
+
+  return (
+    <div className="relative">
+      <Button variant="ghost" size="icon" className="relative h-8 w-8" onClick={() => onOpenChange(!open)}>
+        <Bell className="h-4 w-4" />
+        {unread > 0 && (
+          <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-fuchsia-500 px-1 text-[9px] font-bold text-white shadow-[0_0_10px_-1px_rgba(244,63,94,0.8)]">
+            {unread}
+          </span>
+        )}
+      </Button>
+      {open && (
+        <div className="absolute right-0 top-10 z-50 w-[22rem] overflow-hidden rounded-xl border border-white/10 bg-slate-950/80 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent" />
+          <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+            <div className="flex items-center gap-1.5">
+              <BellRing className="h-3.5 w-3.5 text-indigo-300" />
+              <div className="text-xs font-semibold">Live Notifications</div>
+              <span className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-200">{items.length}</span>
+            </div>
+            <button onClick={() => setDismissed(new Set(derived.map((n) => n.id)))} className="text-[10px] text-muted-foreground hover:text-foreground">Mark all read</button>
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {items.length === 0 && (
+              <div className="px-3 py-8 text-center text-[11px] text-muted-foreground">You're all caught up.</div>
+            )}
+            {items.map((n) => {
+              const meta = NOTIF_META[n.kind];
+              const Icon = meta.icon;
+              return (
+                <div key={n.id} className="group flex items-start gap-2.5 border-b border-white/5 px-3 py-2.5 transition-colors hover:bg-white/[0.03]">
+                  <div className={cn("mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-lg border", meta.cls, meta.ring)}>
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="truncate text-[12px] font-semibold leading-tight">{n.title}</div>
+                      {n.unread && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_6px_1px_rgba(99,102,241,0.7)]" />}
+                    </div>
+                    <div className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">{n.detail}</div>
+                    <div className="mt-0.5 text-[10px] text-muted-foreground/80">{n.time}</div>
+                  </div>
+                  <button
+                    onClick={() => setDismissed((d) => new Set([...d, n.id]))}
+                    className="opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-label="Dismiss"
+                  >
+                    <XCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-rose-300" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =========================================================================
+// Student Dashboard Panel (role: student)
+// =========================================================================
+
+type StudentSubState = "submitted" | "evaluated";
+type SubmissionMap = Record<string, StudentSubState | undefined>;
+
+function ProgressRing({ value, label, color }: { value: number; label: string; color: string }) {
+  const r = 22;
+  const c = 2 * Math.PI * r;
+  const off = c - (c * Math.min(100, Math.max(0, value))) / 100;
+  return (
+    <div className="flex flex-col items-center">
+      <div className="relative h-14 w-14">
+        <svg viewBox="0 0 56 56" className="h-14 w-14 -rotate-90">
+          <circle cx="28" cy="28" r={r} fill="none" stroke="currentColor" className="text-white/5" strokeWidth="5" />
+          <circle
+            cx="28" cy="28" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
+            strokeDasharray={c} strokeDashoffset={off}
+            style={{ transition: "stroke-dashoffset 800ms cubic-bezier(0.4,0,0.2,1)" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold">{Math.round(value)}%</div>
+      </div>
+      <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function StudentDashboardPanel() {
+  const tasks = useTasks();
+  const students = useStudents();
+  const teachers = useTeachers();
+  const classes = useMemo(() => buildInitialClasses(), []);
+  const me = students.find((s) => s.status === "Active") ?? students[0];
+  const [tab, setTab] = useState<"active" | "completed" | "overdue">("active");
+  const [submissions, setSubmissions] = useState<SubmissionMap>({});
+
+  if (!me) {
+    return (
+      <div className="rounded-xl border border-dashed border-border/60 bg-background/30 p-8 text-center text-xs text-muted-foreground">
+        No active student found. Add a student in the School Admin view first.
+      </div>
+    );
+  }
+
+  const sectionLabel = (sid: string) => {
+    for (const c of classes) {
+      const s = c.sections.find((x) => x.id === sid);
+      if (s) return `Grade ${c.grade} · Section ${s.label}`;
+    }
+    return sid;
+  };
+  const teacherName = (id?: string) => teachers.find((t) => t.id === id)?.name ?? "Class Teacher";
+
+  // tasks targeting me
+  const myTasks = useMemo(() => tasks.filter((t) =>
+    t.status !== "draft" && (
+      t.targets.studentIds.includes(me.id) ||
+      t.targets.sectionIds.includes(me.sectionId) ||
+      t.targets.classGrades.includes(me.classGrade)
+    )
+  ), [tasks, me]);
+
+  const counts = useMemo(() => {
+    let assigned = 0, completed = 0, pending = 0, overdue = 0;
+    myTasks.forEach((t) => {
+      assigned++;
+      const sub = submissions[t.id];
+      const dleft = daysUntil(t.deadline);
+      if (sub === "submitted" || sub === "evaluated") completed++;
+      else if (dleft < 0) overdue++;
+      else pending++;
+    });
+    return { assigned, completed, pending, overdue };
+  }, [myTasks, submissions]);
+
+  const completionPct = counts.assigned ? (counts.completed / counts.assigned) * 100 : 0;
+
+  const filtered = useMemo(() => {
+    return myTasks.filter((t) => {
+      const sub = submissions[t.id];
+      const dleft = daysUntil(t.deadline);
+      if (tab === "completed") return sub === "submitted" || sub === "evaluated";
+      if (tab === "overdue") return dleft < 0 && !sub;
+      return dleft >= 0 && !sub;
+    });
+  }, [myTasks, tab, submissions]);
+
+  const submit = (id: string) => setSubmissions((m) => ({ ...m, [id]: "submitted" }));
+
+  return (
+    <div className="space-y-4">
+      {/* Profile Header */}
+      <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-950/60 via-slate-950/70 to-fuchsia-950/40 p-5 shadow-[0_20px_60px_-30px_rgba(99,102,241,0.6)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-fuchsia-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-300/60 to-transparent" />
+
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-indigo-500 via-fuchsia-500 to-amber-400 opacity-60 blur" />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-slate-950 text-lg font-bold">
+                {me.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold tracking-tight">{me.name}</h2>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-200">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_1px_rgba(16,185,129,0.7)]" /> Online
+                </span>
+              </div>
+              <div className="text-[12px] text-muted-foreground">{sectionLabel(me.sectionId)} · Roll {me.roll}</div>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                {["Scratch", "HTML", "Python"].map((tech, i) => (
+                  <span key={tech} className={cn(
+                    "rounded-full border px-1.5 py-0.5 text-[10px] font-medium",
+                    ["border-indigo-400/30 bg-indigo-500/10 text-indigo-200",
+                     "border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-200",
+                     "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"][i]
+                  )}>{tech}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Streak / overall */}
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur">
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"><Flame className="h-3 w-3 text-amber-300" /> Streak</div>
+              <div className="mt-0.5 text-xl font-bold text-amber-200">7d</div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur">
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"><Trophy className="h-3 w-3 text-fuchsia-300" /> XP</div>
+              <div className="mt-0.5 text-xl font-bold text-fuchsia-200">2,840</div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur">
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"><TrendingUp className="h-3 w-3 text-indigo-300" /> Overall</div>
+              <div className="mt-0.5 text-xl font-bold text-indigo-200">{Math.round(completionPct)}%</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric rings */}
+        <div className="relative mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { label: "Assigned",  value: counts.assigned ? 100 : 0, color: "#a5b4fc", count: counts.assigned },
+            { label: "Completed", value: counts.assigned ? (counts.completed / counts.assigned) * 100 : 0, color: "#34d399", count: counts.completed },
+            { label: "Pending",   value: counts.assigned ? (counts.pending / counts.assigned) * 100 : 0, color: "#fbbf24", count: counts.pending },
+            { label: "Overdue",   value: counts.assigned ? (counts.overdue / counts.assigned) * 100 : 0, color: "#f87171", count: counts.overdue },
+          ].map((m) => (
+            <div key={m.label} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur transition-all hover:border-indigo-400/40 hover:bg-white/[0.05]">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{m.label}</div>
+                <div className="text-2xl font-bold">{m.count}</div>
+              </div>
+              <ProgressRing value={m.value} label="" color={m.color} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Task board */}
+      <section className="rounded-xl border border-border/60 bg-background/40 p-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-display text-sm font-semibold">My Task Track</h3>
+          <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 p-1">
+            {([
+              { id: "active" as const, label: "Active", count: counts.pending },
+              { id: "completed" as const, label: "Completed", count: counts.completed },
+              { id: "overdue" as const, label: "Overdue", count: counts.overdue },
+            ]).map(({ id, label, count }) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all",
+                    active
+                      ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {label}
+                  <span className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-bold", active ? "bg-white/20" : "bg-muted/60 text-foreground")}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+          {filtered.map((t) => {
+            const dleft = daysUntil(t.deadline);
+            const overdue = dleft < 0;
+            const sub = submissions[t.id];
+            const typeMeta = t.type === "project"
+              ? { label: "Project", icon: FolderKanban, cls: "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" }
+              : { label: "Assignment", icon: ClipboardList, cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200" };
+            const TypeIcon = typeMeta.icon;
+            return (
+              <article
+                key={t.id}
+                className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-900/30 p-4 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_18px_50px_-15px_rgba(99,102,241,0.45)]"
+              >
+                <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn("inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide", typeMeta.cls)}>
+                        <TypeIcon className="h-3 w-3" /> {typeMeta.label}
+                      </span>
+                      {overdue && !sub && (
+                        <span className="inline-flex items-center rounded-full border border-rose-400/40 bg-rose-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-rose-200">Overdue</span>
+                      )}
+                      {sub === "evaluated" && (
+                        <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-emerald-200">Evaluated</span>
+                      )}
+                      {sub === "submitted" && (
+                        <span className="inline-flex items-center rounded-full border border-indigo-400/40 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-indigo-200">Submitted</span>
+                      )}
+                    </div>
+                    <h4 className="mt-1.5 text-sm font-semibold">{t.title}</h4>
+                    <div className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <UserCircle2 className="h-3 w-3" /> {teacherName()}
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="text-[10px] text-muted-foreground">Total</div>
+                    <div className="text-base font-bold text-indigo-200">{t.maxMarks}</div>
+                  </div>
+                </div>
+
+                <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">{t.instructions || "Guidelines will appear here."}</p>
+
+                <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-2.5">
+                  <div className={cn(
+                    "inline-flex items-center gap-1 text-[11px] font-semibold",
+                    overdue ? "text-rose-300" : dleft <= 2 ? "text-amber-300" : "text-emerald-300"
+                  )}>
+                    <Clock className="h-3 w-3" />
+                    {overdue ? `${Math.abs(dleft)}d overdue` : dleft === 0 ? "Due today" : `${dleft}d left`}
+                    <span className="text-muted-foreground">· {t.deadline}</span>
+                  </div>
+                  {tab === "active" ? (
+                    <button
+                      onClick={() => submit(t.id)}
+                      className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+                    >
+                      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
+                      <Rocket className="relative h-3.5 w-3.5" />
+                      <span className="relative">{t.type === "project" ? "Launch Workspace" : "Submit Task"}</span>
+                    </button>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] text-muted-foreground">
+                      <FileCheck2 className="h-3 w-3" /> {sub === "evaluated" ? "Graded" : sub === "submitted" ? "Awaiting evaluation" : "Closed"}
+                    </span>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+
+          {filtered.length === 0 && (
+            <div className="col-span-full rounded-xl border border-dashed border-border/60 bg-background/30 p-8 text-center text-[12px] text-muted-foreground">
+              Nothing here yet — switch tabs or wait for your teacher to publish new tasks.
             </div>
           )}
         </div>
