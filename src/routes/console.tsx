@@ -3875,7 +3875,7 @@ function SnapshotRenderer({ snapshot }: { snapshot: LabSnapshot }) {
     return (
       <div className="grid gap-3 lg:grid-cols-2">
         <iframe title="snap" srcDoc={s.preview} sandbox="allow-scripts allow-modals" className="h-[360px] w-full rounded-lg border border-white/10 bg-white" />
-        <pre className="max-h-[360px] overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-emerald-200">{p.html}\n\n/* css */\n{p.css}</pre>
+        <pre className="max-h-[360px] overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-emerald-200">{`${p.html}\n\n/* css */\n${p.css}`}</pre>
       </div>
     );
   }
