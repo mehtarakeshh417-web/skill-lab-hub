@@ -2665,18 +2665,23 @@ function TaskManagementPanel() {
     if (!form.title.trim()) { setFlash("Title is required."); setTimeout(() => setFlash(null), 1800); return; }
     const id = `tk${Date.now()}`;
     const total = status === "draft" ? 0 : recipientsCount;
+    const hasQuiz = quiz.length > 0;
+    const computedMarks = hasQuiz ? quiz.length * marksPerQ : form.maxMarks;
     setTasks((t) => [
       {
         id, type: form.type, title: form.title.trim(),
-        instructions: form.instructions.trim(), maxMarks: form.maxMarks,
+        instructions: form.instructions.trim(), maxMarks: computedMarks,
         deadline: form.deadline, status,
         targets: { ...form.targets },
         totalRecipients: total, submissions: 0, pendingEval: 0,
         createdAt: new Date().toISOString().slice(0, 10),
+        quiz: hasQuiz ? quiz : undefined,
+        quizMeta: hasQuiz ? { structure: quizStructure, marksPerQuestion: marksPerQ, source: method, topic: aiTopic || undefined, difficulty: method === "gemini" ? aiDifficulty : undefined } : undefined,
       },
       ...t,
     ]);
     setForm(blank());
+    setQuiz([]); setAiTopic(""); setAiError(null);
     setFlash(status === "draft" ? "Saved as draft." : `Published to ${total} recipient${total === 1 ? "" : "s"}.`);
     setTimeout(() => setFlash(null), 2200);
   };
