@@ -290,12 +290,14 @@ function ConsolePage() {
                   audit={audit}
                 />
                 {isManager && <TeacherManagementPanel maskPII />}
+                <InnovationGallery />
               </div>
             ) : role === "school" ? (
               <div className="space-y-4">
                 <SchoolAdminPanel />
                 <TeacherManagementPanel maskPII={false} />
                 <StudentManagementPanel canEdit />
+                <InnovationGallery />
               </div>
             ) : role === "teacher" ? (
               <div className="space-y-4">
