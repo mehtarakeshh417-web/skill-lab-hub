@@ -1339,3 +1339,471 @@ function TeacherManagementPanel({ maskPII }: { maskPII: boolean }) {
     </div>
   );
 }
+
+// =========================================================================
+// Student Management Panel (School Admin + Teacher)
+// =========================================================================
+
+type Gender = "Male" | "Female" | "Other";
+type Student = {
+  id: string;
+  roll: string;
+  name: string;
+  sectionId: string;
+  classGrade: number;
+  gender: Gender;
+  dob: string;
+  status: "Active" | "Inactive";
+};
+
+let _students: Student[] = [
+  { id: "st1", roll: "ADM-2206", name: "Ira Khanna",   sectionId: "c8-A", classGrade: 8, gender: "Female", dob: "2016-04-12", status: "Active" },
+  { id: "st2", roll: "ADM-2289", name: "Veer Singh",   sectionId: "c9-A", classGrade: 9, gender: "Male",   dob: "2015-09-03", status: "Active" },
+  { id: "st3", roll: "ADM-3101", name: "Tara Mehta",   sectionId: "c6-A", classGrade: 6, gender: "Female", dob: "2018-01-21", status: "Inactive" },
+  { id: "st4", roll: "ADM-3110", name: "Arjun Nair",   sectionId: "c1-A", classGrade: 1, gender: "Male",   dob: "2023-07-15", status: "Active" },
+  { id: "st5", roll: "ADM-3144", name: "Sara Joseph",  sectionId: "c1-B", classGrade: 1, gender: "Female", dob: "2023-11-02", status: "Active" },
+  { id: "st6", roll: "ADM-3201", name: "Kabir Bose",   sectionId: "c2-A", classGrade: 2, gender: "Male",   dob: "2022-05-09", status: "Active" },
+];
+const studentListeners = new Set<() => void>();
+function setStudents(updater: (s: Student[]) => Student[]) {
+  _students = updater(_students);
+  studentListeners.forEach((l) => l());
+}
+function useStudents() {
+  return useSyncExternalStore(
+    (cb) => { studentListeners.add(cb); return () => studentListeners.delete(cb); },
+    () => _students,
+    () => _students,
+  );
+}
+
+function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
+  const students = useStudents();
+  const classes = useMemo(() => buildInitialClasses(), []);
+  const sectionLabel = (sid: string) => {
+    for (const c of classes) {
+      const s = c.sections.find((x) => x.id === sid);
+      if (s) return `${c.grade}-${s.label}`;
+    }
+    return sid;
+  };
+
+  const blank = () => ({
+    roll: "", name: "", classGrade: 1, sectionId: classes[0].sections[0].id,
+    gender: "Male" as Gender, dob: "", status: "Active" as "Active" | "Inactive",
+  });
+  const [form, setForm] = useState(blank);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [query, setQuery] = useState("");
+  const [filterClass, setFilterClass] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+
+  // Upload zone state
+  const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{ rows: number; file: string } | null>(null);
+
+  const sectionsFor = (g: number) => classes.find((c) => c.grade === g)?.sections ?? [];
+
+  const startEdit = (s: Student) => {
+    setEditingId(s.id);
+    setForm({ roll: s.roll, name: s.name, classGrade: s.classGrade, sectionId: s.sectionId, gender: s.gender, dob: s.dob, status: s.status });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const cancel = () => { setEditingId(null); setForm(blank()); setError(null); };
+
+  const submit = () => {
+    if (!form.roll.trim() || !form.name.trim()) { setError("Roll Number and Full Name are required."); return; }
+    if (!form.dob) { setError("Date of Birth is required."); return; }
+    const clash = students.some((s) => s.roll.toLowerCase() === form.roll.trim().toLowerCase() && s.id !== editingId);
+    if (clash) { setError("Roll Number must be unique."); return; }
+
+    setSubmitting(true);
+    setTimeout(() => {
+      if (editingId) {
+        setStudents((arr) => arr.map((s) => s.id === editingId ? { ...s, ...form, roll: form.roll.trim(), name: form.name.trim() } : s));
+      } else {
+        setStudents((arr) => [
+          { id: `st${Date.now()}`, ...form, roll: form.roll.trim(), name: form.name.trim() },
+          ...arr,
+        ]);
+      }
+      setSubmitting(false);
+      cancel();
+    }, 500);
+  };
+
+  const toggleStatus = (id: string) =>
+    setStudents((arr) => arr.map((s) => s.id === id ? { ...s, status: s.status === "Active" ? "Inactive" : "Active" } : s));
+  const remove = (id: string) => {
+    if (!confirm("Remove this student from the roster?")) return;
+    setStudents((arr) => arr.filter((s) => s.id !== id));
+  };
+
+  const handleFile = (file: File) => {
+    setUploading(true);
+    setUploadResult(null);
+    setTimeout(() => {
+      const synthetic = Array.from({ length: 5 }, (_, i) => {
+        const sec = classes[i % classes.length].sections[0];
+        return {
+          id: `st-imp-${Date.now()}-${i}`,
+          roll: `ADM-${Math.floor(4000 + Math.random() * 999)}`,
+          name: ["Imported A", "Imported B", "Imported C", "Imported D", "Imported E"][i],
+          classGrade: classes[i % classes.length].grade,
+          sectionId: sec.id,
+          gender: (["Male", "Female", "Other"] as Gender[])[i % 3],
+          dob: `201${(i + 5) % 10}-0${(i % 9) + 1}-1${i + 1}`,
+          status: "Active" as const,
+        };
+      });
+      setStudents((arr) => [...synthetic, ...arr]);
+      setUploading(false);
+      setUploadResult({ rows: synthetic.length, file: file.name });
+    }, 1400);
+  };
+
+  const downloadTemplate = () => {
+    const csv = "roll,name,class,section,gender,dob,status\nADM-9001,Sample Name,5,A,Female,2017-03-15,Active\n";
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "avartan_student_template.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const filtered = students.filter((s) => {
+    if (filterClass !== "all" && String(s.classGrade) !== filterClass) return false;
+    if (filterStatus !== "all" && s.status !== filterStatus) return false;
+    if (query) {
+      const q = query.toLowerCase();
+      return s.roll.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  const counts = {
+    total: students.length,
+    active: students.filter((s) => s.status === "Active").length,
+    classes: new Set(students.map((s) => s.classGrade)).size,
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header card */}
+      <section
+        className="relative overflow-hidden rounded-xl border border-border/60 bg-card/40 backdrop-blur-xl"
+        style={{ boxShadow: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 18px 50px -22px rgba(99,102,241,0.35)" }}
+      >
+        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-16 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl" />
+
+        <div className="relative flex items-center justify-between border-b border-border/60 px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-violet-500 shadow-lg shadow-primary/30">
+              <UserCircle2 className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <div>
+              <h2 className="font-display text-sm font-semibold tracking-tight">Student Management System</h2>
+              <p className="text-[10px] text-muted-foreground">Unified roster · onboarding · bulk import</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-[10px]">
+            <span className="rounded-full border border-border/60 bg-background/60 px-2 py-0.5 text-muted-foreground"><b className="text-foreground tabular-nums">{counts.total}</b> students</span>
+            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-emerald-300"><b className="tabular-nums">{counts.active}</b> active</span>
+            <span className="rounded-full border border-border/60 bg-background/60 px-2 py-0.5 text-muted-foreground"><b className="text-foreground tabular-nums">{counts.classes}</b> classes</span>
+          </div>
+        </div>
+
+        {/* Form */}
+        {canEdit && (
+          <div className="relative grid gap-3 p-4 lg:grid-cols-12">
+            <div className="lg:col-span-2">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Roll Number*</label>
+              <input
+                value={form.roll}
+                onChange={(e) => setForm({ ...form, roll: e.target.value.slice(0, 20) })}
+                placeholder="ADM-3204"
+                className="mt-1 h-9 w-full rounded-lg border border-border/60 bg-background/40 px-2.5 font-mono text-xs outline-none ring-primary/30 transition focus:border-primary/60 focus:ring-2"
+              />
+            </div>
+            <div className="lg:col-span-3">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Full Name*</label>
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value.slice(0, 80) })}
+                placeholder="Aanya Kapoor"
+                className="mt-1 h-9 w-full rounded-lg border border-border/60 bg-background/40 px-2.5 text-xs outline-none ring-primary/30 transition focus:border-primary/60 focus:ring-2"
+              />
+            </div>
+            <div className="lg:col-span-2">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Class</label>
+              <select
+                value={form.classGrade}
+                onChange={(e) => {
+                  const g = Number(e.target.value);
+                  setForm({ ...form, classGrade: g, sectionId: sectionsFor(g)[0].id });
+                }}
+                className="mt-1 h-9 w-full rounded-lg border border-border/60 bg-background/40 px-2.5 text-xs outline-none focus:border-primary/60"
+              >
+                {classes.map((c) => <option key={c.grade} value={c.grade}>Class {c.grade}</option>)}
+              </select>
+            </div>
+            <div className="lg:col-span-2">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Section</label>
+              <select
+                value={form.sectionId}
+                onChange={(e) => setForm({ ...form, sectionId: e.target.value })}
+                className="mt-1 h-9 w-full rounded-lg border border-border/60 bg-background/40 px-2.5 text-xs outline-none focus:border-primary/60"
+              >
+                {sectionsFor(form.classGrade).map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              </select>
+            </div>
+            <div className="lg:col-span-1">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Gender</label>
+              <select
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value as Gender })}
+                className="mt-1 h-9 w-full rounded-lg border border-border/60 bg-background/40 px-1.5 text-xs outline-none focus:border-primary/60"
+              >
+                <option>Male</option><option>Female</option><option>Other</option>
+              </select>
+            </div>
+            <div className="lg:col-span-2">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Date of Birth*</label>
+              <div className="relative mt-1">
+                <CalendarIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="date"
+                  value={form.dob}
+                  onChange={(e) => setForm({ ...form, dob: e.target.value })}
+                  className="h-9 w-full rounded-lg border border-border/60 bg-background/40 pl-7 pr-2 text-xs outline-none focus:border-primary/60"
+                />
+              </div>
+            </div>
+
+            <div className="lg:col-span-12 flex flex-wrap items-end gap-3">
+              {/* Premium status toggle */}
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</div>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, status: form.status === "Active" ? "Inactive" : "Active" })}
+                  className={cn(
+                    "mt-1 flex items-center gap-2 rounded-full border px-2 py-1 text-[11px] font-semibold transition",
+                    form.status === "Active"
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 shadow-[0_0_18px_-4px_rgba(16,185,129,0.6)]"
+                      : "border-rose-500/40 bg-rose-500/10 text-rose-300"
+                  )}
+                >
+                  <span className={cn(
+                    "flex h-4 w-7 items-center rounded-full border border-border/60 bg-background/60 px-0.5 transition",
+                  )}>
+                    <span className={cn(
+                      "h-3 w-3 rounded-full bg-gradient-to-br shadow-sm transition-transform duration-300",
+                      form.status === "Active" ? "translate-x-3 from-emerald-300 to-emerald-500" : "translate-x-0 from-rose-300 to-rose-500"
+                    )} />
+                  </span>
+                  {form.status}
+                </button>
+              </div>
+
+              <div className="ml-auto flex items-center gap-2">
+                {editingId && (
+                  <button onClick={cancel} className="rounded-lg border border-border/60 px-3 py-1.5 text-xs hover:border-primary/40">Cancel</button>
+                )}
+                <button
+                  onClick={submit}
+                  disabled={submitting}
+                  className={cn(
+                    "group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg px-4 py-2 text-xs font-semibold text-primary-foreground transition",
+                    "bg-gradient-to-r from-primary via-violet-500 to-primary",
+                    "shadow-[0_8px_24px_-8px_rgba(99,102,241,0.7)] hover:shadow-[0_10px_30px_-6px_rgba(99,102,241,0.9)]",
+                    "disabled:opacity-60"
+                  )}
+                >
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : editingId ? <Save className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
+                  {submitting ? "Saving…" : editingId ? "Update Student" : "Add Student"}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="lg:col-span-12 flex items-center gap-1.5 rounded-lg border border-rose-500/40 bg-rose-500/10 px-2.5 py-1.5 text-[11px] text-rose-300">
+                <AlertTriangle className="h-3.5 w-3.5" /> {error}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Bulk Upload */}
+        {canEdit && (
+          <div className="relative grid gap-3 border-t border-border/60 p-4 md:grid-cols-3">
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault(); setDragOver(false);
+                const f = e.dataTransfer.files?.[0]; if (f) handleFile(f);
+              }}
+              className={cn(
+                "group relative md:col-span-2 flex flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed p-6 text-center transition",
+                dragOver
+                  ? "border-primary/70 bg-primary/10 shadow-[0_0_40px_-10px_rgba(99,102,241,0.8)]"
+                  : "border-border/60 bg-background/30 hover:border-primary/40"
+              )}
+            >
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-violet-500/10 opacity-0 transition group-hover:opacity-100" />
+              {uploading ? (
+                <>
+                  <Loader2 className="mb-2 h-6 w-6 animate-spin text-primary" />
+                  <div className="text-xs font-semibold">Processing rows…</div>
+                  <div className="mt-2 h-1 w-48 overflow-hidden rounded-full bg-border/60">
+                    <div className="h-full w-1/2 animate-pulse rounded-full bg-gradient-to-r from-primary to-violet-500" />
+                  </div>
+                </>
+              ) : uploadResult ? (
+                <>
+                  <div className="mb-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                  </div>
+                  <div className="text-xs font-semibold text-emerald-300">Imported {uploadResult.rows} students</div>
+                  <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">{uploadResult.file}</div>
+                  <button onClick={() => setUploadResult(null)} className="mt-2 text-[10px] text-primary hover:underline">Upload another file</button>
+                </>
+              ) : (
+                <>
+                  <div className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-violet-500/20 ring-1 ring-primary/30">
+                    <Upload className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="font-display text-sm font-semibold">Drag &amp; drop Excel / CSV</div>
+                  <div className="mt-0.5 text-[10px] text-muted-foreground">or</div>
+                  <label className="mt-1 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary hover:bg-primary/20">
+                    <FileSpreadsheet className="h-3 w-3" /> Browse file
+                    <input type="file" accept=".csv,.xls,.xlsx" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+                  </label>
+                  <div className="mt-2 text-[10px] text-muted-foreground">Accepts .csv .xls .xlsx · max 20MB</div>
+                </>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2 rounded-xl border border-border/60 bg-background/30 p-4">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Template</div>
+              <div className="text-xs leading-snug">
+                Download a pre-formatted CSV template with all required columns, then bulk import your entire class roster in one go.
+              </div>
+              <button
+                onClick={downloadTemplate}
+                className="mt-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold transition hover:border-primary/40 hover:bg-primary/10"
+              >
+                <Download className="h-3.5 w-3.5" /> Download CSV Template
+              </button>
+              <div className="grid grid-cols-3 gap-1 text-[9px] text-muted-foreground">
+                {["roll", "name", "class", "section", "gender", "dob", "status"].map((c) => (
+                  <span key={c} className="rounded border border-border/60 bg-background/60 px-1.5 py-0.5 text-center font-mono">{c}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Roster Table */}
+      <section className="rounded-xl border border-border/60 bg-card/40 backdrop-blur-xl">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border/60 px-4 py-2.5">
+          <h3 className="font-display text-sm font-semibold">Student Directory</h3>
+          <span className="rounded-full border border-border/60 bg-background/40 px-2 py-0.5 text-[10px] text-muted-foreground">{filtered.length} of {students.length}</span>
+          <div className="ml-auto flex flex-wrap items-center gap-1.5">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search roll / name…"
+                className="h-8 w-52 rounded-md border border-border/60 bg-background/60 pl-6 pr-2 text-xs outline-none focus:border-primary/60"
+              />
+            </div>
+            <select value={filterClass} onChange={(e) => setFilterClass(e.target.value)} className="h-8 rounded-md border border-border/60 bg-background/60 px-1.5 text-xs outline-none focus:border-primary/60">
+              <option value="all">All Classes</option>
+              {classes.map((c) => <option key={c.grade} value={c.grade}>Class {c.grade}</option>)}
+            </select>
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="h-8 rounded-md border border-border/60 bg-background/60 px-1.5 text-xs outline-none focus:border-primary/60">
+              <option value="all">All Status</option><option>Active</option><option>Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/30 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold">Roll No.</th>
+                <th className="px-3 py-2 text-left font-semibold">Name</th>
+                <th className="px-3 py-2 text-left font-semibold">Class · Section</th>
+                <th className="px-3 py-2 text-left font-semibold">Gender</th>
+                <th className="px-3 py-2 text-left font-semibold">DOB</th>
+                <th className="px-3 py-2 text-left font-semibold">Status</th>
+                <th className="px-3 py-2 text-right font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
+              {filtered.map((s) => (
+                <tr key={s.id} className={cn("group transition hover:bg-primary/5", s.status === "Inactive" && "opacity-60")}>
+                  <td className="px-3 py-1.5 font-mono text-[11px] font-semibold text-primary">{s.roll}</td>
+                  <td className="px-3 py-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold uppercase",
+                        s.gender === "Female" ? "bg-pink-500/15 text-pink-300" :
+                        s.gender === "Male" ? "bg-sky-500/15 text-sky-300" :
+                        "bg-violet-500/15 text-violet-300"
+                      )}>{s.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}</div>
+                      <span className="font-medium">{s.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-1.5">
+                    <span className="rounded border border-border/60 bg-background/60 px-1.5 py-0.5 font-mono text-[10px]">Class {s.classGrade}-{sectionLabel(s.sectionId).split("-")[1] ?? ""}</span>
+                  </td>
+                  <td className="px-3 py-1.5 text-[10px] text-muted-foreground">{s.gender}</td>
+                  <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{s.dob || "—"}</td>
+                  <td className="px-3 py-1.5"><StatusPill s={s.status} /></td>
+                  <td className="px-3 py-1.5">
+                    <div className="flex items-center justify-end gap-1 opacity-70 transition group-hover:opacity-100">
+                      {canEdit && (
+                        <button onClick={() => startEdit(s)} title="Edit Profile" className="inline-flex items-center rounded-md border border-border/60 p-1.5 hover:border-primary/50 hover:text-primary">
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => toggleStatus(s.id)}
+                        title={s.status === "Active" ? "Deactivate" : "Activate"}
+                        className={cn(
+                          "inline-flex items-center rounded-md border p-1.5",
+                          s.status === "Active"
+                            ? "border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
+                            : "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                        )}
+                      >
+                        {s.status === "Active" ? <PowerOff className="h-3 w-3" /> : <Power className="h-3 w-3" />}
+                      </button>
+                      {canEdit && (
+                        <button onClick={() => remove(s.id)} title="Remove" className="inline-flex items-center rounded-md border border-border/60 p-1.5 hover:border-rose-500/50 hover:text-rose-300">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">No students match the filters.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
