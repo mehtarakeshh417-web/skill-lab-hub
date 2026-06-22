@@ -2758,7 +2758,8 @@ function TaskManagementPanel() {
   const addQuestion = (kind: QuizKind) => setQuiz((qs) => [...qs, blankQuestionOfKind(kind)]);
 
   const generateWithGemini = async () => {
-    if (!aiTopic.trim()) { setAiError("Enter a topic to generate."); return; }
+    if (!aiTopic.trim()) { setAiError("Enter a topic to generate."); toast.error("Topic is required"); return; }
+    if (numQuestions <= 0 || marksPerQ <= 0) { setAiError("Question count and marks per question must be greater than 0."); toast.error("Counts must be > 0"); return; }
     setAiLoading(true); setAiError(null);
     const structureDesc = quizStructure === "hybrid"
       ? "a mix of multiple-choice, true/false, and fill-in-the-blank"
@@ -2801,8 +2802,11 @@ function TaskManagementPanel() {
       });
       if (normalized.length === 0) throw new Error("No questions returned");
       setQuiz(normalized);
+      toast.success("AI Assignment Generated Successfully", { description: `${normalized.length} ${quizStructure.toUpperCase()} questions on "${aiTopic.trim()}"` });
     } catch (e: any) {
-      setAiError(e?.message ?? "Generation failed. Try a different topic.");
+      const msg = e?.message ?? "Generation failed. Try a different topic.";
+      setAiError(msg);
+      toast.error("AI generation failed", { description: msg });
     } finally {
       setAiLoading(false);
     }
