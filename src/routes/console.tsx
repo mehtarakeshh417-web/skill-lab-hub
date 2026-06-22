@@ -5,6 +5,7 @@ import {
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
   ToggleLeft, ToggleRight, History, Sparkles, AlertTriangle,
   Trash2, Filter, Download, MoreHorizontal, Lock,
+  Pencil, Check, Plus, Layers, BookOpen, Save, Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -282,6 +283,8 @@ function ConsolePage() {
                 setDrilldown={setDrilldown}
                 audit={audit}
               />
+            ) : role === "school" ? (
+              <SchoolAdminPanel />
             ) : (
               <PlaceholderPanel role={role} />
             )}
@@ -557,6 +560,388 @@ function PlaceholderPanel({ role }: { role: Role }) {
       <p className="mt-1 max-w-md text-xs text-muted-foreground">
         Switch to <span className="font-semibold text-foreground">Admin</span> or <span className="font-semibold text-foreground">Portal Manager</span> in the Dev Role Selector to see the unified operations control panel built for this step.
       </p>
+    </div>
+  );
+}
+
+// =========================================================================
+// School Admin Panel
+// =========================================================================
+
+const TECHS = ["HTML", "CSS", "Python", "Scratch", "Java", "MySQL", "JavaScript", "C++", "MS Word", "MS Excel"] as const;
+type Tech = typeof TECHS[number];
+
+type SchoolTeacher = { id: string; code: string; name: string; expertise: Tech[] };
+const SCHOOL_TEACHERS: SchoolTeacher[] = [
+  { id: "t1", code: "EMP-014-01", name: "Anita Rao", expertise: ["Python", "MySQL"] },
+  { id: "t2", code: "EMP-014-02", name: "Rakesh Verma", expertise: ["HTML", "CSS", "Scratch"] },
+  { id: "t3", code: "EMP-014-03", name: "Priya Sharma", expertise: ["Java", "C++"] },
+  { id: "t4", code: "EMP-014-04", name: "Sandeep Mehta", expertise: ["MS Word", "MS Excel"] },
+  { id: "t5", code: "EMP-014-05", name: "Neha Kapoor", expertise: ["JavaScript", "HTML"] },
+  { id: "t6", code: "EMP-014-06", name: "Vikram Joshi", expertise: ["Python", "Scratch"] },
+];
+
+type SectionRec = { id: string; defaultLabel: string; label: string; students: number };
+type ClassRec = { grade: number; sections: SectionRec[] };
+
+function buildInitialClasses(): ClassRec[] {
+  const letters = ["A", "B", "C", "D"];
+  return Array.from({ length: 12 }, (_, i) => {
+    const grade = i + 1;
+    const secCount = grade <= 5 ? 4 : grade <= 8 ? 3 : 2;
+    return {
+      grade,
+      sections: Array.from({ length: secCount }, (_, j) => ({
+        id: `c${grade}-${letters[j]}`,
+        defaultLabel: letters[j],
+        label: letters[j],
+        students: 18 + ((grade * 7 + j * 11) % 22),
+      })),
+    };
+  });
+}
+
+type Mapping = { id: string; classGrade: number; sectionId: string; teacherId: string; tech: Tech };
+
+function SchoolAdminPanel() {
+  const [classes, setClasses] = useState<ClassRec[]>(() => buildInitialClasses());
+  const [activeGrade, setActiveGrade] = useState<number>(1);
+  const [editingSec, setEditingSec] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [mappings, setMappings] = useState<Mapping[]>([
+    { id: "m1", classGrade: 1, sectionId: "c1-A", teacherId: "t2", tech: "Scratch" },
+    { id: "m2", classGrade: 1, sectionId: "c1-B", teacherId: "t6", tech: "Scratch" },
+    { id: "m3", classGrade: 6, sectionId: "c6-A", teacherId: "t1", tech: "Python" },
+    { id: "m4", classGrade: 9, sectionId: "c9-A", teacherId: "t3", tech: "Java" },
+  ]);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  const totalStudents = useMemo(
+    () => classes.reduce((sum, c) => sum + c.sections.reduce((s, x) => s + x.students, 0), 0),
+    [classes]
+  );
+  const totalSections = classes.reduce((s, c) => s + c.sections.length, 0);
+  const activeClass = classes.find((c) => c.grade === activeGrade)!;
+  const maxStudents = Math.max(...classes.flatMap((c) => c.sections.map((s) => s.students)));
+
+  const renameSection = (sectionId: string, newLabel: string) => {
+    const trimmed = newLabel.trim();
+    if (!trimmed) return;
+    setClasses((cs) =>
+      cs.map((c) => ({
+        ...c,
+        sections: c.sections.map((s) => (s.id === sectionId ? { ...s, label: trimmed } : s)),
+      }))
+    );
+    setEditingSec(null);
+  };
+
+  const addSection = (grade: number) => {
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    setClasses((cs) =>
+      cs.map((c) => {
+        if (c.grade !== grade) return c;
+        const nextLetter = letters[c.sections.length] ?? `S${c.sections.length + 1}`;
+        return {
+          ...c,
+          sections: [
+            ...c.sections,
+            { id: `c${grade}-${nextLetter}-${Date.now()}`, defaultLabel: nextLetter, label: nextLetter, students: 0 },
+          ],
+        };
+      })
+    );
+  };
+
+  const addMapping = () => {
+    const firstSec = activeClass.sections[0];
+    setMappings((m) => [
+      ...m,
+      { id: `m${Date.now()}`, classGrade: activeGrade, sectionId: firstSec.id, teacherId: SCHOOL_TEACHERS[0].id, tech: TECHS[0] },
+    ]);
+  };
+  const updateMapping = (id: string, patch: Partial<Mapping>) =>
+    setMappings((arr) => arr.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  const removeMapping = (id: string) => setMappings((arr) => arr.filter((m) => m.id !== id));
+
+  const saveMappings = () => {
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 1600);
+  };
+
+  const sectionsLookup = (grade: number) => classes.find((c) => c.grade === grade)?.sections ?? [];
+
+  return (
+    <div className="space-y-4">
+      {/* Metrics */}
+      <section>
+        <h2 className="mb-2 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">School Dashboard</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {[
+            { label: "Teachers", value: SCHOOL_TEACHERS.length, icon: GraduationCap, color: "from-violet-500/20 to-violet-500/0" },
+            { label: "Students", value: totalStudents, icon: Users, color: "from-sky-500/20 to-sky-500/0" },
+            { label: "Classes", value: classes.length, icon: BookOpen, color: "from-indigo-500/20 to-indigo-500/0" },
+            { label: "Sections", value: totalSections, icon: Layers, color: "from-emerald-500/20 to-emerald-500/0" },
+          ].map((c) => (
+            <div key={c.label} className="relative overflow-hidden rounded-lg border border-border/60 bg-card/40 p-3 backdrop-blur">
+              <div className={cn("pointer-events-none absolute inset-0 bg-gradient-to-br opacity-40", c.color)} />
+              <div className="relative flex items-start justify-between">
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{c.label}</div>
+                  <div className="mt-1 font-display text-2xl font-bold tabular-nums">{c.value}</div>
+                </div>
+                <c.icon className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Class-wise distribution */}
+      <section className="rounded-lg border border-border/60 bg-card/40 backdrop-blur">
+        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
+          <div>
+            <h2 className="font-display text-sm font-semibold">Class-wise Student Allocation</h2>
+            <p className="text-[10px] text-muted-foreground">Live distribution across all 12 classes</p>
+          </div>
+          <span className="rounded-full border border-border/60 px-2 py-0.5 text-[10px] text-muted-foreground">{totalStudents} total</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 p-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          {classes.map((c) => {
+            const total = c.sections.reduce((s, x) => s + x.students, 0);
+            return (
+              <button
+                key={c.grade}
+                onClick={() => setActiveGrade(c.grade)}
+                className={cn(
+                  "rounded-md border px-2 py-1.5 text-left transition",
+                  activeGrade === c.grade
+                    ? "border-primary/60 bg-primary/10"
+                    : "border-border/60 bg-background/40 hover:border-primary/40"
+                )}
+              >
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                  <span className="font-semibold uppercase tracking-wider">Class {c.grade}</span>
+                  <span className="tabular-nums">{total}</span>
+                </div>
+                <div className="mt-1 flex h-1.5 gap-0.5">
+                  {c.sections.map((s) => (
+                    <div
+                      key={s.id}
+                      title={`${s.label}: ${s.students}`}
+                      className="flex-1 rounded-sm bg-gradient-to-r from-primary/60 to-primary/30"
+                      style={{ opacity: 0.35 + (s.students / maxStudents) * 0.65 }}
+                    />
+                  ))}
+                </div>
+                <div className="mt-1 text-[9px] text-muted-foreground">{c.sections.length} sections</div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Class & Section editor */}
+      <section className="rounded-lg border border-border/60 bg-card/40 backdrop-blur">
+        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
+          <div>
+            <h2 className="font-display text-sm font-semibold">Class &amp; Section Management</h2>
+            <p className="text-[10px] text-muted-foreground">Click any section label to rename it (e.g. Red, Lotus, Alpha)</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Class</label>
+            <select
+              value={activeGrade}
+              onChange={(e) => setActiveGrade(Number(e.target.value))}
+              className="h-7 rounded-md border border-border/60 bg-background/60 px-2 text-xs outline-none focus:border-primary/60"
+            >
+              {classes.map((c) => (
+                <option key={c.grade} value={c.grade}>Class {c.grade}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => addSection(activeGrade)}
+              className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-[10px] font-semibold hover:border-primary/50"
+            >
+              <Plus className="h-3 w-3" /> Add Section
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-2 p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {activeClass.sections.map((s) => {
+            const isEditing = editingSec === s.id;
+            const isCustom = s.label !== s.defaultLabel;
+            return (
+              <div key={s.id} className="group relative overflow-hidden rounded-md border border-border/60 bg-background/40 p-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Class {activeGrade} · Section
+                  </div>
+                  {isCustom && (
+                    <span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">renamed</span>
+                  )}
+                </div>
+                <div className="mt-1 flex items-center gap-2">
+                  {isEditing ? (
+                    <div className="flex flex-1 items-center gap-1">
+                      <input
+                        autoFocus
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") renameSection(s.id, draft);
+                          if (e.key === "Escape") setEditingSec(null);
+                        }}
+                        placeholder="e.g. Red, Lotus"
+                        className="h-7 w-full rounded-md border border-primary/50 bg-background px-2 font-display text-sm font-bold outline-none"
+                      />
+                      <button onClick={() => renameSection(s.id, draft)} className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-1 text-emerald-300">
+                        <Check className="h-3 w-3" />
+                      </button>
+                      <button onClick={() => setEditingSec(null)} className="rounded-md border border-border/60 p-1">
+                        <XCircle className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setEditingSec(s.id); setDraft(s.label); }}
+                      className="flex flex-1 items-center justify-between rounded-md px-1 py-0.5 text-left hover:bg-accent/40"
+                    >
+                      <span className="font-display text-lg font-bold tracking-tight">{s.label}</span>
+                      <Pencil className="h-3 w-3 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
+                    </button>
+                  )}
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
+                  <span>{s.students} students</span>
+                  <span className="font-mono">{s.id}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Mapping grid */}
+      <section className="rounded-lg border border-border/60 bg-card/40 backdrop-blur">
+        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
+          <div className="flex items-center gap-2">
+            <Link2 className="h-3.5 w-3.5 text-primary" />
+            <div>
+              <h2 className="font-display text-sm font-semibold">Class · Section · Teacher · Technology Mapping</h2>
+              <p className="text-[10px] text-muted-foreground">Assign teachers and subjects to each section</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={addMapping} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-[10px] font-semibold hover:border-primary/50">
+              <Plus className="h-3 w-3" /> Add Row
+            </button>
+            <button
+              onClick={saveMappings}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-semibold transition",
+                savedFlash
+                  ? "border border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
+                  : "border border-primary/40 bg-primary/15 text-primary hover:bg-primary/25"
+              )}
+            >
+              {savedFlash ? <><Check className="h-3 w-3" /> Saved</> : <><Save className="h-3 w-3" /> Save Mapping</>}
+            </button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/30 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold">#</th>
+                <th className="px-3 py-2 text-left font-semibold">Class</th>
+                <th className="px-3 py-2 text-left font-semibold">Section</th>
+                <th className="px-3 py-2 text-left font-semibold">Teacher</th>
+                <th className="px-3 py-2 text-left font-semibold">Technology</th>
+                <th className="px-3 py-2 text-left font-semibold">Expertise</th>
+                <th className="px-3 py-2 text-right font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
+              {mappings.map((m, i) => {
+                const teacher = SCHOOL_TEACHERS.find((t) => t.id === m.teacherId)!;
+                const compatible = teacher.expertise.includes(m.tech);
+                const secs = sectionsLookup(m.classGrade);
+                return (
+                  <tr key={m.id} className="hover:bg-accent/20">
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{String(i + 1).padStart(2, "0")}</td>
+                    <td className="px-3 py-1.5">
+                      <select
+                        value={m.classGrade}
+                        onChange={(e) => {
+                          const g = Number(e.target.value);
+                          const firstSec = classes.find((c) => c.grade === g)!.sections[0].id;
+                          updateMapping(m.id, { classGrade: g, sectionId: firstSec });
+                        }}
+                        className="h-7 rounded-md border border-border/60 bg-background/60 px-1.5 text-xs outline-none focus:border-primary/60"
+                      >
+                        {classes.map((c) => <option key={c.grade} value={c.grade}>Class {c.grade}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <select
+                        value={m.sectionId}
+                        onChange={(e) => updateMapping(m.id, { sectionId: e.target.value })}
+                        className="h-7 rounded-md border border-border/60 bg-background/60 px-1.5 text-xs outline-none focus:border-primary/60"
+                      >
+                        {secs.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <select
+                        value={m.teacherId}
+                        onChange={(e) => updateMapping(m.id, { teacherId: e.target.value })}
+                        className="h-7 rounded-md border border-border/60 bg-background/60 px-1.5 text-xs outline-none focus:border-primary/60"
+                      >
+                        {SCHOOL_TEACHERS.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <select
+                        value={m.tech}
+                        onChange={(e) => updateMapping(m.id, { tech: e.target.value as Tech })}
+                        className={cn(
+                          "h-7 rounded-md border bg-background/60 px-1.5 text-xs outline-none",
+                          compatible ? "border-border/60 focus:border-primary/60" : "border-amber-500/50 text-amber-300"
+                        )}
+                      >
+                        {TECHS.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <div className="flex flex-wrap gap-1">
+                        {teacher.expertise.map((e) => (
+                          <span key={e} className={cn(
+                            "rounded-full border px-1.5 py-0.5 text-[9px] font-mono",
+                            e === m.tech ? "border-primary/50 bg-primary/15 text-primary" : "border-border/60 text-muted-foreground"
+                          )}>{e}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-3 py-1.5 text-right">
+                      <button onClick={() => removeMapping(m.id)} className="inline-flex items-center rounded-md border border-border/60 p-1 hover:border-rose-500/50 hover:text-rose-300">
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+              {mappings.length === 0 && (
+                <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">No mappings yet — click <span className="font-semibold text-foreground">Add Row</span> to start.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="border-t border-border/60 px-3 py-2 text-[10px] text-muted-foreground">
+          {mappings.length} allocations · {new Set(mappings.map((m) => m.teacherId)).size} teachers assigned · {new Set(mappings.map((m) => m.tech)).size} technologies in use
+        </div>
+      </section>
     </div>
   );
 }
