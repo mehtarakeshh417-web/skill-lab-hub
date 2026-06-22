@@ -10,6 +10,7 @@ import {
   generatePassword,
   type SchoolRegistration,
 } from "@/lib/registrations";
+import { registerMockAccount } from "@/lib/mock-auth";
 import {
   Bell, ShieldCheck, Users, School2, GraduationCap, Briefcase,
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
