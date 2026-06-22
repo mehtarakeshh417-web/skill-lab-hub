@@ -13,6 +13,7 @@ import {
   Code2, Database, Coffee, Cat, Baby, FileType2, Sheet, Presentation, Palette, Play, Square, FlagTriangleRight,
   Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, Eraser, Brush, ChevronLeft, ChevronRight,
   Paperclip, Image as ImageIcon, ChevronUp,
+  Activity, BarChart3, LineChart, FileType, Server, Globe2, Cpu, Zap, ShieldAlert, KeyRound, RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
