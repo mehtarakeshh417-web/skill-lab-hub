@@ -1930,14 +1930,34 @@ type Student = {
   status: "Active" | "Inactive";
 };
 
-let _students: Student[] = [
-  { id: "st1", roll: "ADM-2206", name: "Ira Khanna",   sectionId: "c8-A", classGrade: 8, gender: "Female", dob: "2016-04-12", status: "Active" },
-  { id: "st2", roll: "ADM-2289", name: "Veer Singh",   sectionId: "c9-A", classGrade: 9, gender: "Male",   dob: "2015-09-03", status: "Active" },
-  { id: "st3", roll: "ADM-3101", name: "Tara Mehta",   sectionId: "c6-A", classGrade: 6, gender: "Female", dob: "2018-01-21", status: "Inactive" },
-  { id: "st4", roll: "ADM-3110", name: "Arjun Nair",   sectionId: "c1-A", classGrade: 1, gender: "Male",   dob: "2023-07-15", status: "Active" },
-  { id: "st5", roll: "ADM-3144", name: "Sara Joseph",  sectionId: "c1-B", classGrade: 1, gender: "Female", dob: "2023-11-02", status: "Active" },
-  { id: "st6", roll: "ADM-3201", name: "Kabir Bose",   sectionId: "c2-A", classGrade: 2, gender: "Male",   dob: "2022-05-09", status: "Active" },
+const _seedStudentRoster: Student[] = [
+  { id: "st1",  roll: "ADM-2206", name: "Ira Khanna",     sectionId: "c8-A", classGrade: 8, gender: "Female", dob: "2016-04-12", status: "Active" },
+  { id: "st2",  roll: "ADM-2289", name: "Veer Singh",     sectionId: "c9-A", classGrade: 9, gender: "Male",   dob: "2015-09-03", status: "Active" },
+  { id: "st3",  roll: "ADM-3101", name: "Tara Mehta",     sectionId: "c6-A", classGrade: 6, gender: "Female", dob: "2018-01-21", status: "Inactive" },
+  { id: "st4",  roll: "ADM-3110", name: "Arjun Nair",     sectionId: "c1-A", classGrade: 1, gender: "Male",   dob: "2023-07-15", status: "Active" },
+  { id: "st5",  roll: "ADM-3144", name: "Sara Joseph",    sectionId: "c1-B", classGrade: 1, gender: "Female", dob: "2023-11-02", status: "Active" },
+  { id: "st6",  roll: "ADM-3201", name: "Kabir Bose",     sectionId: "c2-A", classGrade: 2, gender: "Male",   dob: "2022-05-09", status: "Active" },
+  { id: "st7",  roll: "ADM-3215", name: "Aanya Iyer",     sectionId: "c2-B", classGrade: 2, gender: "Female", dob: "2022-08-22", status: "Active" },
+  { id: "st8",  roll: "ADM-3322", name: "Rohan Patel",    sectionId: "c3-A", classGrade: 3, gender: "Male",   dob: "2021-02-14", status: "Active" },
+  { id: "st9",  roll: "ADM-3408", name: "Meera Pillai",   sectionId: "c3-B", classGrade: 3, gender: "Female", dob: "2021-06-30", status: "Active" },
+  { id: "st10", roll: "ADM-3501", name: "Dev Malhotra",   sectionId: "c4-A", classGrade: 4, gender: "Male",   dob: "2020-04-05", status: "Active" },
+  { id: "st11", roll: "ADM-3580", name: "Saanvi Reddy",   sectionId: "c4-B", classGrade: 4, gender: "Female", dob: "2020-11-19", status: "Active" },
+  { id: "st12", roll: "ADM-3611", name: "Ayaan Khan",     sectionId: "c5-A", classGrade: 5, gender: "Male",   dob: "2019-03-08", status: "Active" },
+  { id: "st13", roll: "ADM-3640", name: "Zara Ali",       sectionId: "c5-B", classGrade: 5, gender: "Female", dob: "2019-07-27", status: "Inactive" },
+  { id: "st14", roll: "ADM-3712", name: "Vihaan Gupta",   sectionId: "c6-A", classGrade: 6, gender: "Male",   dob: "2018-02-11", status: "Active" },
+  { id: "st15", roll: "ADM-3744", name: "Anaya Sen",      sectionId: "c6-B", classGrade: 6, gender: "Female", dob: "2018-09-04", status: "Active" },
+  { id: "st16", roll: "ADM-3801", name: "Reyansh Das",    sectionId: "c7-A", classGrade: 7, gender: "Male",   dob: "2017-05-22", status: "Active" },
+  { id: "st17", roll: "ADM-3833", name: "Pari Saxena",    sectionId: "c7-B", classGrade: 7, gender: "Female", dob: "2017-10-15", status: "Active" },
+  { id: "st18", roll: "ADM-3902", name: "Krishna Menon",  sectionId: "c8-A", classGrade: 8, gender: "Male",   dob: "2016-01-30", status: "Active" },
+  { id: "st19", roll: "ADM-3960", name: "Aaradhya Roy",   sectionId: "c8-B", classGrade: 8, gender: "Female", dob: "2016-06-08", status: "Active" },
+  { id: "st20", roll: "ADM-4011", name: "Aditya Shah",    sectionId: "c9-A", classGrade: 9, gender: "Male",   dob: "2015-04-19", status: "Active" },
+  { id: "st21", roll: "ADM-4055", name: "Diya Kulkarni",  sectionId: "c9-B", classGrade: 9, gender: "Female", dob: "2015-12-01", status: "Active" },
+  { id: "st22", roll: "ADM-4108", name: "Yash Choudhary", sectionId: "c10-A", classGrade: 10, gender: "Male",   dob: "2014-08-17", status: "Active" },
+  { id: "st23", roll: "ADM-4144", name: "Riya Bhatt",     sectionId: "c10-B", classGrade: 10, gender: "Female", dob: "2014-11-25", status: "Active" },
+  { id: "st24", roll: "ADM-4203", name: "Ishaan Pandey",  sectionId: "c11-A", classGrade: 11, gender: "Male",   dob: "2013-07-09", status: "Active" },
+  { id: "st25", roll: "ADM-4290", name: "Myra Bansal",    sectionId: "c12-A", classGrade: 12, gender: "Female", dob: "2012-02-28", status: "Active" },
 ];
+let _students: Student[] = [..._seedStudentRoster];
 const studentListeners = new Set<() => void>();
 function setStudents(updater: (s: Student[]) => Student[]) {
   _students = updater(_students);
