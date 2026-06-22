@@ -2837,7 +2837,10 @@ function StudentDashboardPanel() {
       </section>
 
       {/* Practice Labs */}
-      <PracticeLabsPanel studentName={me.name} />
+      <PracticeLabsPanel student={me} />
+
+      {/* Digital Portfolio Hub */}
+      <PortfolioHub studentId={me.id} />
     </div>
   );
 }
