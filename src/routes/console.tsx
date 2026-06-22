@@ -1611,20 +1611,29 @@ function TeacherManagementPanel({ maskPII }: { maskPII: boolean }) {
   const cancelEdit = () => { setEditingId(null); setForm(blankForm()); setError(null); };
 
   const submit = () => {
-    if (!form.code.trim() || !form.name.trim()) { setError("Employee Code and Full Name are required."); return; }
-    if (form.expertise.length === 0) { setError("Select at least one expertise."); return; }
-    const codeClash = teachers.some((t) => t.code.toLowerCase() === form.code.trim().toLowerCase() && t.id !== editingId);
-    if (codeClash) { setError("Employee Code must be unique."); return; }
+    const code = form.code.trim();
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const mobile = form.mobile.trim();
+    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!code || !name) { setError("Employee Code and Full Name are required."); toast.error("Missing required fields"); return; }
+    if (email && !emailRx.test(email)) { setError("Enter a valid email address."); toast.error("Invalid email format"); return; }
+    if (mobile && mobile.replace(/\D/g, "").length < 7) { setError("Mobile number looks too short."); toast.error("Invalid mobile number"); return; }
+    if (form.expertise.length === 0) { setError("Select at least one expertise."); toast.error("Pick at least one expertise area"); return; }
+    const codeClash = teachers.some((t) => t.code.toLowerCase() === code.toLowerCase() && t.id !== editingId);
+    if (codeClash) { setError("Employee Code must be unique."); toast.error("Employee Code already in use"); return; }
 
     if (editingId) {
-      setTeachers((arr) => arr.map((t) => t.id === editingId ? { ...t, ...form, code: form.code.trim(), name: form.name.trim() } : t));
+      setTeachers((arr) => arr.map((t) => t.id === editingId ? { ...t, ...form, code, name, email, mobile } : t));
+      toast.success("Teacher profile updated", { description: `${name} · ${code}` });
     } else {
       const id = `t${Date.now()}`;
       setTeachers((arr) => [
         ...arr,
-        { id, code: form.code.trim(), name: form.name.trim(), email: form.email.trim(), mobile: form.mobile.trim(),
+        { id, code, name, email, mobile,
           expertise: form.expertise, sectionIds: form.sectionIds, status: form.status },
       ]);
+      toast.success("Teacher onboarded", { description: `${name} added with ${form.expertise.length} skill area${form.expertise.length === 1 ? "" : "s"}` });
     }
     cancelEdit();
   };
