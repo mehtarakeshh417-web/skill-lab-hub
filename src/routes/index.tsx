@@ -97,9 +97,17 @@ function Header() {
           <a href="#about" className="hover:text-foreground">About</a>
         </nav>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/auth">Sign in</Link>
-          </Button>
+          <Link
+            to="/auth"
+            className="group relative inline-flex h-9 items-center gap-1.5 overflow-hidden rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold tracking-wide text-foreground backdrop-blur-xl transition-all duration-300 hover:border-primary/50 hover:bg-white/[0.07] hover:shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.6)]"
+          >
+            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+            <span className="relative inline-flex h-1.5 w-1.5 items-center justify-center">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/70 opacity-70" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_2px_hsl(var(--primary)/0.7)]" />
+            </span>
+            <span className="relative">Sign in</span>
+          </Link>
           <Button variant="hero" size="sm" asChild>
             <Link to="/auth">Get started <ArrowRight className="h-4 w-4" /></Link>
           </Button>
