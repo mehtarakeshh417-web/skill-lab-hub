@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useSyncExternalStore, useRef, useEffect } from "react";
+import { useMemo, useState, useSyncExternalStore, useRef, useEffect, createContext, useContext, useCallback } from "react";
 import {
   Bell, ShieldCheck, Users, School2, GraduationCap, Briefcase,
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
@@ -12,6 +12,7 @@ import {
   BellRing, Megaphone, AlarmClock, MessageSquare, CheckCheck, Rocket, TrendingUp, Trophy, Flame,
   Code2, Database, Coffee, Cat, Baby, FileType2, Sheet, Presentation, Palette, Play, Square, FlagTriangleRight,
   Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, Eraser, Brush, ChevronLeft, ChevronRight,
+  Paperclip, Image as ImageIcon, ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -1868,6 +1869,79 @@ function useTasks() {
   );
 }
 
+// ========================================================================
+// Portfolio store + Lab → Assignment snapshot registry
+// ========================================================================
+export type LabKind = "html" | "sql" | "java" | "scratch" | "scratchjr" | "word" | "excel" | "ppt" | "paint";
+export type LabSnapshot = {
+  kind: LabKind;
+  labName: string;
+  payload: unknown;
+  preview?: string; // html string OR data URL OR text
+  previewKind?: "html" | "image" | "text" | "grid" | "slides" | "blocks";
+  bytes: number;
+};
+export type PortfolioStatus = "draft" | "submitted" | "evaluated";
+export type PortfolioItem = {
+  id: string;
+  studentId: string;
+  taskId?: string;
+  taskTitle?: string;
+  status: PortfolioStatus;
+  createdAt: number;
+  grade?: number;
+  snapshot: LabSnapshot;
+};
+let _portfolio: PortfolioItem[] = [];
+const portfolioListeners = new Set<() => void>();
+function setPortfolio(updater: (p: PortfolioItem[]) => PortfolioItem[]) {
+  _portfolio = updater(_portfolio);
+  portfolioListeners.forEach((l) => l());
+}
+function usePortfolio() {
+  return useSyncExternalStore(
+    (cb) => { portfolioListeners.add(cb); return () => portfolioListeners.delete(cb); },
+    () => _portfolio,
+    () => _portfolio,
+  );
+}
+
+type SnapshotGetter = () => LabSnapshot | null;
+const LabSnapshotCtx = createContext<{ register: (g: SnapshotGetter | null) => void }>({ register: () => {} });
+function useRegisterSnapshot(getter: SnapshotGetter, deps: ReadonlyArray<unknown>) {
+  const { register } = useContext(LabSnapshotCtx);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { register(getter); return () => register(null); }, deps);
+}
+
+function approxBytes(v: unknown): number {
+  try { return new Blob([typeof v === "string" ? v : JSON.stringify(v)]).size; } catch { return 0; }
+}
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(2)} MB`;
+}
+function formatTime(ts: number): string {
+  const d = new Date(ts);
+  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+const LAB_ICON: Record<LabKind, typeof Code2> = {
+  html: Code2, sql: Database, java: Coffee, scratch: Cat, scratchjr: Baby,
+  word: FileType2, excel: Sheet, ppt: Presentation, paint: Palette,
+};
+const LAB_TINT: Record<LabKind, string> = {
+  html: "from-orange-500/30 to-rose-500/20",
+  sql: "from-sky-500/30 to-indigo-500/20",
+  java: "from-amber-500/30 to-orange-500/20",
+  scratch: "from-amber-400/30 to-yellow-500/20",
+  scratchjr: "from-pink-500/30 to-fuchsia-500/20",
+  word: "from-blue-500/30 to-indigo-500/20",
+  excel: "from-emerald-500/30 to-teal-500/20",
+  ppt: "from-rose-500/30 to-orange-500/20",
+  paint: "from-fuchsia-500/30 to-violet-500/20",
+};
+
 function TaskManagementPanel() {
   const tasks = useTasks();
   const students = useStudents();
@@ -2763,7 +2837,10 @@ function StudentDashboardPanel() {
       </section>
 
       {/* Practice Labs */}
-      <PracticeLabsPanel studentName={me.name} />
+      <PracticeLabsPanel student={me} />
+
+      {/* Digital Portfolio Hub */}
+      <PortfolioHub studentId={me.id} />
     </div>
   );
 }
@@ -2786,38 +2863,99 @@ const LABS: { id: LabId; name: string; tag: string; icon: typeof Code2; tint: st
   { id: "paint",     name: "Paint Studio",     tag: "Canvas",            icon: Palette,      tint: "from-fuchsia-500/30 to-violet-500/20"},
 ];
 
-function PracticeLabsPanel({ studentName }: { studentName: string }) {
+function PracticeLabsPanel({ student }: { student: Student }) {
   const [active, setActive] = useState<LabId | null>(null);
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
   const tasks = useTasks();
-  const activeAssignment = tasks.find((t) => t.status === "active" && daysUntil(t.deadline) >= 0);
+  const portfolio = usePortfolio();
+  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
 
-  const flash = (msg: string) => { setSavedFlash(msg); setTimeout(() => setSavedFlash(null), 2200); };
-  const saveProgress = () => flash("Lab progress saved to your portfolio.");
-  const submitLab = () => {
-    if (activeAssignment) {
-      setTasks((all) => all.map((t) =>
-        t.id === activeAssignment.id
-          ? { ...t, submissions: Math.min(t.totalRecipients, t.submissions + 1), pendingEval: t.pendingEval + 1 }
-          : t
-      ));
-      flash(`Submitted to “${activeAssignment.title}”.`);
-    } else {
-      flash("No active assignment — saved as practice attempt.");
-    }
+  const getterRef = useRef<SnapshotGetter | null>(null);
+  const register = useCallback((g: SnapshotGetter | null) => { getterRef.current = g; }, []);
+
+  const submittedSet = useMemo(
+    () => new Set(portfolio.filter((p) => p.studentId === student.id && (p.status === "submitted" || p.status === "evaluated") && p.taskId).map((p) => p.taskId!)),
+    [portfolio, student.id]
+  );
+  const eligibleTasks = useMemo(
+    () => tasks.filter((t) =>
+      t.status === "active"
+      && !submittedSet.has(t.id)
+      && (t.targets.studentIds.includes(student.id)
+        || t.targets.sectionIds.includes(student.sectionId)
+        || t.targets.classGrades.includes(student.classGrade))
+    ),
+    [tasks, submittedSet, student]
+  );
+
+  useEffect(() => {
+    if (selectedTaskId && !eligibleTasks.some((t) => t.id === selectedTaskId)) setSelectedTaskId("");
+    if (!selectedTaskId && eligibleTasks[0]) setSelectedTaskId(eligibleTasks[0].id);
+  }, [eligibleTasks, selectedTaskId]);
+
+  const flash = (msg: string) => { setSavedFlash(msg); setTimeout(() => setSavedFlash(null), 2400); };
+
+  const captureSnapshot = (): LabSnapshot | null => {
+    const snap = getterRef.current?.();
+    if (!snap) return null;
+    return snap;
+  };
+
+  const saveDraft = () => {
+    const snap = captureSnapshot();
+    if (!snap) { flash("Open a lab first to save a draft."); return; }
+    setPortfolio((p) => [{
+      id: `pf${Date.now()}`, studentId: student.id, status: "draft",
+      createdAt: Date.now(), snapshot: snap,
+    }, ...p]);
+    flash("Draft saved to your portfolio.");
+  };
+
+  const attachAsset = () => {
+    if (!selectedTaskId) { flash("Pick an assignment to attach to."); return; }
+    const snap = captureSnapshot();
+    if (!snap) { flash("Open a lab first to attach."); return; }
+    const task = tasks.find((t) => t.id === selectedTaskId);
+    setPortfolio((p) => [{
+      id: `pf${Date.now()}`, studentId: student.id,
+      taskId: selectedTaskId, taskTitle: task?.title,
+      status: "draft", createdAt: Date.now(), snapshot: snap,
+    }, ...p]);
+    flash(`Attached to “${task?.title ?? selectedTaskId}”.`);
+  };
+
+  const submitAssignment = () => {
+    if (!selectedTaskId) { flash("Pick an assignment to submit to."); return; }
+    const snap = captureSnapshot();
+    if (!snap) { flash("Open a lab to capture your work first."); return; }
+    const task = tasks.find((t) => t.id === selectedTaskId);
+    setPortfolio((p) => [{
+      id: `pf${Date.now()}`, studentId: student.id,
+      taskId: selectedTaskId, taskTitle: task?.title,
+      status: "submitted", createdAt: Date.now(), snapshot: snap,
+    }, ...p]);
+    setTasks((all) => all.map((t) =>
+      t.id === selectedTaskId
+        ? { ...t, submissions: Math.min(t.totalRecipients, t.submissions + 1), pendingEval: t.pendingEval + 1 }
+        : t
+    ));
+    flash(`✓ Submitted “${task?.title ?? "assignment"}” to teacher inbox.`);
   };
 
   const activeMeta = active ? LABS.find((l) => l.id === active) : null;
+  const selectedTask = tasks.find((t) => t.id === selectedTaskId);
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+    <LabSnapshotCtx.Provider value={{ register }}>
+      <section className="relative rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200">
             <Sparkles className="h-3 w-3" /> Technology Practice Labs
           </div>
-          <h3 className="mt-1 font-display text-base font-bold tracking-tight">Hey {studentName.split(" ")[0]} — pick a lab and build something live.</h3>
+          <h3 className="mt-1 font-display text-base font-bold tracking-tight">Hey {student.name.split(" ")[0]} — pick a lab and build something live.</h3>
         </div>
         <div className="flex items-center gap-2">
           {savedFlash && (
@@ -2826,18 +2964,18 @@ function PracticeLabsPanel({ studentName }: { studentName: string }) {
             </span>
           )}
           <button
-            onClick={saveProgress}
+            onClick={saveDraft}
             className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition-all hover:border-indigo-400/40 hover:bg-white/[0.07]"
           >
-            <Save className="h-3.5 w-3.5" /> Save Progress
+            <Save className="h-3.5 w-3.5" /> Save Draft
           </button>
           <button
-            onClick={submitLab}
+            onClick={submitAssignment}
             className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
           >
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
             <Send className="relative h-3.5 w-3.5" />
-            <span className="relative">Submit Lab</span>
+            <span className="relative">Submit Assignment</span>
           </button>
         </div>
       </div>
@@ -2907,7 +3045,89 @@ function PracticeLabsPanel({ studentName }: { studentName: string }) {
           </div>
         )}
       </div>
+
+      {/* Floating "Link to Assignment" drawer */}
+      {active && (
+        <div className={cn(
+          "pointer-events-none absolute bottom-4 right-4 z-30 flex max-w-[92%] flex-col items-end gap-2 transition-all",
+        )}>
+          <div className={cn(
+            "pointer-events-auto w-[340px] origin-bottom-right overflow-hidden rounded-2xl border border-indigo-400/30 bg-slate-950/85 shadow-[0_30px_60px_-20px_rgba(99,102,241,0.55)] backdrop-blur-xl transition-all duration-300",
+            drawerOpen ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0 translate-y-2"
+          )}>
+            <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-200">
+                <Paperclip className="h-3.5 w-3.5" /> Link to Assignment
+              </div>
+              <button onClick={() => setDrawerOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="space-y-2 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Active tasks for you</div>
+              {eligibleTasks.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-white/10 bg-white/[0.02] p-3 text-[11px] text-muted-foreground">
+                  Nothing pending — every active assignment is already submitted. Saved work goes straight to your portfolio.
+                </div>
+              ) : (
+                <div className="relative">
+                  <select
+                    value={selectedTaskId}
+                    onChange={(e) => setSelectedTaskId(e.target.value)}
+                    className="w-full appearance-none rounded-lg border border-white/10 bg-slate-900/80 px-2.5 py-2 pr-7 text-[12px] outline-none focus:border-indigo-400/60"
+                  >
+                    {eligibleTasks.map((t) => {
+                      const d = daysUntil(t.deadline);
+                      const tag = d < 0 ? `${Math.abs(d)}d overdue` : d === 0 ? "due today" : `${d}d left`;
+                      return <option key={t.id} value={t.id}>{t.title} · {tag}</option>;
+                    })}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                </div>
+              )}
+              {selectedTask && (
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2 text-[10.5px] text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1 text-indigo-200"><ClipboardList className="h-3 w-3" /> {selectedTask.type === "project" ? "Project" : "Assignment"}</span>
+                    <span>{selectedTask.maxMarks} marks</span>
+                  </div>
+                  <div className="mt-0.5 inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {selectedTask.deadline}</div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-1.5 pt-1">
+                <button
+                  onClick={attachAsset}
+                  disabled={!selectedTaskId}
+                  className="inline-flex items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[11px] font-semibold hover:border-indigo-400/40 hover:bg-white/[0.07] disabled:opacity-50"
+                >
+                  <Paperclip className="h-3.5 w-3.5" /> Attach Asset
+                </button>
+                <button
+                  onClick={submitAssignment}
+                  disabled={!selectedTaskId}
+                  className="group relative inline-flex items-center justify-center gap-1 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] disabled:opacity-50"
+                >
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  <Send className="relative h-3.5 w-3.5" /> <span className="relative">Submit</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {!drawerOpen && (
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="pointer-events-auto group inline-flex items-center gap-1.5 rounded-full border border-indigo-400/40 bg-slate-950/85 px-3 py-2 text-[11px] font-semibold text-indigo-100 shadow-[0_10px_25px_-10px_rgba(99,102,241,0.7)] backdrop-blur transition-all hover:scale-[1.03]"
+            >
+              <Paperclip className="h-3.5 w-3.5" /> Link to Assignment
+              <span className="inline-flex items-center justify-center rounded-full bg-indigo-500/30 px-1.5 text-[10px]">{eligibleTasks.length}</span>
+              <ChevronUp className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      )}
     </section>
+    </LabSnapshotCtx.Provider>
   );
 }
 
@@ -2918,6 +3138,10 @@ function HtmlCssLab() {
   const [srcDoc, setSrcDoc] = useState("");
   const run = () => setSrcDoc(`${html}\n<style>${css}</style>`);
   useEffect(() => { run(); /* eslint-disable-next-line */ }, []);
+  useRegisterSnapshot(() => {
+    const doc = `${html}\n<style>${css}</style>`;
+    return { kind: "html", labName: "HTML & CSS", payload: { html, css }, preview: doc, previewKind: "html", bytes: approxBytes(doc) };
+  }, [html, css]);
   return (
     <div className="grid gap-3 lg:grid-cols-2">
       <div className="space-y-2">
@@ -2987,6 +3211,11 @@ function SqlLab() {
   const [q, setQ] = useState("SELECT * FROM students WHERE marks > 80;");
   const [result, setResult] = useState(() => runSql("SELECT * FROM students;"));
   const exec = () => setResult(runSql(q));
+  useRegisterSnapshot(() => ({
+    kind: "sql", labName: "SQL Lab",
+    payload: { query: q, cols: result.cols, rows: result.rows, error: result.error },
+    preview: q, previewKind: "grid", bytes: approxBytes({ q, result }),
+  }), [q, result]);
   return (
     <div className="space-y-3">
       <div className="rounded-lg border border-white/10 bg-slate-900/80">
@@ -3028,6 +3257,11 @@ function JavaLab() {
   const [code, setCode] = useState(`public class Main {\n  public static void main(String[] args) {\n    for (int i = 1; i <= 3; i++) {\n      System.out.println("Hello Avartan #" + i);\n    }\n  }\n}`);
   const [out, setOut] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
+  useRegisterSnapshot(() => ({
+    kind: "java", labName: "Java Lab",
+    payload: { mode, code, out },
+    preview: code, previewKind: "text", bytes: approxBytes(code + out.join("\n")),
+  }), [mode, code, out]);
 
   const compile = () => {
     setRunning(true); setOut(["» javac Main.java", "» java Main"]);
@@ -3078,6 +3312,11 @@ function JavaLab() {
 
 // ---------- Scratch Lab ----------
 function ScratchLab() {
+  useRegisterSnapshot(() => ({
+    kind: "scratch", labName: "Scratch Lab",
+    payload: { project: "scratch.mit.edu/projects/104" },
+    preview: "Scratch sandbox session", previewKind: "text", bytes: 64,
+  }), []);
   return (
     <div className="space-y-2">
       <p className="text-[11px] text-muted-foreground">Live Scratch sandbox — drag blocks, hit the green flag inside.</p>
@@ -3108,6 +3347,12 @@ function ScratchJrLab() {
   const [program, setProgram] = useState<JrBlock[]>([{ id: "b1", kind: "right" }, { id: "b1b", kind: "right" }, { id: "b2", kind: "grow" }, { id: "b3", kind: "say" }]);
   const [pos, setPos] = useState({ x: 20, y: 60, s: 1, msg: "" });
   const [playing, setPlaying] = useState(false);
+  useRegisterSnapshot(() => ({
+    kind: "scratchjr", labName: "Scratch Jr",
+    payload: { program, pos },
+    preview: program.map((b) => b.kind).join(" → "),
+    previewKind: "blocks", bytes: approxBytes(program),
+  }), [program, pos]);
 
   const run = async () => {
     setPlaying(true); setPos({ x: 20, y: 60, s: 1, msg: "" });
@@ -3181,6 +3426,10 @@ function WordLab() {
   const ref = useRef<HTMLDivElement>(null);
   const cmd = (c: string, v?: string) => { document.execCommand(c, false, v); ref.current?.focus(); };
   const btn = "inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-[11px] hover:border-indigo-400/40 hover:bg-white/[0.08]";
+  useRegisterSnapshot(() => {
+    const html = ref.current?.innerHTML ?? "";
+    return { kind: "word", labName: "Word Processor", payload: { html }, preview: html, previewKind: "html", bytes: approxBytes(html) };
+  }, []);
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-1 rounded-lg border border-white/10 bg-slate-900/60 p-1.5">
@@ -3274,6 +3523,10 @@ function ExcelLab() {
   }));
   const [sel, setSel] = useState("D6");
   const setCell = (addr: string, v: string) => setGrid((g) => ({ ...g, [addr]: v }));
+  useRegisterSnapshot(() => ({
+    kind: "excel", labName: "Spreadsheet",
+    payload: { grid }, preview: JSON.stringify(grid), previewKind: "grid", bytes: approxBytes(grid),
+  }), [grid]);
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-2">
@@ -3340,6 +3593,11 @@ function PowerPointLab() {
     { id: "s2", title: "What I Learned", body: "• HTML\n• CSS\n• Logic", theme: SLIDE_THEMES[1] },
   ]);
   const [active, setActive] = useState("s1");
+  useRegisterSnapshot(() => ({
+    kind: "ppt", labName: "Presentation",
+    payload: { slides }, preview: slides.map((s) => s.title).join(" · "),
+    previewKind: "slides", bytes: approxBytes(slides),
+  }), [slides]);
   const cur = slides.find((s) => s.id === active) ?? slides[0];
   const update = (patch: Partial<Slide>) => setSlides((s) => s.map((x) => x.id === active ? { ...x, ...patch } : x));
   const add = () => { const id = `s${Date.now()}`; setSlides((s) => [...s, { id, title: "New Slide", body: "Click to edit", theme: SLIDE_THEMES[s.length % SLIDE_THEMES.length] }]); setActive(id); };
@@ -3389,6 +3647,10 @@ function PaintLab() {
   const [color, setColor] = useState("#6366f1");
   const [size, setSize] = useState(4);
   const COLORS = ["#0f172a","#ef4444","#f59e0b","#10b981","#06b6d4","#6366f1","#d946ef","#ffffff"];
+  useRegisterSnapshot(() => {
+    const url = ref.current?.toDataURL("image/png") ?? "";
+    return { kind: "paint", labName: "Paint Studio", payload: { dataUrl: url, tool, color, size }, preview: url, previewKind: "image", bytes: Math.round(url.length * 0.75) };
+  }, []);
 
   useEffect(() => {
     const c = ref.current; if (!c) return;
@@ -3456,5 +3718,262 @@ function PaintLab() {
         className="h-[420px] w-full touch-none rounded-lg border border-white/10 bg-white shadow-inner"
       />
     </div>
+  );
+}
+
+// =========================================================================
+// Digital Portfolio Hub + Snapshot Viewer Modal
+// =========================================================================
+function PortfolioHub({ studentId }: { studentId: string }) {
+  const portfolio = usePortfolio();
+  const mine = useMemo(
+    () => portfolio.filter((p) => p.studentId === studentId).sort((a, b) => b.createdAt - a.createdAt),
+    [portfolio, studentId]
+  );
+  const [filter, setFilter] = useState<"all" | PortfolioStatus>("all");
+  const [viewing, setViewing] = useState<PortfolioItem | null>(null);
+  const shown = mine.filter((p) => filter === "all" || p.status === filter);
+
+  const counts = {
+    all: mine.length,
+    draft: mine.filter((p) => p.status === "draft").length,
+    submitted: mine.filter((p) => p.status === "submitted").length,
+    evaluated: mine.filter((p) => p.status === "evaluated").length,
+  };
+
+  const statusMeta: Record<PortfolioStatus, { label: string; cls: string }> = {
+    draft: { label: "Draft", cls: "border-amber-400/40 bg-amber-500/10 text-amber-200" },
+    submitted: { label: "Submitted for Review", cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200" },
+    evaluated: { label: "Graded", cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200" },
+  };
+
+  const removeItem = (id: string) => setPortfolio((p) => p.filter((x) => x.id !== id));
+
+  return (
+    <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-fuchsia-950/20 p-4 shadow-[0_24px_60px_-30px_rgba(217,70,239,0.4)] backdrop-blur-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+            <FolderKanban className="h-3 w-3" /> Digital Portfolio Hub
+          </div>
+          <h3 className="mt-1 font-display text-base font-bold tracking-tight">Every lab artefact you've saved, in one place.</h3>
+        </div>
+        <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 p-1">
+          {(["all", "draft", "submitted", "evaluated"] as const).map((f) => {
+            const active = filter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-all capitalize",
+                  active
+                    ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {f === "all" ? "All" : statusMeta[f].label}
+                <span className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-bold", active ? "bg-white/20" : "bg-muted/60 text-foreground")}>{counts[f]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {shown.length === 0 ? (
+        <div className="mt-4 rounded-xl border border-dashed border-border/60 bg-background/30 p-8 text-center text-[12px] text-muted-foreground">
+          Nothing here yet — open a lab, build something, then tap <span className="text-indigo-300 font-semibold">Save Draft</span> or <span className="text-fuchsia-300 font-semibold">Submit Assignment</span>.
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {shown.map((item) => {
+            const Icon = LAB_ICON[item.snapshot.kind];
+            const tint = LAB_TINT[item.snapshot.kind];
+            const sm = statusMeta[item.status];
+            return (
+              <article
+                key={item.id}
+                className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-900/30 p-3 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_18px_50px_-15px_rgba(99,102,241,0.45)]"
+              >
+                <div className={cn("pointer-events-none absolute -inset-12 rounded-full bg-gradient-to-br opacity-30 blur-3xl transition-opacity group-hover:opacity-60", tint)} />
+                <div className="relative flex items-start gap-2.5">
+                  <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-950/70 ring-1 ring-white/5">
+                    <Icon className="h-4 w-4 text-indigo-200" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[12px] font-semibold">{item.snapshot.labName}</div>
+                    <div className="truncate text-[10px] text-muted-foreground">
+                      {item.taskTitle ? `↳ ${item.taskTitle}` : "Personal practice"}
+                    </div>
+                  </div>
+                  <span className={cn("rounded-full border px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap", sm.cls)}>{sm.label}</span>
+                </div>
+
+                <div className="relative mt-3 grid grid-cols-2 gap-2 text-[10px] text-muted-foreground">
+                  <div className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {formatTime(item.createdAt)}</div>
+                  <div className="inline-flex items-center justify-end gap-1"><FileText className="h-3 w-3" /> {formatBytes(item.snapshot.bytes)}</div>
+                </div>
+
+                <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-2.5">
+                  <button
+                    onClick={() => setViewing(item)}
+                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10.5px] font-semibold hover:border-indigo-400/40 hover:bg-white/[0.08]"
+                  >
+                    <Eye className="h-3 w-3" /> View Snapshot
+                  </button>
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className="inline-flex items-center justify-center rounded-md border border-white/10 px-1.5 py-1 text-muted-foreground hover:border-rose-400/50 hover:text-rose-200"
+                    aria-label="Remove"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {viewing && <SnapshotViewer item={viewing} onClose={() => setViewing(null)} />}
+    </section>
+  );
+}
+
+function SnapshotViewer({ item, onClose }: { item: PortfolioItem; onClose: () => void }) {
+  const s = item.snapshot;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950 to-slate-900 shadow-[0_40px_100px_-20px_rgba(99,102,241,0.45)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
+          <div className="min-w-0">
+            <div className="text-[10px] uppercase tracking-wider text-indigo-200">Snapshot · {formatTime(item.createdAt)}</div>
+            <div className="truncate text-sm font-semibold">{s.labName}{item.taskTitle ? ` · ${item.taskTitle}` : ""}</div>
+          </div>
+          <button onClick={onClose} className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground">Close ×</button>
+        </div>
+        <div className="max-h-[72vh] overflow-auto p-4">
+          <SnapshotRenderer snapshot={s} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SnapshotRenderer({ snapshot }: { snapshot: LabSnapshot }) {
+  const s = snapshot;
+  if (s.kind === "html") {
+    const p = s.payload as { html: string; css: string };
+    return (
+      <div className="grid gap-3 lg:grid-cols-2">
+        <iframe title="snap" srcDoc={s.preview} sandbox="allow-scripts allow-modals" className="h-[360px] w-full rounded-lg border border-white/10 bg-white" />
+        <pre className="max-h-[360px] overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-emerald-200">{`${p.html}\n\n/* css */\n${p.css}`}</pre>
+      </div>
+    );
+  }
+  if (s.kind === "sql") {
+    const p = s.payload as { query: string; cols: string[]; rows: Record<string, string|number>[]; error?: string };
+    return (
+      <div className="space-y-3">
+        <pre className="rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[12px] text-emerald-200">{p.query}</pre>
+        {p.error ? (
+          <div className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-3 text-[12px] text-rose-200">⚠ {p.error}</div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-white/10">
+            <table className="w-full text-[11px]">
+              <thead className="bg-white/[0.04] text-[10px] uppercase text-indigo-200">
+                <tr>{p.cols.map((c) => <th key={c} className="px-3 py-2 text-left">{c}</th>)}</tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {p.rows.map((r, i) => (
+                  <tr key={i}>{p.cols.map((c) => <td key={c} className="px-3 py-1.5 font-mono">{String(r[c] ?? "")}</td>)}</tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+  if (s.kind === "java") {
+    const p = s.payload as { code: string; out: string[]; mode: string };
+    return (
+      <div className="grid gap-3 lg:grid-cols-2">
+        <pre className="max-h-[420px] overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-amber-200">{p.code}</pre>
+        <pre className="max-h-[420px] overflow-auto rounded-lg border border-white/10 bg-black p-3 font-mono text-[11px] text-emerald-300">{p.out.length ? p.out.join("\n") : "(no output captured)"}</pre>
+      </div>
+    );
+  }
+  if (s.kind === "scratchjr") {
+    const p = s.payload as { program: { kind: string }[] };
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {p.program.map((b, i) => (
+          <span key={i} className="rounded-md bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-1 text-[11px] font-semibold text-white">{b.kind}</span>
+        ))}
+        {p.program.length === 0 && <span className="text-[11px] text-muted-foreground">Empty program</span>}
+      </div>
+    );
+  }
+  if (s.kind === "word") {
+    return (
+      <div
+        className="min-h-[200px] rounded-lg border border-white/10 bg-white p-6 text-[13px] leading-relaxed text-slate-900 shadow-inner"
+        style={{ fontFamily: "'Georgia', serif" }}
+        dangerouslySetInnerHTML={{ __html: (s.payload as { html: string }).html || "(empty document)" }}
+      />
+    );
+  }
+  if (s.kind === "excel") {
+    const grid = (s.payload as { grid: Record<string, string> }).grid;
+    const cells = Object.entries(grid);
+    return (
+      <div className="overflow-x-auto rounded-lg border border-white/10">
+        <table className="w-full text-[11px]">
+          <thead className="bg-white/[0.04] text-[10px] uppercase text-indigo-200">
+            <tr><th className="px-3 py-2 text-left">Cell</th><th className="px-3 py-2 text-left">Value</th></tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {cells.map(([k, v]) => (
+              <tr key={k}><td className="px-3 py-1.5 font-mono text-indigo-200">{k}</td><td className="px-3 py-1.5 font-mono">{v}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  if (s.kind === "ppt") {
+    const p = s.payload as { slides: { id: string; title: string; body: string; theme: string }[] };
+    return (
+      <div className="grid gap-3 sm:grid-cols-2">
+        {p.slides.map((sl, i) => (
+          <div key={sl.id} className={cn("aspect-video overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br p-4", sl.theme)}>
+            <div className="text-[10px] text-white/70">Slide {i + 1}</div>
+            <div className="mt-1 text-lg font-bold text-white">{sl.title}</div>
+            <div className="mt-2 whitespace-pre-wrap text-[12px] text-white/90">{sl.body}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (s.kind === "paint") {
+    const url = (s.payload as { dataUrl: string }).dataUrl;
+    return url
+      ? <img src={url} alt="snapshot" className="mx-auto max-h-[60vh] rounded-lg border border-white/10 bg-white" />
+      : <div className="text-[12px] text-muted-foreground">Canvas was empty at capture.</div>;
+  }
+  // scratch / fallback
+  return (
+    <pre className="overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-indigo-200">
+      {JSON.stringify(s.payload, null, 2)}
+    </pre>
   );
 }
