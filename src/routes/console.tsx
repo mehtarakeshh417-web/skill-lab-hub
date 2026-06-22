@@ -3203,9 +3203,16 @@ function TaskManagementPanel() {
             </button>
             <button
               onClick={() => publish("active")}
-              className="group inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(99,102,241,0.7)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+              className={cn(
+                "group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg px-3 py-1.5 text-[11px] font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]",
+                quiz.length > 0
+                  ? "bg-gradient-to-r from-emerald-500 via-indigo-500 to-fuchsia-500 shadow-[0_12px_36px_-10px_rgba(16,185,129,0.7)]"
+                  : "bg-gradient-to-r from-indigo-500 to-fuchsia-500 shadow-[0_10px_30px_-10px_rgba(99,102,241,0.7)]"
+              )}
             >
-              <Send className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /> Publish Now
+              <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <Send className="relative h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              <span className="relative">{quiz.length > 0 ? "Approve & Publish Assignment" : "Publish Now"}</span>
             </button>
           </div>
         </div>
