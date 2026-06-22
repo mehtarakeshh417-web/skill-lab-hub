@@ -299,6 +299,13 @@ function ConsolePage() {
                 {isManager && <TeacherManagementPanel maskPII />}
                 <InnovationGallery />
               </div>
+            ) : role === "portal_manager" ? (
+              <PortalManagerDashboard
+                schools={schools}
+                setSchools={setSchools}
+                audit={audit}
+                log={log}
+              />
             ) : role === "school" ? (
               <div className="space-y-4">
                 <SchoolAdminPanel />
