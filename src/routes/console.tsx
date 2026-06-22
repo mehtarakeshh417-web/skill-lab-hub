@@ -9,6 +9,7 @@ import {
   UserPlus, Mail, Phone, Power, PowerOff,
   Upload, FileSpreadsheet, Loader2, Calendar as CalendarIcon, UserCircle2,
   ClipboardList, FolderKanban, Send, FileText, Target, Users2, Clock, Archive, FileCheck2, Hash, Award,
+  BellRing, Megaphone, AlarmClock, MessageSquare, CheckCheck, Rocket, TrendingUp, Trophy, Flame,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
