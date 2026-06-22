@@ -2761,6 +2761,9 @@ function StudentDashboardPanel() {
           )}
         </div>
       </section>
+
+      {/* Practice Labs */}
+      <PracticeLabsPanel studentName={me.name} />
     </div>
   );
 }
