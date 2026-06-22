@@ -2050,10 +2050,16 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
   };
 
   const toggleStatus = (id: string) =>
-    setStudents((arr) => arr.map((s) => s.id === id ? { ...s, status: s.status === "Active" ? "Inactive" : "Active" } : s));
+    setStudents((arr) => {
+      const next = arr.map((s) => s.id === id ? { ...s, status: (s.status === "Active" ? "Inactive" : "Active") as Student["status"] } : s);
+      const target = next.find((s) => s.id === id);
+      if (target) toast.success("Account Status Updated", { description: `${target.name} → ${target.status}` });
+      return next;
+    });
   const remove = (id: string) => {
     if (!confirm("Remove this student from the roster?")) return;
     setStudents((arr) => arr.filter((s) => s.id !== id));
+    toast.success("Student removed from roster");
   };
 
   const handleFile = (file: File) => {
