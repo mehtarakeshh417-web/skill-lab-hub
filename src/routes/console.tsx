@@ -273,19 +273,25 @@ function ConsolePage() {
           {/* Body */}
           <main className="p-4 lg:p-6">
             {showUnified ? (
-              <UnifiedAdminPanel
-                isAdmin={isAdmin}
-                stats={stats}
-                schools={filteredSchools}
-                onApprove={(id) => updateStatus(id, "Approved")}
-                onReject={(id) => updateStatus(id, "Rejected")}
-                onToggleDisable={toggleDisabled}
-                drilldown={drilldown}
-                setDrilldown={setDrilldown}
-                audit={audit}
-              />
+              <div className="space-y-4">
+                <UnifiedAdminPanel
+                  isAdmin={isAdmin}
+                  stats={stats}
+                  schools={filteredSchools}
+                  onApprove={(id) => updateStatus(id, "Approved")}
+                  onReject={(id) => updateStatus(id, "Rejected")}
+                  onToggleDisable={toggleDisabled}
+                  drilldown={drilldown}
+                  setDrilldown={setDrilldown}
+                  audit={audit}
+                />
+                {isManager && <TeacherManagementPanel maskPII />}
+              </div>
             ) : role === "school" ? (
-              <SchoolAdminPanel />
+              <div className="space-y-4">
+                <SchoolAdminPanel />
+                <TeacherManagementPanel maskPII={false} />
+              </div>
             ) : (
               <PlaceholderPanel role={role} />
             )}
