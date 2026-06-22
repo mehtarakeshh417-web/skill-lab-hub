@@ -134,7 +134,7 @@ function Hero() {
                 <span className="absolute inset-0 animate-ping rounded-full bg-success/70" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
               </span>
-              Version 1 · Now live for early schools
+              Now live for early schools
             </div>
             <h1 className="mt-6 font-display text-5xl font-bold leading-[1.02] tracking-tight md:text-7xl">
               The modern lab where
