@@ -2485,6 +2485,57 @@ let _tasks: Task[] = [
     totalRecipients: 0, submissions: 0, pendingEval: 0, createdAt: "2026-06-20",
   },
 ];
+// Extra realistic timeline entries (6 more → 10 total)
+_tasks.push(
+  {
+    id: "tk5", type: "assignment", title: "CSS Flexbox Layout Challenge",
+    instructions: "Recreate the provided dashboard layout using Flexbox only. No grid or absolute positioning.",
+    maxMarks: 25, deadline: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [7], sectionIds: ["c7-A", "c7-B"], studentIds: [], groups: ["Design Studio"] },
+    totalRecipients: 38, submissions: 21, pendingEval: 12, createdAt: "2026-06-19",
+  },
+  {
+    id: "tk6", type: "project", title: "MS Excel — Class Budget Tracker",
+    instructions: "Build a working budget tracker with SUM/AVG formulas across 12 monthly columns.",
+    maxMarks: 35, deadline: new Date(Date.now() + 9 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [8], sectionIds: ["c8-A", "c8-B"], studentIds: [], groups: [] },
+    totalRecipients: 31, submissions: 8, pendingEval: 8, createdAt: "2026-06-17",
+  },
+  {
+    id: "tk7", type: "assignment", title: "Java — OOP Basics (Quiz)",
+    instructions: "Auto-graded quiz on classes, inheritance and polymorphism. 10 mixed questions.",
+    maxMarks: 20, deadline: new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [10], sectionIds: ["c10-A"], studentIds: [], groups: [] },
+    totalRecipients: 18, submissions: 16, pendingEval: 2, createdAt: "2026-06-08",
+  },
+  {
+    id: "tk8", type: "project", title: "Scratch Jr — My Family Story",
+    instructions: "A 2-page interactive story introducing each family member with sound.",
+    maxMarks: 20, deadline: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [2], sectionIds: ["c2-A", "c2-B"], studentIds: [], groups: [] },
+    totalRecipients: 24, submissions: 5, pendingEval: 5, createdAt: "2026-06-16",
+  },
+  {
+    id: "tk9", type: "assignment", title: "PowerPoint — Persuasive Pitch Deck",
+    instructions: "5-slide pitch deck on a club idea. Use consistent theme + speaker notes.",
+    maxMarks: 30, deadline: new Date(Date.now() + 11 * 86400000).toISOString().slice(0, 10),
+    status: "draft",
+    targets: { classGrades: [11], sectionIds: ["c11-A"], studentIds: [], groups: ["Math Olympiad"] },
+    totalRecipients: 0, submissions: 0, pendingEval: 0, createdAt: "2026-06-21",
+  },
+  {
+    id: "tk10", type: "assignment", title: "Paint — Logo Design Sprint",
+    instructions: "Design an original logo for your section. Export as PNG with a one-line concept note.",
+    maxMarks: 15, deadline: new Date(Date.now() - 8 * 86400000).toISOString().slice(0, 10),
+    status: "archived",
+    targets: { classGrades: [3], sectionIds: ["c3-A"], studentIds: [], groups: [] },
+    totalRecipients: 20, submissions: 18, pendingEval: 0, createdAt: "2026-06-02",
+  },
+);
 const taskListeners = new Set<() => void>();
 function setTasks(updater: (t: Task[]) => Task[]) {
   _tasks = updater(_tasks);
