@@ -2572,7 +2572,75 @@ export type PortfolioItem = {
   grade?: number;
   snapshot: LabSnapshot;
 };
-let _portfolio: PortfolioItem[] = [];
+const _seedPortfolio: PortfolioItem[] = [
+  {
+    id: "pf1", studentId: "st20", taskId: "tk1", taskTitle: "HTML Form Validation Worksheet",
+    status: "evaluated", createdAt: Date.now() - 86400000 * 6, grade: 18,
+    snapshot: { kind: "html", labName: "HTML & CSS Lab",
+      payload: { html: "<form><input required type='email' placeholder='Email'/><button>Submit</button></form>", css: "form{display:flex;gap:.5rem}input{padding:.5rem;border:1px solid #6366f1}" },
+      preview: "<form style=\"display:flex;gap:.5rem;font-family:sans-serif\"><input type='email' placeholder='Email' style='padding:.5rem;border:1px solid #6366f1'/><button style='padding:.5rem 1rem;background:#6366f1;color:#fff;border:0;border-radius:6px'>Submit</button></form>",
+      previewKind: "html", bytes: 412 } },
+  {
+    id: "pf2", studentId: "st21", taskId: "tk1", taskTitle: "HTML Form Validation Worksheet",
+    status: "submitted", createdAt: Date.now() - 86400000 * 2,
+    snapshot: { kind: "html", labName: "HTML & CSS Lab",
+      payload: { html: "<h1>Sign Up</h1><form><label>Email <input type='email'/></label></form>", css: "h1{color:#4f46e5}" },
+      preview: "<div style='font-family:sans-serif'><h1 style='color:#4f46e5'>Sign Up</h1><form><label>Email <input type='email' style='padding:.4rem'/></label></form></div>",
+      previewKind: "html", bytes: 318 } },
+  {
+    id: "pf3", studentId: "st14", taskId: "tk3", taskTitle: "Python — Loops Practice Set",
+    status: "evaluated", createdAt: Date.now() - 86400000 * 9, grade: 27,
+    snapshot: { kind: "sql", labName: "SQL Lab",
+      payload: { query: "SELECT name, marks FROM students WHERE marks > 80;", cols: ["name", "marks"],
+        rows: [{ name: "Ira Khanna", marks: 92 }, { name: "Veer Singh", marks: 88 }, { name: "Aanya Iyer", marks: 84 }] },
+      preview: "SELECT name, marks FROM students WHERE marks > 80;", previewKind: "grid", bytes: 264 } },
+  {
+    id: "pf4", studentId: "st22", taskId: "tk4", taskTitle: "MySQL Mini-DB Schema (Draft)",
+    status: "draft", createdAt: Date.now() - 86400000 * 1,
+    snapshot: { kind: "sql", labName: "SQL Lab",
+      payload: { query: "CREATE TABLE books (id INT PRIMARY KEY, title VARCHAR(120), author VARCHAR(80));", cols: ["info"], rows: [{ info: "Statement queued" }] },
+      preview: "CREATE TABLE books (id INT PRIMARY KEY, title VARCHAR(120));", previewKind: "text", bytes: 198 } },
+  {
+    id: "pf5", studentId: "st4", taskId: "tk10", taskTitle: "Paint — Logo Design Sprint",
+    status: "evaluated", createdAt: Date.now() - 86400000 * 10, grade: 14,
+    snapshot: { kind: "paint", labName: "MS Paint Lab",
+      payload: { strokes: [
+        { x: 32, y: 40, x2: 120, y2: 40, color: "#6366f1", size: 6 },
+        { x: 120, y: 40, x2: 120, y2: 120, color: "#6366f1", size: 6 },
+        { x: 32, y: 40, x2: 32, y2: 120, color: "#f59e0b", size: 6 },
+        { x: 32, y: 120, x2: 120, y2: 120, color: "#10b981", size: 6 },
+      ] },
+      preview: "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><rect x='32' y='40' width='88' height='80' fill='none' stroke='#6366f1' stroke-width='6'/></svg>"),
+      previewKind: "image", bytes: 612 } },
+  {
+    id: "pf6", studentId: "st12", taskId: "tk6", taskTitle: "MS Excel — Class Budget Tracker",
+    status: "submitted", createdAt: Date.now() - 86400000 * 3,
+    snapshot: { kind: "excel", labName: "Excel Lab",
+      payload: { cells: { A1: "Month", B1: "Income", C1: "Expense", A2: "Jan", B2: "12000", C2: "8500", A3: "Feb", B3: "11500", C3: "9000", A4: "Total", B4: "=SUM(B2:B3)", C4: "=SUM(C2:C3)" } },
+      preview: "Jan/Feb budget · SUM formulas", previewKind: "grid", bytes: 540 } },
+  {
+    id: "pf7", studentId: "st8", taskId: "tk2", taskTitle: "Scratch — Interactive Story Capstone",
+    status: "evaluated", createdAt: Date.now() - 86400000 * 7, grade: 44,
+    snapshot: { kind: "scratch", labName: "Scratch Lab",
+      payload: { blocks: [
+        { type: "motion", text: "move 10 steps" },
+        { type: "looks", text: "say Hello! for 2 seconds" },
+        { type: "sound", text: "play sound meow" },
+        { type: "motion", text: "turn 15 degrees" },
+      ] },
+      preview: "4 blocks · cat sprite story", previewKind: "blocks", bytes: 220 } },
+  {
+    id: "pf8", studentId: "st18", taskId: "tk9", taskTitle: "PowerPoint — Persuasive Pitch Deck",
+    status: "draft", createdAt: Date.now() - 86400000 * 0.5,
+    snapshot: { kind: "ppt", labName: "PowerPoint Lab",
+      payload: { slides: [
+        { title: "Robotics Club", body: "Pitch to launch an after-school robotics squad." },
+        { title: "Why Now?", body: "STEM enrolment up 32% across our sections." },
+        { title: "Ask", body: "Budget of ₹40k + 2 mentor hours / week." },
+      ] },
+      preview: "3 slides · pitch deck draft", previewKind: "slides", bytes: 410 } },
+];
+let _portfolio: PortfolioItem[] = [..._seedPortfolio];
 const portfolioListeners = new Set<() => void>();
 function setPortfolio(updater: (p: PortfolioItem[]) => PortfolioItem[]) {
   _portfolio = updater(_portfolio);
