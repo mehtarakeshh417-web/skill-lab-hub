@@ -4,6 +4,13 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/lib/theme";
 import { QuickTourTrigger } from "@/components/quick-tour";
 import {
+  useRegistrations,
+  setRegistrationStatus,
+  removeRegistration,
+  generatePassword,
+  type SchoolRegistration,
+} from "@/lib/registrations";
+import {
   Bell, ShieldCheck, Users, School2, GraduationCap, Briefcase,
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
   ToggleLeft, ToggleRight, History, Sparkles, AlertTriangle,
@@ -111,7 +118,7 @@ function ConsolePage() {
 
   const isAdmin = role === "admin";
   const isManager = role === "portal_manager";
-  const showUnified = isAdmin || isManager;
+  const showUnified = isAdmin;
 
   const pendingCount = schools.filter((s) => s.status === "Pending").length;
   const stats = useMemo(() => ({
@@ -292,6 +299,13 @@ function ConsolePage() {
                 {isManager && <TeacherManagementPanel maskPII />}
                 <InnovationGallery />
               </div>
+            ) : role === "portal_manager" ? (
+              <PortalManagerDashboard
+                schools={schools}
+                setSchools={setSchools}
+                audit={audit}
+                log={log}
+              />
             ) : role === "school" ? (
               <div className="space-y-4">
                 <SchoolAdminPanel />
@@ -5905,5 +5919,632 @@ function InnovationGallery() {
         )}
       </div>
     </section>
+  );
+}
+
+// =========================================================================
+// Portal Manager Dashboard — restricted operational view
+// =========================================================================
+
+type SalesRep = {
+  id: string;
+  code: string;
+  name: string;
+  region: string;
+  schools: string[]; // school codes
+  status: "Active" | "Inactive";
+  mobile: string;
+  email: string;
+};
+
+const seedSalesReps: SalesRep[] = [
+  { id: "sr1", code: "REP-N-001", name: "Priya Khurana",  region: "North · Delhi NCR",  schools: ["SCH-DEL-001", "SCH-CHD-066"], status: "Active",   mobile: "+91 98101 23001", email: "priya@avartan.lab" },
+  { id: "sr2", code: "REP-W-014", name: "Karan Bhatia",   region: "West · Mumbai",       schools: ["SCH-MUM-014", "SCH-PUN-031"], status: "Active",   mobile: "+91 98202 88440", email: "karan@avartan.lab" },
+  { id: "sr3", code: "REP-S-022", name: "Lakshmi Iyer",   region: "South · Bengaluru",   schools: ["SCH-BLR-022", "SCH-KCH-118"], status: "Active",   mobile: "+91 98451 70022", email: "lakshmi@avartan.lab" },
+  { id: "sr4", code: "REP-E-031", name: "Rohan Banerjee", region: "East · Kolkata",      schools: [],                             status: "Inactive", mobile: "+91 99031 50031", email: "rohan@avartan.lab" },
+];
+
+const PRIVATE_MASK = "•••••• Masked";
+
+function PMStatCard({ icon: Icon, label, value, tint }: { icon: typeof School2; label: string; value: number; tint: string }) {
+  return (
+    <div
+      aria-disabled="true"
+      tabIndex={-1}
+      title="Summary view only — drill-down disabled for this role"
+      className={cn(
+        "relative cursor-default select-none overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br p-4 shadow-[0_18px_50px_-25px_rgba(99,102,241,0.6)] backdrop-blur-xl",
+        tint
+      )}
+    >
+      <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
+      <div className="relative flex items-center justify-between">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
+          <div className="mt-1 font-display text-3xl font-black tabular-nums text-foreground">{value}</div>
+        </div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-slate-950/60 backdrop-blur">
+          <Icon className="h-5 w-5 text-indigo-200" />
+        </div>
+      </div>
+      <div className="relative mt-3 inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300">
+        <Lock className="h-3 w-3" /> Read-only · drill-down disabled
+      </div>
+    </div>
+  );
+}
+
+function PortalManagerDashboard({
+  schools, setSchools, audit, log,
+}: {
+  schools: typeof seedSchools;
+  setSchools: React.Dispatch<React.SetStateAction<typeof seedSchools>>;
+  audit: AuditEntry[];
+  log: (action: string, target: string) => void;
+}) {
+  const regs = useRegistrations();
+  const pending = regs.filter((r) => r.status === "Pending Approval");
+
+  const [tab, setTab] = useState<"schools" | "teachers" | "students" | "reps">("schools");
+  const [search, setSearch] = useState("");
+
+  // Local mock state for tables — Portal Manager scope
+  const [teachers, setTeachers] = useState(() => [
+    ...seedTeachers,
+    { id: "t3", school_id: "s1", code: "EMP-001-02", name: "Manoj Tripathi", expertise: ["Java"], classes: ["X-A"], status: "Active",   mobile: "+91 90011 00012", email: "manoj@dpspilot.edu", disabled: false },
+    { id: "t4", school_id: "s3", code: "EMP-022-05", name: "Sunita Reddy",   expertise: ["Excel", "PowerPoint"], classes: ["VII-B"], status: "Inactive", mobile: "+91 90022 03345", email: "sunita@bskhub.org", disabled: true  },
+    { id: "t5", school_id: "s2", code: "EMP-014-09", name: "Faisal Shaikh",  expertise: ["HTML", "MySQL"], classes: ["IX-A"], status: "Active",   mobile: "+91 90033 88812", email: "faisal@mta.in",    disabled: false },
+  ]);
+  const [students, setStudents] = useState(() => [
+    ...seedStudents,
+    { id: "st4", school_id: "s1", class: "X-A", admission: "ADM-1101", name: "Aryan Verma",   status: "Active", mobile: "+91 90100 11111", email: "aryan@parent.com",  disabled: false },
+    { id: "st5", school_id: "s3", class: "VII-B", admission: "ADM-2233", name: "Kavya Nair",  status: "Active", mobile: "+91 90100 22222", email: "kavya@parent.com",  disabled: false },
+    { id: "st6", school_id: "s2", class: "IX-A", admission: "ADM-2299", name: "Devansh Roy",  status: "Active", mobile: "+91 90100 33333", email: "devansh@parent.com", disabled: false },
+  ]);
+  const [reps, setReps] = useState<SalesRep[]>(seedSalesReps);
+
+  const stats = useMemo(() => ({
+    schools: schools.length,
+    teachers: teachers.filter((t) => !t.disabled).length,
+    students: students.length,
+    reps: reps.filter((r) => r.status === "Active").length,
+  }), [schools, teachers, students, reps]);
+
+  // ----- Approve / Reject registrations -----
+  const approveRegistration = (r: SchoolRegistration) => {
+    const pwd = generatePassword(14);
+    const cityFromRegion = r.region.split("/").pop()?.trim() || r.region;
+    setSchools((arr) => [
+      {
+        id: `s-${Date.now()}`, code: r.schoolCode, name: r.schoolName, city: cityFromRegion,
+        status: "Approved" as SchoolStatus,
+        email: "Masked for Privacy",
+        mobile: "Masked for Privacy",
+        created: new Date().toISOString().slice(0, 10),
+        disabled: false,
+      },
+      ...arr,
+    ]);
+    setRegistrationStatus(r.id, "Approved", pwd);
+    log("APPROVED_REGISTRATION", r.schoolCode);
+    toast.success("School approved", {
+      description: `${r.schoolName} provisioned · auto-generated password copied below`,
+    });
+    // mock clipboard
+    try { navigator?.clipboard?.writeText(pwd); } catch { /* noop */ }
+  };
+
+  const rejectRegistration = (r: SchoolRegistration) => {
+    setRegistrationStatus(r.id, "Rejected");
+    log("REJECTED_REGISTRATION", r.schoolCode);
+    toast.error("Registration rejected", { description: r.schoolName });
+  };
+
+  // ----- CRUD ops -----
+  const promptNewSchool = () => {
+    const name = window.prompt("School name");
+    if (!name) return;
+    const code = window.prompt("Unique school code (e.g. SCH-XXX-000)");
+    if (!code) return;
+    if (schools.some((s) => s.code.toLowerCase() === code.toLowerCase())) {
+      toast.error("School code already exists");
+      return;
+    }
+    const city = window.prompt("City") || "—";
+    setSchools((arr) => [{
+      id: `s-${Date.now()}`, code: code.toUpperCase(), name, city,
+      status: "Approved", email: "Masked for Privacy", mobile: "Masked for Privacy",
+      created: new Date().toISOString().slice(0, 10), disabled: false,
+    }, ...arr]);
+    log("CREATED_SCHOOL", code.toUpperCase());
+    toast.success("School added", { description: code.toUpperCase() });
+  };
+  const toggleSchool = (id: string) => {
+    setSchools((arr) => arr.map((s) => s.id === id ? { ...s, disabled: !s.disabled } : s));
+    const sc = schools.find((s) => s.id === id);
+    if (sc) { log(sc.disabled ? "ENABLED_SCHOOL" : "DISABLED_SCHOOL", `school:${sc.code}`); toast(`School ${sc.disabled ? "activated" : "deactivated"}`); }
+  };
+  const deleteSchool = (id: string) => {
+    const sc = schools.find((s) => s.id === id);
+    if (!sc) return;
+    if (!window.confirm(`Delete ${sc.code}? This cannot be undone.`)) return;
+    setSchools((arr) => arr.filter((s) => s.id !== id));
+    log("DELETED_SCHOOL", `school:${sc.code}`);
+    toast.success("School deleted", { description: sc.code });
+  };
+
+  const toggleTeacher = (id: string) => {
+    setTeachers((arr) => arr.map((t) => t.id === id ? { ...t, disabled: !t.disabled, status: t.disabled ? "Active" : "Inactive" } : t));
+    const t = teachers.find((x) => x.id === id);
+    if (t) log(t.disabled ? "ENABLED_TEACHER" : "DISABLED_TEACHER", t.code);
+  };
+  const deleteTeacher = (id: string) => {
+    const t = teachers.find((x) => x.id === id);
+    if (!t || !window.confirm(`Remove teacher ${t.code}?`)) return;
+    setTeachers((arr) => arr.filter((x) => x.id !== id));
+    log("DELETED_TEACHER", t.code);
+    toast.success("Teacher removed", { description: t.code });
+  };
+  const addTeacher = () => {
+    const name = window.prompt("Teacher name"); if (!name) return;
+    const code = `EMP-${Math.floor(100 + Math.random() * 900)}-${String(teachers.length + 1).padStart(2, "0")}`;
+    const schoolCodes = schools.map((s) => s.code).join(", ");
+    const schoolCode = window.prompt(`Assign to school (one of: ${schoolCodes})`) || schools[0]?.code;
+    const sch = schools.find((s) => s.code === schoolCode);
+    if (!sch) { toast.error("Unknown school code"); return; }
+    setTeachers((arr) => [{
+      id: `t-${Date.now()}`, school_id: sch.id, code, name,
+      expertise: ["HTML"], classes: ["VIII-A"], status: "Active",
+      mobile: "Masked for Privacy", email: "Masked for Privacy", disabled: false,
+    }, ...arr]);
+    log("CREATED_TEACHER", code);
+    toast.success("Teacher onboarded", { description: `${name} · ${sch.code}` });
+  };
+
+  const toggleStudent = (id: string) => {
+    setStudents((arr) => arr.map((s) => s.id === id ? { ...s, disabled: !s.disabled, status: s.disabled ? "Active" : "Suspended" } : s));
+    const s = students.find((x) => x.id === id);
+    if (s) log(s.disabled ? "ENABLED_STUDENT" : "SUSPENDED_STUDENT", s.admission);
+  };
+  const deleteStudent = (id: string) => {
+    const s = students.find((x) => x.id === id);
+    if (!s || !window.confirm(`Remove student ${s.admission}?`)) return;
+    setStudents((arr) => arr.filter((x) => x.id !== id));
+    log("DELETED_STUDENT", s.admission);
+    toast.success("Student removed", { description: s.admission });
+  };
+  const addStudent = () => {
+    const name = window.prompt("Student name"); if (!name) return;
+    const cls = window.prompt("Class (e.g. VIII-A)") || "VIII-A";
+    const sch = schools[0];
+    if (!sch) { toast.error("No schools available"); return; }
+    setStudents((arr) => [{
+      id: `st-${Date.now()}`, school_id: sch.id, class: cls,
+      admission: `ADM-${1000 + Math.floor(Math.random() * 9000)}`, name,
+      status: "Active", mobile: "Masked for Privacy", email: "Masked for Privacy", disabled: false,
+    }, ...arr]);
+    log("CREATED_STUDENT", name);
+    toast.success("Student enrolled", { description: name });
+  };
+  const bulkUploadStudents = () => {
+    const n = Number(window.prompt("Simulate CSV upload — how many students? (max 25)") || 0);
+    if (!n) return;
+    const count = Math.min(25, Math.max(1, Math.floor(n)));
+    const sch = schools[0];
+    if (!sch) { toast.error("No schools available"); return; }
+    const wave = Array.from({ length: count }, (_, i) => ({
+      id: `st-${Date.now()}-${i}`, school_id: sch.id, class: ["VI-A", "VII-A", "VIII-A", "IX-A", "X-A"][i % 5],
+      admission: `ADM-${5000 + Math.floor(Math.random() * 4000) + i}`,
+      name: `Bulk Student ${String.fromCharCode(65 + (i % 26))}${i + 1}`,
+      status: "Active", mobile: "Masked for Privacy", email: "Masked for Privacy", disabled: false,
+    }));
+    setStudents((arr) => [...wave, ...arr]);
+    log("BULK_UPLOADED_STUDENTS", `count:${count}`);
+    toast.success("CSV ingested", { description: `${count} students added to ${sch.code}` });
+  };
+
+  const toggleRep = (id: string) => {
+    setReps((arr) => arr.map((r) => r.id === id ? { ...r, status: r.status === "Active" ? "Inactive" : "Active" } : r));
+    const r = reps.find((x) => x.id === id);
+    if (r) log(r.status === "Active" ? "DEACTIVATED_REP" : "ACTIVATED_REP", r.code);
+  };
+  const deleteRep = (id: string) => {
+    const r = reps.find((x) => x.id === id);
+    if (!r || !window.confirm(`Remove sales rep ${r.code}?`)) return;
+    setReps((arr) => arr.filter((x) => x.id !== id));
+    log("DELETED_REP", r.code);
+    toast.success("Sales rep removed", { description: r.code });
+  };
+  const addRep = () => {
+    const name = window.prompt("Sales rep name"); if (!name) return;
+    const region = window.prompt("Region (e.g. South · Chennai)") || "—";
+    setReps((arr) => [{
+      id: `sr-${Date.now()}`, code: `REP-X-${String(arr.length + 1).padStart(3, "0")}`, name, region,
+      schools: [], status: "Active", mobile: "Masked for Privacy", email: "Masked for Privacy",
+    }, ...arr]);
+    log("CREATED_REP", name);
+    toast.success("Sales rep added", { description: name });
+  };
+  const assignSchoolToRep = (id: string) => {
+    const codes = schools.map((s) => s.code).join(", ");
+    const code = window.prompt(`Assign which school? Options: ${codes}`);
+    if (!code) return;
+    const sc = schools.find((s) => s.code.toLowerCase() === code.toLowerCase());
+    if (!sc) { toast.error("Unknown school code"); return; }
+    setReps((arr) => arr.map((r) => r.id === id ? { ...r, schools: r.schools.includes(sc.code) ? r.schools : [...r.schools, sc.code] } : r));
+    log("ASSIGNED_SCHOOL_TO_REP", `${sc.code} → ${id}`);
+    toast.success("School assigned");
+  };
+
+  // ----- Filters -----
+  const q = search.trim().toLowerCase();
+  const matches = (s: string) => !q || s.toLowerCase().includes(q);
+
+  const schoolName = (id: string) => schools.find((s) => s.id === id)?.name || "—";
+  const schoolCode = (id: string) => schools.find((s) => s.id === id)?.code || "—";
+
+  // ----- UI -----
+  return (
+    <div className="space-y-4">
+      {/* Header strip */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 via-indigo-950/30 to-slate-950/70 p-4 shadow-[0_22px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+        <div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-200">
+            <Briefcase className="h-3 w-3" /> Portal Manager · Central Operations
+          </div>
+          <h2 className="mt-1.5 font-display text-lg font-bold tracking-tight">Onboarding, allocation &amp; lifecycle controls</h2>
+          <p className="text-[11px] text-muted-foreground">PII fields (mobile / email / passwords) are masked under your role privileges.</p>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+          <ShieldAlert className="h-3.5 w-3.5" /> Read-only summary widgets · Privacy mask enforced
+        </div>
+      </div>
+
+      {/* Static, non-clickable stat widgets */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <PMStatCard icon={School2}      label="Total Schools"          value={stats.schools}  tint="from-indigo-500/15 to-indigo-500/0" />
+        <PMStatCard icon={GraduationCap} label="Active Teachers"        value={stats.teachers} tint="from-fuchsia-500/15 to-fuchsia-500/0" />
+        <PMStatCard icon={Users}         label="Total Students"         value={stats.students} tint="from-emerald-500/15 to-emerald-500/0" />
+        <PMStatCard icon={Briefcase}     label="Assigned Sales Reps"   value={stats.reps}     tint="from-amber-500/15 to-amber-500/0" />
+      </div>
+
+      {/* Approval queue */}
+      <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-amber-950/15 p-4 shadow-[0_18px_50px_-25px_rgba(245,158,11,0.55)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+              <AlarmClock className="h-3 w-3" /> Incoming Institutional Registrations
+            </div>
+            <h3 className="mt-1.5 font-display text-base font-bold">{pending.length} pending application(s)</h3>
+          </div>
+          <span className="text-[10px] text-muted-foreground">Sourced live from the public Self-Registration form.</span>
+        </div>
+
+        <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
+          <div className="grid grid-cols-12 gap-2 border-b border-white/10 bg-slate-950/70 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="col-span-4">Institution</div>
+            <div className="col-span-2">Code</div>
+            <div className="col-span-3">Region · Principal</div>
+            <div className="col-span-1">Submitted</div>
+            <div className="col-span-2 text-right">Actions</div>
+          </div>
+          <div className="divide-y divide-white/5 max-h-[280px] overflow-y-auto">
+            {pending.length === 0 && (
+              <div className="px-3 py-8 text-center text-[11px] text-muted-foreground">No pending applications — inbox clear.</div>
+            )}
+            {pending.map((r) => (
+              <div key={r.id} className="grid grid-cols-12 items-center gap-2 px-3 py-2.5 transition-colors hover:bg-white/[0.03]">
+                <div className="col-span-4 min-w-0">
+                  <div className="truncate text-[12px] font-bold">{r.schoolName}</div>
+                  <div className="line-clamp-1 text-[10px] text-muted-foreground">{r.notes || "No notes provided."}</div>
+                </div>
+                <div className="col-span-2 font-mono text-[11px] text-indigo-200">{r.schoolCode}</div>
+                <div className="col-span-3 min-w-0">
+                  <div className="truncate text-[11px]">{r.principalName} · <span className="text-muted-foreground">{r.designation}</span></div>
+                  <div className="truncate text-[10px] text-muted-foreground">{r.region}</div>
+                </div>
+                <div className="col-span-1 text-[10px] text-muted-foreground">{new Date(r.submittedAt).toLocaleDateString()}</div>
+                <div className="col-span-2 flex items-center justify-end gap-1.5">
+                  <button
+                    onClick={() => approveRegistration(r)}
+                    className="group relative inline-flex items-center gap-1 overflow-hidden rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-[0_8px_24px_-8px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.04] active:scale-[0.97]"
+                  >
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                    <CheckCircle2 className="relative h-3 w-3" />
+                    <span className="relative">Approve</span>
+                  </button>
+                  <button
+                    onClick={() => rejectRegistration(r)}
+                    className="inline-flex items-center gap-1 rounded-md border border-rose-400/50 bg-rose-500/10 px-2 py-1 text-[10px] font-bold text-rose-300 transition-colors hover:bg-rose-500/20"
+                  >
+                    <XCircle className="h-3 w-3" /> Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Management tabs */}
+      <section className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 shadow-[0_22px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-white/10 bg-background/40 p-1 backdrop-blur">
+            {([
+              { id: "schools" as const,  label: "School Management",  icon: School2,       count: schools.length  },
+              { id: "teachers" as const, label: "Teacher Management", icon: GraduationCap, count: teachers.length },
+              { id: "students" as const, label: "Student Management", icon: Users,         count: students.length },
+              { id: "reps" as const,     label: "Sales Reps",         icon: Briefcase,     count: reps.length     },
+            ]).map(({ id, label, icon: Icon, count }) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-300",
+                    active
+                      ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.7)]"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" /> {label}
+                  <span className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-bold", active ? "bg-white/20" : "bg-muted/60 text-foreground")}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/60 px-2.5 backdrop-blur">
+              <Search className="h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search…"
+                className="h-8 w-48 bg-transparent text-[11px] outline-none"
+              />
+            </div>
+            {tab === "schools" && <ToolbarBtn onClick={promptNewSchool} icon={Plus} label="Add School" />}
+            {tab === "teachers" && <ToolbarBtn onClick={addTeacher} icon={UserPlus} label="Add Teacher" />}
+            {tab === "students" && (
+              <>
+                <ToolbarBtn onClick={bulkUploadStudents} icon={Upload} label="Bulk CSV" />
+                <ToolbarBtn onClick={addStudent} icon={UserPlus} label="Add Student" />
+              </>
+            )}
+            {tab === "reps" && <ToolbarBtn onClick={addRep} icon={UserPlus} label="Add Rep" />}
+          </div>
+        </div>
+
+        <div className="mt-3 overflow-x-auto rounded-xl border border-white/10">
+          {/* Schools */}
+          {tab === "schools" && (
+            <table className="w-full min-w-[760px] text-left text-[12px]">
+              <thead className="bg-slate-950/70 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2">Code</th>
+                  <th className="px-3 py-2">School</th>
+                  <th className="px-3 py-2">City</th>
+                  <th className="px-3 py-2">Email</th>
+                  <th className="px-3 py-2">Mobile</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {schools.filter((s) => matches(s.code) || matches(s.name) || matches(s.city)).map((s) => (
+                  <tr key={s.id} className="transition-colors hover:bg-white/[0.03]">
+                    <td className="px-3 py-2 font-mono text-indigo-200">{s.code}</td>
+                    <td className="px-3 py-2 font-semibold">{s.name}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{s.city}</td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground" title="Masked for Privacy">{PRIVATE_MASK}</td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground" title="Masked for Privacy">{PRIVATE_MASK}</td>
+                    <td className="px-3 py-2"><StatusPill s={s.disabled ? "Suspended" : s.status} /></td>
+                    <td className="px-3 py-2"><RowActions onToggle={() => toggleSchool(s.id)} active={!s.disabled} onDelete={() => deleteSchool(s.id)} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {/* Teachers */}
+          {tab === "teachers" && (
+            <table className="w-full min-w-[820px] text-left text-[12px]">
+              <thead className="bg-slate-950/70 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2">Code</th>
+                  <th className="px-3 py-2">Teacher</th>
+                  <th className="px-3 py-2">School</th>
+                  <th className="px-3 py-2">Expertise</th>
+                  <th className="px-3 py-2">Email</th>
+                  <th className="px-3 py-2">Mobile</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {teachers.filter((t) => matches(t.code) || matches(t.name) || matches(schoolCode(t.school_id))).map((t) => (
+                  <tr key={t.id} className="transition-colors hover:bg-white/[0.03]">
+                    <td className="px-3 py-2 font-mono text-indigo-200">{t.code}</td>
+                    <td className="px-3 py-2 font-semibold">{t.name}</td>
+                    <td className="px-3 py-2 text-muted-foreground">
+                      <div className="font-mono text-[10px] text-indigo-200">{schoolCode(t.school_id)}</div>
+                      <div className="truncate text-[10px]">{schoolName(t.school_id)}</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-wrap gap-1">
+                        {t.expertise.map((e) => (
+                          <span key={e} className="rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-1.5 py-0.5 text-[9px] text-fuchsia-200">{e}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{PRIVATE_MASK}</td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{PRIVATE_MASK}</td>
+                    <td className="px-3 py-2"><StatusPill s={t.disabled ? "Suspended" : t.status} /></td>
+                    <td className="px-3 py-2"><RowActions onToggle={() => toggleTeacher(t.id)} active={!t.disabled} onDelete={() => deleteTeacher(t.id)} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {/* Students */}
+          {tab === "students" && (
+            <table className="w-full min-w-[820px] text-left text-[12px]">
+              <thead className="bg-slate-950/70 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2">Admission</th>
+                  <th className="px-3 py-2">Name</th>
+                  <th className="px-3 py-2">Class</th>
+                  <th className="px-3 py-2">School</th>
+                  <th className="px-3 py-2">Email</th>
+                  <th className="px-3 py-2">Mobile</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {students.filter((s) => matches(s.admission) || matches(s.name) || matches(s.class) || matches(schoolCode(s.school_id))).map((s) => (
+                  <tr key={s.id} className="transition-colors hover:bg-white/[0.03]">
+                    <td className="px-3 py-2 font-mono text-indigo-200">{s.admission}</td>
+                    <td className="px-3 py-2 font-semibold">{s.name}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{s.class}</td>
+                    <td className="px-3 py-2 font-mono text-[10px] text-indigo-200">{schoolCode(s.school_id)}</td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{PRIVATE_MASK}</td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{PRIVATE_MASK}</td>
+                    <td className="px-3 py-2"><StatusPill s={s.disabled ? "Suspended" : s.status} /></td>
+                    <td className="px-3 py-2"><RowActions onToggle={() => toggleStudent(s.id)} active={!s.disabled} onDelete={() => deleteStudent(s.id)} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {/* Sales Reps */}
+          {tab === "reps" && (
+            <table className="w-full min-w-[820px] text-left text-[12px]">
+              <thead className="bg-slate-950/70 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2">Code</th>
+                  <th className="px-3 py-2">Name</th>
+                  <th className="px-3 py-2">Region</th>
+                  <th className="px-3 py-2">Assigned Schools</th>
+                  <th className="px-3 py-2">Email</th>
+                  <th className="px-3 py-2">Mobile</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {reps.filter((r) => matches(r.code) || matches(r.name) || matches(r.region)).map((r) => (
+                  <tr key={r.id} className="transition-colors hover:bg-white/[0.03]">
+                    <td className="px-3 py-2 font-mono text-indigo-200">{r.code}</td>
+                    <td className="px-3 py-2 font-semibold">{r.name}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{r.region}</td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-wrap items-center gap-1">
+                        {r.schools.length === 0 && <span className="text-[10px] text-muted-foreground">No schools yet</span>}
+                        {r.schools.map((c) => (
+                          <span key={c} className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] text-emerald-200">{c}</span>
+                        ))}
+                        <button
+                          onClick={() => assignSchoolToRep(r.id)}
+                          className="inline-flex items-center gap-0.5 rounded-full border border-dashed border-indigo-400/50 px-1.5 py-0.5 text-[9px] text-indigo-200 hover:bg-indigo-500/10"
+                        >
+                          <Plus className="h-2.5 w-2.5" /> Assign
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{PRIVATE_MASK}</td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{PRIVATE_MASK}</td>
+                    <td className="px-3 py-2"><StatusPill s={r.status === "Active" ? "Active" : "Suspended"} /></td>
+                    <td className="px-3 py-2"><RowActions onToggle={() => toggleRep(r.id)} active={r.status === "Active"} onDelete={() => deleteRep(r.id)} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </section>
+
+      {/* Audit Trail */}
+      <section className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 shadow-[0_22px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
+        <div className="flex items-center justify-between">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-200">
+            <History className="h-3 w-3" /> System Audit Trail
+          </div>
+          <span className="text-[10px] text-muted-foreground">{audit.length} events tracked · most recent first</span>
+        </div>
+        <div className="mt-2 max-h-[260px] overflow-y-auto rounded-xl border border-white/10">
+          <table className="w-full min-w-[680px] text-left text-[11px]">
+            <thead className="sticky top-0 bg-slate-950/90 text-[9px] uppercase tracking-wider text-muted-foreground backdrop-blur">
+              <tr>
+                <th className="px-3 py-2">Timestamp</th>
+                <th className="px-3 py-2">Actor</th>
+                <th className="px-3 py-2">Event</th>
+                <th className="px-3 py-2">Target</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {audit.map((e) => {
+                const tone =
+                  /REJECT|DISABLE|DELETE|SUSPEND|BLOCK|DEACTIVAT/i.test(e.action) ? "text-rose-300" :
+                  /APPROVE|ENABLE|ACTIVAT|CREATE|ADD|BACKUP/i.test(e.action) ? "text-emerald-300" :
+                  /BULK|EXPORT|PUBLISH/i.test(e.action) ? "text-indigo-300" : "text-foreground";
+                return (
+                  <tr key={e.id} className="transition-colors hover:bg-white/[0.03]">
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{e.ts}</td>
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-indigo-200">{e.actor}</td>
+                    <td className={cn("px-3 py-1.5 font-mono font-bold", tone)}>{e.action}</td>
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{e.target}</td>
+                  </tr>
+                );
+              })}
+              {audit.length === 0 && (
+                <tr><td colSpan={4} className="px-3 py-6 text-center text-muted-foreground">No events yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ToolbarBtn({ onClick, icon: Icon, label }: { onClick: () => void; icon: typeof Plus; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_10px_28px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.04] active:scale-[0.97]"
+    >
+      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+      <Icon className="relative h-3.5 w-3.5" />
+      <span className="relative">{label}</span>
+    </button>
+  );
+}
+
+function RowActions({ onToggle, active, onDelete }: { onToggle: () => void; active: boolean; onDelete: () => void }) {
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <button
+        onClick={onToggle}
+        className={cn(
+          "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold transition-colors",
+          active
+            ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+            : "border-amber-400/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
+        )}
+      >
+        {active ? <><PowerOff className="h-3 w-3" /> Deactivate</> : <><Power className="h-3 w-3" /> Activate</>}
+      </button>
+      <button
+        onClick={onDelete}
+        className="inline-flex items-center gap-1 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[10px] font-bold text-rose-300 transition-colors hover:bg-rose-500/20"
+      >
+        <Trash2 className="h-3 w-3" /> Delete
+      </button>
+    </div>
   );
 }
