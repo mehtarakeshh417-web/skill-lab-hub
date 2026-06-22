@@ -252,6 +252,9 @@ function ConsolePage() {
                 pendingCount={pendingCount}
               />
 
+              <ThemeToggle />
+              <QuickTourTrigger />
+
               <div className="flex items-center gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15">
                   <RoleIcon className="h-3 w-3 text-primary" />
