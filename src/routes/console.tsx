@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useSyncExternalStore, useRef, useEffect, createContext, useContext, useCallback } from "react";
+import { toast } from "sonner";
+import { ThemeToggle } from "@/lib/theme";
+import { QuickTourTrigger } from "@/components/quick-tour";
 import {
   Bell, ShieldCheck, Users, School2, GraduationCap, Briefcase,
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
@@ -70,6 +73,16 @@ const seedAudit: AuditEntry[] = [
   { id: "a3", ts: "2026-06-21 17:32", actor: "admin", action: "DISABLED_USER", target: "school:SCH-HYD-007" },
   { id: "a4", ts: "2026-06-21 14:08", actor: "manager", action: "REJECTED_SCHOOL", target: "SCH-HYD-007" },
   { id: "a5", ts: "2026-06-20 11:00", actor: "system", action: "PURGED_DELETED_ENTRIES", target: "batch:2026-06-W3" },
+  { id: "a6", ts: "2026-06-20 09:42", actor: "teacher:anita", action: "PUBLISHED_ASSIGNMENT", target: "task:Python Loops" },
+  { id: "a7", ts: "2026-06-19 18:27", actor: "system", action: "BACKUP_COMPLETED", target: "snapshot:nightly-0619" },
+  { id: "a8", ts: "2026-06-19 16:11", actor: "admin", action: "API_KEY_ROTATED", target: "key:gemini-prod" },
+  { id: "a9", ts: "2026-06-19 12:03", actor: "school:s2", action: "ADDED_TEACHER", target: "EMP-014-06" },
+  { id: "a10", ts: "2026-06-18 21:48", actor: "system", action: "RATE_LIMIT_RESET", target: "gateway:gemini" },
+  { id: "a11", ts: "2026-06-18 15:30", actor: "teacher:rakesh", action: "EVALUATED_SUBMISSION", target: "portfolio:pf-2206-html" },
+  { id: "a12", ts: "2026-06-18 10:15", actor: "school:s5", action: "ENROLLED_STUDENTS", target: "batch:c1-A x12" },
+  { id: "a13", ts: "2026-06-17 23:55", actor: "system", action: "STORAGE_THRESHOLD", target: "bucket:portfolio @ 72%" },
+  { id: "a14", ts: "2026-06-17 17:09", actor: "manager", action: "EXPORTED_REPORT", target: "csv:platform-weekly" },
+  { id: "a15", ts: "2026-06-17 09:22", actor: "admin", action: "GRANTED_ROLE", target: "manager:ops-priya" },
 ];
 
 // ---------- Helpers ----------
@@ -238,6 +251,9 @@ function ConsolePage() {
                 onOpenChange={setNotifsOpen}
                 pendingCount={pendingCount}
               />
+
+              <ThemeToggle />
+              <QuickTourTrigger />
 
               <div className="flex items-center gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15">
@@ -1595,31 +1611,43 @@ function TeacherManagementPanel({ maskPII }: { maskPII: boolean }) {
   const cancelEdit = () => { setEditingId(null); setForm(blankForm()); setError(null); };
 
   const submit = () => {
-    if (!form.code.trim() || !form.name.trim()) { setError("Employee Code and Full Name are required."); return; }
-    if (form.expertise.length === 0) { setError("Select at least one expertise."); return; }
-    const codeClash = teachers.some((t) => t.code.toLowerCase() === form.code.trim().toLowerCase() && t.id !== editingId);
-    if (codeClash) { setError("Employee Code must be unique."); return; }
+    const code = form.code.trim();
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const mobile = form.mobile.trim();
+    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!code || !name) { setError("Employee Code and Full Name are required."); toast.error("Missing required fields"); return; }
+    if (email && !emailRx.test(email)) { setError("Enter a valid email address."); toast.error("Invalid email format"); return; }
+    if (mobile && mobile.replace(/\D/g, "").length < 7) { setError("Mobile number looks too short."); toast.error("Invalid mobile number"); return; }
+    if (form.expertise.length === 0) { setError("Select at least one expertise."); toast.error("Pick at least one expertise area"); return; }
+    const codeClash = teachers.some((t) => t.code.toLowerCase() === code.toLowerCase() && t.id !== editingId);
+    if (codeClash) { setError("Employee Code must be unique."); toast.error("Employee Code already in use"); return; }
 
     if (editingId) {
-      setTeachers((arr) => arr.map((t) => t.id === editingId ? { ...t, ...form, code: form.code.trim(), name: form.name.trim() } : t));
+      setTeachers((arr) => arr.map((t) => t.id === editingId ? { ...t, ...form, code, name, email, mobile } : t));
+      toast.success("Teacher profile updated", { description: `${name} · ${code}` });
     } else {
       const id = `t${Date.now()}`;
       setTeachers((arr) => [
         ...arr,
-        { id, code: form.code.trim(), name: form.name.trim(), email: form.email.trim(), mobile: form.mobile.trim(),
+        { id, code, name, email, mobile,
           expertise: form.expertise, sectionIds: form.sectionIds, status: form.status },
       ]);
+      toast.success("Teacher onboarded", { description: `${name} added with ${form.expertise.length} skill area${form.expertise.length === 1 ? "" : "s"}` });
     }
     cancelEdit();
   };
 
   const toggleStatus = (id: string) => {
     setTeachers((arr) => arr.map((t) => t.id === id ? { ...t, status: t.status === "Active" ? "Inactive" : "Active" } : t));
+    const t = _teachers.find((x) => x.id === id);
+    if (t) toast.success("Account Status Updated", { description: `${t.name} → ${t.status === "Active" ? "Inactive" : "Active"}` });
   };
   const remove = (id: string) => {
     if (!confirm("Remove this teacher from the roster?")) return;
     setTeachers((arr) => arr.filter((t) => t.id !== id));
     if (editingId === id) cancelEdit();
+    toast.success("Teacher removed from roster");
   };
 
   const mask = (v: string) => v ? "•".repeat(Math.min(10, Math.max(6, v.length))) : "—";
@@ -1917,14 +1945,34 @@ type Student = {
   status: "Active" | "Inactive";
 };
 
-let _students: Student[] = [
-  { id: "st1", roll: "ADM-2206", name: "Ira Khanna",   sectionId: "c8-A", classGrade: 8, gender: "Female", dob: "2016-04-12", status: "Active" },
-  { id: "st2", roll: "ADM-2289", name: "Veer Singh",   sectionId: "c9-A", classGrade: 9, gender: "Male",   dob: "2015-09-03", status: "Active" },
-  { id: "st3", roll: "ADM-3101", name: "Tara Mehta",   sectionId: "c6-A", classGrade: 6, gender: "Female", dob: "2018-01-21", status: "Inactive" },
-  { id: "st4", roll: "ADM-3110", name: "Arjun Nair",   sectionId: "c1-A", classGrade: 1, gender: "Male",   dob: "2023-07-15", status: "Active" },
-  { id: "st5", roll: "ADM-3144", name: "Sara Joseph",  sectionId: "c1-B", classGrade: 1, gender: "Female", dob: "2023-11-02", status: "Active" },
-  { id: "st6", roll: "ADM-3201", name: "Kabir Bose",   sectionId: "c2-A", classGrade: 2, gender: "Male",   dob: "2022-05-09", status: "Active" },
+const _seedStudentRoster: Student[] = [
+  { id: "st1",  roll: "ADM-2206", name: "Ira Khanna",     sectionId: "c8-A", classGrade: 8, gender: "Female", dob: "2016-04-12", status: "Active" },
+  { id: "st2",  roll: "ADM-2289", name: "Veer Singh",     sectionId: "c9-A", classGrade: 9, gender: "Male",   dob: "2015-09-03", status: "Active" },
+  { id: "st3",  roll: "ADM-3101", name: "Tara Mehta",     sectionId: "c6-A", classGrade: 6, gender: "Female", dob: "2018-01-21", status: "Inactive" },
+  { id: "st4",  roll: "ADM-3110", name: "Arjun Nair",     sectionId: "c1-A", classGrade: 1, gender: "Male",   dob: "2023-07-15", status: "Active" },
+  { id: "st5",  roll: "ADM-3144", name: "Sara Joseph",    sectionId: "c1-B", classGrade: 1, gender: "Female", dob: "2023-11-02", status: "Active" },
+  { id: "st6",  roll: "ADM-3201", name: "Kabir Bose",     sectionId: "c2-A", classGrade: 2, gender: "Male",   dob: "2022-05-09", status: "Active" },
+  { id: "st7",  roll: "ADM-3215", name: "Aanya Iyer",     sectionId: "c2-B", classGrade: 2, gender: "Female", dob: "2022-08-22", status: "Active" },
+  { id: "st8",  roll: "ADM-3322", name: "Rohan Patel",    sectionId: "c3-A", classGrade: 3, gender: "Male",   dob: "2021-02-14", status: "Active" },
+  { id: "st9",  roll: "ADM-3408", name: "Meera Pillai",   sectionId: "c3-B", classGrade: 3, gender: "Female", dob: "2021-06-30", status: "Active" },
+  { id: "st10", roll: "ADM-3501", name: "Dev Malhotra",   sectionId: "c4-A", classGrade: 4, gender: "Male",   dob: "2020-04-05", status: "Active" },
+  { id: "st11", roll: "ADM-3580", name: "Saanvi Reddy",   sectionId: "c4-B", classGrade: 4, gender: "Female", dob: "2020-11-19", status: "Active" },
+  { id: "st12", roll: "ADM-3611", name: "Ayaan Khan",     sectionId: "c5-A", classGrade: 5, gender: "Male",   dob: "2019-03-08", status: "Active" },
+  { id: "st13", roll: "ADM-3640", name: "Zara Ali",       sectionId: "c5-B", classGrade: 5, gender: "Female", dob: "2019-07-27", status: "Inactive" },
+  { id: "st14", roll: "ADM-3712", name: "Vihaan Gupta",   sectionId: "c6-A", classGrade: 6, gender: "Male",   dob: "2018-02-11", status: "Active" },
+  { id: "st15", roll: "ADM-3744", name: "Anaya Sen",      sectionId: "c6-B", classGrade: 6, gender: "Female", dob: "2018-09-04", status: "Active" },
+  { id: "st16", roll: "ADM-3801", name: "Reyansh Das",    sectionId: "c7-A", classGrade: 7, gender: "Male",   dob: "2017-05-22", status: "Active" },
+  { id: "st17", roll: "ADM-3833", name: "Pari Saxena",    sectionId: "c7-B", classGrade: 7, gender: "Female", dob: "2017-10-15", status: "Active" },
+  { id: "st18", roll: "ADM-3902", name: "Krishna Menon",  sectionId: "c8-A", classGrade: 8, gender: "Male",   dob: "2016-01-30", status: "Active" },
+  { id: "st19", roll: "ADM-3960", name: "Aaradhya Roy",   sectionId: "c8-B", classGrade: 8, gender: "Female", dob: "2016-06-08", status: "Active" },
+  { id: "st20", roll: "ADM-4011", name: "Aditya Shah",    sectionId: "c9-A", classGrade: 9, gender: "Male",   dob: "2015-04-19", status: "Active" },
+  { id: "st21", roll: "ADM-4055", name: "Diya Kulkarni",  sectionId: "c9-B", classGrade: 9, gender: "Female", dob: "2015-12-01", status: "Active" },
+  { id: "st22", roll: "ADM-4108", name: "Yash Choudhary", sectionId: "c10-A", classGrade: 10, gender: "Male",   dob: "2014-08-17", status: "Active" },
+  { id: "st23", roll: "ADM-4144", name: "Riya Bhatt",     sectionId: "c10-B", classGrade: 10, gender: "Female", dob: "2014-11-25", status: "Active" },
+  { id: "st24", roll: "ADM-4203", name: "Ishaan Pandey",  sectionId: "c11-A", classGrade: 11, gender: "Male",   dob: "2013-07-09", status: "Active" },
+  { id: "st25", roll: "ADM-4290", name: "Myra Bansal",    sectionId: "c12-A", classGrade: 12, gender: "Female", dob: "2012-02-28", status: "Active" },
 ];
+let _students: Student[] = [..._seedStudentRoster];
 const studentListeners = new Set<() => void>();
 function setStudents(updater: (s: Student[]) => Student[]) {
   _students = updater(_students);
@@ -1976,20 +2024,25 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
   const cancel = () => { setEditingId(null); setForm(blank()); setError(null); };
 
   const submit = () => {
-    if (!form.roll.trim() || !form.name.trim()) { setError("Roll Number and Full Name are required."); return; }
-    if (!form.dob) { setError("Date of Birth is required."); return; }
-    const clash = students.some((s) => s.roll.toLowerCase() === form.roll.trim().toLowerCase() && s.id !== editingId);
-    if (clash) { setError("Roll Number must be unique."); return; }
+    const roll = form.roll.trim();
+    const name = form.name.trim();
+    if (!roll || !name) { setError("Roll Number and Full Name are required."); toast.error("Missing required fields"); return; }
+    if (!form.dob) { setError("Date of Birth is required."); toast.error("Date of birth is required"); return; }
+    if (new Date(form.dob).getTime() > Date.now()) { setError("Date of Birth cannot be in the future."); toast.error("Invalid date of birth"); return; }
+    const clash = students.some((s) => s.roll.toLowerCase() === roll.toLowerCase() && s.id !== editingId);
+    if (clash) { setError("Roll Number must be unique."); toast.error("Roll number already exists"); return; }
 
     setSubmitting(true);
     setTimeout(() => {
       if (editingId) {
-        setStudents((arr) => arr.map((s) => s.id === editingId ? { ...s, ...form, roll: form.roll.trim(), name: form.name.trim() } : s));
+        setStudents((arr) => arr.map((s) => s.id === editingId ? { ...s, ...form, roll, name } : s));
+        toast.success("Student profile updated", { description: `${name} · ${roll}` });
       } else {
         setStudents((arr) => [
-          { id: `st${Date.now()}`, ...form, roll: form.roll.trim(), name: form.name.trim() },
+          { id: `st${Date.now()}`, ...form, roll, name },
           ...arr,
         ]);
+        toast.success("Student added to roster", { description: `${name} · Grade ${form.classGrade}` });
       }
       setSubmitting(false);
       cancel();
@@ -1997,10 +2050,16 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
   };
 
   const toggleStatus = (id: string) =>
-    setStudents((arr) => arr.map((s) => s.id === id ? { ...s, status: s.status === "Active" ? "Inactive" : "Active" } : s));
+    setStudents((arr) => {
+      const next = arr.map((s) => s.id === id ? { ...s, status: (s.status === "Active" ? "Inactive" : "Active") as Student["status"] } : s);
+      const target = next.find((s) => s.id === id);
+      if (target) toast.success("Account Status Updated", { description: `${target.name} → ${target.status}` });
+      return next;
+    });
   const remove = (id: string) => {
     if (!confirm("Remove this student from the roster?")) return;
     setStudents((arr) => arr.filter((s) => s.id !== id));
+    toast.success("Student removed from roster");
   };
 
   const handleFile = (file: File) => {
@@ -2452,6 +2511,57 @@ let _tasks: Task[] = [
     totalRecipients: 0, submissions: 0, pendingEval: 0, createdAt: "2026-06-20",
   },
 ];
+// Extra realistic timeline entries (6 more → 10 total)
+_tasks.push(
+  {
+    id: "tk5", type: "assignment", title: "CSS Flexbox Layout Challenge",
+    instructions: "Recreate the provided dashboard layout using Flexbox only. No grid or absolute positioning.",
+    maxMarks: 25, deadline: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [7], sectionIds: ["c7-A", "c7-B"], studentIds: [], groups: ["Design Studio"] },
+    totalRecipients: 38, submissions: 21, pendingEval: 12, createdAt: "2026-06-19",
+  },
+  {
+    id: "tk6", type: "project", title: "MS Excel — Class Budget Tracker",
+    instructions: "Build a working budget tracker with SUM/AVG formulas across 12 monthly columns.",
+    maxMarks: 35, deadline: new Date(Date.now() + 9 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [8], sectionIds: ["c8-A", "c8-B"], studentIds: [], groups: [] },
+    totalRecipients: 31, submissions: 8, pendingEval: 8, createdAt: "2026-06-17",
+  },
+  {
+    id: "tk7", type: "assignment", title: "Java — OOP Basics (Quiz)",
+    instructions: "Auto-graded quiz on classes, inheritance and polymorphism. 10 mixed questions.",
+    maxMarks: 20, deadline: new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [10], sectionIds: ["c10-A"], studentIds: [], groups: [] },
+    totalRecipients: 18, submissions: 16, pendingEval: 2, createdAt: "2026-06-08",
+  },
+  {
+    id: "tk8", type: "project", title: "Scratch Jr — My Family Story",
+    instructions: "A 2-page interactive story introducing each family member with sound.",
+    maxMarks: 20, deadline: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
+    status: "active",
+    targets: { classGrades: [2], sectionIds: ["c2-A", "c2-B"], studentIds: [], groups: [] },
+    totalRecipients: 24, submissions: 5, pendingEval: 5, createdAt: "2026-06-16",
+  },
+  {
+    id: "tk9", type: "assignment", title: "PowerPoint — Persuasive Pitch Deck",
+    instructions: "5-slide pitch deck on a club idea. Use consistent theme + speaker notes.",
+    maxMarks: 30, deadline: new Date(Date.now() + 11 * 86400000).toISOString().slice(0, 10),
+    status: "draft",
+    targets: { classGrades: [11], sectionIds: ["c11-A"], studentIds: [], groups: ["Math Olympiad"] },
+    totalRecipients: 0, submissions: 0, pendingEval: 0, createdAt: "2026-06-21",
+  },
+  {
+    id: "tk10", type: "assignment", title: "Paint — Logo Design Sprint",
+    instructions: "Design an original logo for your section. Export as PNG with a one-line concept note.",
+    maxMarks: 15, deadline: new Date(Date.now() - 8 * 86400000).toISOString().slice(0, 10),
+    status: "archived",
+    targets: { classGrades: [3], sectionIds: ["c3-A"], studentIds: [], groups: [] },
+    totalRecipients: 20, submissions: 18, pendingEval: 0, createdAt: "2026-06-02",
+  },
+);
 const taskListeners = new Set<() => void>();
 function setTasks(updater: (t: Task[]) => Task[]) {
   _tasks = updater(_tasks);
@@ -2488,7 +2598,75 @@ export type PortfolioItem = {
   grade?: number;
   snapshot: LabSnapshot;
 };
-let _portfolio: PortfolioItem[] = [];
+const _seedPortfolio: PortfolioItem[] = [
+  {
+    id: "pf1", studentId: "st20", taskId: "tk1", taskTitle: "HTML Form Validation Worksheet",
+    status: "evaluated", createdAt: Date.now() - 86400000 * 6, grade: 18,
+    snapshot: { kind: "html", labName: "HTML & CSS Lab",
+      payload: { html: "<form><input required type='email' placeholder='Email'/><button>Submit</button></form>", css: "form{display:flex;gap:.5rem}input{padding:.5rem;border:1px solid #6366f1}" },
+      preview: "<form style=\"display:flex;gap:.5rem;font-family:sans-serif\"><input type='email' placeholder='Email' style='padding:.5rem;border:1px solid #6366f1'/><button style='padding:.5rem 1rem;background:#6366f1;color:#fff;border:0;border-radius:6px'>Submit</button></form>",
+      previewKind: "html", bytes: 412 } },
+  {
+    id: "pf2", studentId: "st21", taskId: "tk1", taskTitle: "HTML Form Validation Worksheet",
+    status: "submitted", createdAt: Date.now() - 86400000 * 2,
+    snapshot: { kind: "html", labName: "HTML & CSS Lab",
+      payload: { html: "<h1>Sign Up</h1><form><label>Email <input type='email'/></label></form>", css: "h1{color:#4f46e5}" },
+      preview: "<div style='font-family:sans-serif'><h1 style='color:#4f46e5'>Sign Up</h1><form><label>Email <input type='email' style='padding:.4rem'/></label></form></div>",
+      previewKind: "html", bytes: 318 } },
+  {
+    id: "pf3", studentId: "st14", taskId: "tk3", taskTitle: "Python — Loops Practice Set",
+    status: "evaluated", createdAt: Date.now() - 86400000 * 9, grade: 27,
+    snapshot: { kind: "sql", labName: "SQL Lab",
+      payload: { query: "SELECT name, marks FROM students WHERE marks > 80;", cols: ["name", "marks"],
+        rows: [{ name: "Ira Khanna", marks: 92 }, { name: "Veer Singh", marks: 88 }, { name: "Aanya Iyer", marks: 84 }] },
+      preview: "SELECT name, marks FROM students WHERE marks > 80;", previewKind: "grid", bytes: 264 } },
+  {
+    id: "pf4", studentId: "st22", taskId: "tk4", taskTitle: "MySQL Mini-DB Schema (Draft)",
+    status: "draft", createdAt: Date.now() - 86400000 * 1,
+    snapshot: { kind: "sql", labName: "SQL Lab",
+      payload: { query: "CREATE TABLE books (id INT PRIMARY KEY, title VARCHAR(120), author VARCHAR(80));", cols: ["info"], rows: [{ info: "Statement queued" }] },
+      preview: "CREATE TABLE books (id INT PRIMARY KEY, title VARCHAR(120));", previewKind: "text", bytes: 198 } },
+  {
+    id: "pf5", studentId: "st4", taskId: "tk10", taskTitle: "Paint — Logo Design Sprint",
+    status: "evaluated", createdAt: Date.now() - 86400000 * 10, grade: 14,
+    snapshot: { kind: "paint", labName: "MS Paint Lab",
+      payload: { strokes: [
+        { x: 32, y: 40, x2: 120, y2: 40, color: "#6366f1", size: 6 },
+        { x: 120, y: 40, x2: 120, y2: 120, color: "#6366f1", size: 6 },
+        { x: 32, y: 40, x2: 32, y2: 120, color: "#f59e0b", size: 6 },
+        { x: 32, y: 120, x2: 120, y2: 120, color: "#10b981", size: 6 },
+      ] },
+      preview: "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><rect x='32' y='40' width='88' height='80' fill='none' stroke='#6366f1' stroke-width='6'/></svg>"),
+      previewKind: "image", bytes: 612 } },
+  {
+    id: "pf6", studentId: "st12", taskId: "tk6", taskTitle: "MS Excel — Class Budget Tracker",
+    status: "submitted", createdAt: Date.now() - 86400000 * 3,
+    snapshot: { kind: "excel", labName: "Excel Lab",
+      payload: { cells: { A1: "Month", B1: "Income", C1: "Expense", A2: "Jan", B2: "12000", C2: "8500", A3: "Feb", B3: "11500", C3: "9000", A4: "Total", B4: "=SUM(B2:B3)", C4: "=SUM(C2:C3)" } },
+      preview: "Jan/Feb budget · SUM formulas", previewKind: "grid", bytes: 540 } },
+  {
+    id: "pf7", studentId: "st8", taskId: "tk2", taskTitle: "Scratch — Interactive Story Capstone",
+    status: "evaluated", createdAt: Date.now() - 86400000 * 7, grade: 44,
+    snapshot: { kind: "scratch", labName: "Scratch Lab",
+      payload: { blocks: [
+        { type: "motion", text: "move 10 steps" },
+        { type: "looks", text: "say Hello! for 2 seconds" },
+        { type: "sound", text: "play sound meow" },
+        { type: "motion", text: "turn 15 degrees" },
+      ] },
+      preview: "4 blocks · cat sprite story", previewKind: "blocks", bytes: 220 } },
+  {
+    id: "pf8", studentId: "st18", taskId: "tk9", taskTitle: "PowerPoint — Persuasive Pitch Deck",
+    status: "draft", createdAt: Date.now() - 86400000 * 0.5,
+    snapshot: { kind: "ppt", labName: "PowerPoint Lab",
+      payload: { slides: [
+        { title: "Robotics Club", body: "Pitch to launch an after-school robotics squad." },
+        { title: "Why Now?", body: "STEM enrolment up 32% across our sections." },
+        { title: "Ask", body: "Budget of ₹40k + 2 mentor hours / week." },
+      ] },
+      preview: "3 slides · pitch deck draft", previewKind: "slides", bytes: 410 } },
+];
+let _portfolio: PortfolioItem[] = [..._seedPortfolio];
 const portfolioListeners = new Set<() => void>();
 function setPortfolio(updater: (p: PortfolioItem[]) => PortfolioItem[]) {
   _portfolio = updater(_portfolio);
@@ -2589,7 +2767,8 @@ function TaskManagementPanel() {
   const addQuestion = (kind: QuizKind) => setQuiz((qs) => [...qs, blankQuestionOfKind(kind)]);
 
   const generateWithGemini = async () => {
-    if (!aiTopic.trim()) { setAiError("Enter a topic to generate."); return; }
+    if (!aiTopic.trim()) { setAiError("Enter a topic to generate."); toast.error("Topic is required"); return; }
+    if (numQuestions <= 0 || marksPerQ <= 0) { setAiError("Question count and marks per question must be greater than 0."); toast.error("Counts must be > 0"); return; }
     setAiLoading(true); setAiError(null);
     const structureDesc = quizStructure === "hybrid"
       ? "a mix of multiple-choice, true/false, and fill-in-the-blank"
@@ -2632,8 +2811,11 @@ function TaskManagementPanel() {
       });
       if (normalized.length === 0) throw new Error("No questions returned");
       setQuiz(normalized);
+      toast.success("AI Assignment Generated Successfully", { description: `${normalized.length} ${quizStructure.toUpperCase()} questions on "${aiTopic.trim()}"` });
     } catch (e: any) {
-      setAiError(e?.message ?? "Generation failed. Try a different topic.");
+      const msg = e?.message ?? "Generation failed. Try a different topic.";
+      setAiError(msg);
+      toast.error("AI generation failed", { description: msg });
     } finally {
       setAiLoading(false);
     }
@@ -2662,7 +2844,13 @@ function TaskManagementPanel() {
   const toggleIn = <T,>(arr: T[], val: T): T[] => (arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
 
   const publish = (status: TaskStatus) => {
-    if (!form.title.trim()) { setFlash("Title is required."); setTimeout(() => setFlash(null), 1800); return; }
+    if (!form.title.trim()) { setFlash("Title is required."); setTimeout(() => setFlash(null), 1800); toast.error("Title is required"); return; }
+    if (form.maxMarks <= 0) { setFlash("Max Marks must be greater than 0."); setTimeout(() => setFlash(null), 1800); toast.error("Max Marks must be > 0"); return; }
+    if (quiz.length > 0) {
+      if (marksPerQ <= 0) { toast.error("Marks per question must be > 0"); return; }
+      const bad = quiz.find((q) => !q.question.trim());
+      if (bad) { toast.error("Every quiz question needs a stem"); return; }
+    }
     const id = `tk${Date.now()}`;
     const total = status === "draft" ? 0 : recipientsCount;
     const hasQuiz = quiz.length > 0;
@@ -2684,6 +2872,8 @@ function TaskManagementPanel() {
     setQuiz([]); setAiTopic(""); setAiError(null);
     setFlash(status === "draft" ? "Saved as draft." : `Published to ${total} recipient${total === 1 ? "" : "s"}.`);
     setTimeout(() => setFlash(null), 2200);
+    if (status === "draft") toast.success("Draft saved", { description: form.title.trim() });
+    else toast.success("Assignment published", { description: `Sent to ${total} recipient${total === 1 ? "" : "s"}` });
   };
 
   const removeTask = (id: string) => setTasks((t) => t.filter((x) => x.id !== id));
