@@ -3257,6 +3257,11 @@ function JavaLab() {
   const [code, setCode] = useState(`public class Main {\n  public static void main(String[] args) {\n    for (int i = 1; i <= 3; i++) {\n      System.out.println("Hello Avartan #" + i);\n    }\n  }\n}`);
   const [out, setOut] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
+  useRegisterSnapshot(() => ({
+    kind: "java", labName: "Java Lab",
+    payload: { mode, code, out },
+    preview: code, previewKind: "text", bytes: approxBytes(code + out.join("\n")),
+  }), [mode, code, out]);
 
   const compile = () => {
     setRunning(true); setOut(["» javac Main.java", "» java Main"]);
@@ -3307,6 +3312,11 @@ function JavaLab() {
 
 // ---------- Scratch Lab ----------
 function ScratchLab() {
+  useRegisterSnapshot(() => ({
+    kind: "scratch", labName: "Scratch Lab",
+    payload: { project: "scratch.mit.edu/projects/104" },
+    preview: "Scratch sandbox session", previewKind: "text", bytes: 64,
+  }), []);
   return (
     <div className="space-y-2">
       <p className="text-[11px] text-muted-foreground">Live Scratch sandbox — drag blocks, hit the green flag inside.</p>
@@ -3337,6 +3347,12 @@ function ScratchJrLab() {
   const [program, setProgram] = useState<JrBlock[]>([{ id: "b1", kind: "right" }, { id: "b1b", kind: "right" }, { id: "b2", kind: "grow" }, { id: "b3", kind: "say" }]);
   const [pos, setPos] = useState({ x: 20, y: 60, s: 1, msg: "" });
   const [playing, setPlaying] = useState(false);
+  useRegisterSnapshot(() => ({
+    kind: "scratchjr", labName: "Scratch Jr",
+    payload: { program, pos },
+    preview: program.map((b) => b.kind).join(" → "),
+    previewKind: "blocks", bytes: approxBytes(program),
+  }), [program, pos]);
 
   const run = async () => {
     setPlaying(true); setPos({ x: 20, y: 60, s: 1, msg: "" });
@@ -3410,6 +3426,10 @@ function WordLab() {
   const ref = useRef<HTMLDivElement>(null);
   const cmd = (c: string, v?: string) => { document.execCommand(c, false, v); ref.current?.focus(); };
   const btn = "inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-[11px] hover:border-indigo-400/40 hover:bg-white/[0.08]";
+  useRegisterSnapshot(() => {
+    const html = ref.current?.innerHTML ?? "";
+    return { kind: "word", labName: "Word Processor", payload: { html }, preview: html, previewKind: "html", bytes: approxBytes(html) };
+  }, []);
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-1 rounded-lg border border-white/10 bg-slate-900/60 p-1.5">
