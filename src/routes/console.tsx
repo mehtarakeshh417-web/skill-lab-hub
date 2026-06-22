@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore, useRef, useEffect } from "react";
 import {
   Bell, ShieldCheck, Users, School2, GraduationCap, Briefcase,
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
@@ -10,6 +10,8 @@ import {
   Upload, FileSpreadsheet, Loader2, Calendar as CalendarIcon, UserCircle2,
   ClipboardList, FolderKanban, Send, FileText, Target, Users2, Clock, Archive, FileCheck2, Hash, Award,
   BellRing, Megaphone, AlarmClock, MessageSquare, CheckCheck, Rocket, TrendingUp, Trophy, Flame,
+  Code2, Database, Coffee, Cat, Baby, FileType2, Sheet, Presentation, Palette, Play, Square, FlagTriangleRight,
+  Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, Eraser, Brush, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
