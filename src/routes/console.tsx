@@ -301,6 +301,8 @@ function ConsolePage() {
                 <StudentManagementPanel canEdit />
                 <TaskManagementPanel />
               </div>
+            ) : role === "student" ? (
+              <StudentDashboardPanel />
             ) : (
               <PlaceholderPanel role={role} />
             )}
