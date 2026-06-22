@@ -3795,6 +3795,7 @@ function StudentDashboardPanel() {
   }, [myTasks, tab, submissions]);
 
   const submit = (id: string) => setSubmissions((m) => ({ ...m, [id]: "submitted" }));
+  const [projectWorkspace, setProjectWorkspace] = useState<Task | null>(null);
 
   return (
     <div className="space-y-4">
@@ -3954,7 +3955,7 @@ function StudentDashboardPanel() {
                   </div>
                   {tab === "active" ? (
                     <button
-                      onClick={() => submit(t.id)}
+                      onClick={() => t.type === "project" ? setProjectWorkspace(t) : submit(t.id)}
                       className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
                     >
                       <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
@@ -3984,6 +3985,17 @@ function StudentDashboardPanel() {
 
       {/* Digital Portfolio Hub */}
       <PortfolioHub studentId={me.id} />
+
+      {/* Innovation Gallery — visible to students for inspiration */}
+      <InnovationGallery />
+
+      {projectWorkspace && (
+        <ProjectWorkspaceModal
+          task={projectWorkspace}
+          onClose={() => setProjectWorkspace(null)}
+          onSubmit={() => submit(projectWorkspace.id)}
+        />
+      )}
     </div>
   );
 }
