@@ -5,6 +5,7 @@ import {
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
   ToggleLeft, ToggleRight, History, Sparkles, AlertTriangle,
   Trash2, Filter, Download, MoreHorizontal, Lock,
+  Pencil, Check, Plus, Layers, BookOpen, Save, Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
