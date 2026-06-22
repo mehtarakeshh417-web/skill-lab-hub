@@ -978,3 +978,358 @@ function SchoolAdminPanel() {
     </div>
   );
 }
+
+// =========================================================================
+// Teacher Management Panel (Portal Manager + School Admin)
+// =========================================================================
+
+function TeacherManagementPanel({ maskPII }: { maskPII: boolean }) {
+  const teachers = useTeachers();
+  // Local class structure to map section IDs to friendly labels
+  const classes = useMemo(() => buildInitialClasses(), []);
+  const sectionLabel = (sid: string) => {
+    for (const c of classes) {
+      const s = c.sections.find((x) => x.id === sid);
+      if (s) return `${c.grade}-${s.label}`;
+    }
+    return sid;
+  };
+
+  const activeCount = teachers.filter((t) => t.status === "Active").length;
+  const expertiseCount = new Set(teachers.flatMap((t) => t.expertise)).size;
+
+  // Form state
+  const blankForm = () => ({
+    code: "",
+    name: "",
+    email: "",
+    mobile: "",
+    expertise: [] as Tech[],
+    sectionIds: [] as string[],
+    status: "Active" as "Active" | "Inactive",
+  });
+  const [form, setForm] = useState(blankForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [classFilter, setClassFilter] = useState<number>(1);
+
+  const toggleArr = <T,>(arr: T[], v: T): T[] =>
+    arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+
+  const startEdit = (t: SchoolTeacher) => {
+    setEditingId(t.id);
+    setForm({
+      code: t.code, name: t.name, email: t.email, mobile: t.mobile,
+      expertise: [...t.expertise], sectionIds: [...t.sectionIds], status: t.status,
+    });
+    setError(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const cancelEdit = () => { setEditingId(null); setForm(blankForm()); setError(null); };
+
+  const submit = () => {
+    if (!form.code.trim() || !form.name.trim()) { setError("Employee Code and Full Name are required."); return; }
+    if (form.expertise.length === 0) { setError("Select at least one expertise."); return; }
+    const codeClash = teachers.some((t) => t.code.toLowerCase() === form.code.trim().toLowerCase() && t.id !== editingId);
+    if (codeClash) { setError("Employee Code must be unique."); return; }
+
+    if (editingId) {
+      setTeachers((arr) => arr.map((t) => t.id === editingId ? { ...t, ...form, code: form.code.trim(), name: form.name.trim() } : t));
+    } else {
+      const id = `t${Date.now()}`;
+      setTeachers((arr) => [
+        ...arr,
+        { id, code: form.code.trim(), name: form.name.trim(), email: form.email.trim(), mobile: form.mobile.trim(),
+          expertise: form.expertise, sectionIds: form.sectionIds, status: form.status },
+      ]);
+    }
+    cancelEdit();
+  };
+
+  const toggleStatus = (id: string) => {
+    setTeachers((arr) => arr.map((t) => t.id === id ? { ...t, status: t.status === "Active" ? "Inactive" : "Active" } : t));
+  };
+  const remove = (id: string) => {
+    if (!confirm("Remove this teacher from the roster?")) return;
+    setTeachers((arr) => arr.filter((t) => t.id !== id));
+    if (editingId === id) cancelEdit();
+  };
+
+  const mask = (v: string) => v ? "•".repeat(Math.min(10, Math.max(6, v.length))) : "—";
+
+  return (
+    <div className="space-y-4">
+      {/* Header / metrics */}
+      <section className="rounded-lg border border-border/60 bg-card/40 backdrop-blur">
+        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-3.5 w-3.5 text-primary" />
+            <div>
+              <h2 className="font-display text-sm font-semibold">Teacher Creation &amp; Management</h2>
+              <p className="text-[10px] text-muted-foreground">
+                {maskPII ? "Portal Manager view · personal contact data masked" : "School Admin view · full roster control"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+            <span><b className="text-foreground tabular-nums">{teachers.length}</b> total</span>
+            <span><b className="text-emerald-300 tabular-nums">{activeCount}</b> active</span>
+            <span><b className="text-foreground tabular-nums">{expertiseCount}</b> expertise</span>
+          </div>
+        </div>
+
+        {/* Onboarding Form — hidden for Portal Manager (read-only operational view) */}
+        {!maskPII && (
+          <div className="border-b border-border/60 p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {editingId ? "Edit Teacher" : "New Teacher Onboarding"}
+              </div>
+              {editingId && (
+                <button onClick={cancelEdit} className="text-[10px] text-muted-foreground hover:text-foreground">Cancel edit</button>
+              )}
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-12">
+              {/* Basic */}
+              <div className="lg:col-span-3">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Employee Code*</label>
+                <input
+                  value={form.code}
+                  onChange={(e) => setForm({ ...form, code: e.target.value.slice(0, 20) })}
+                  placeholder="EMP-014-07"
+                  className="mt-1 h-8 w-full rounded-md border border-border/60 bg-background/60 px-2 font-mono text-xs outline-none focus:border-primary/60"
+                />
+              </div>
+              <div className="lg:col-span-3">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Full Name*</label>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value.slice(0, 80) })}
+                  placeholder="Jane Doe"
+                  className="mt-1 h-8 w-full rounded-md border border-border/60 bg-background/60 px-2 text-xs outline-none focus:border-primary/60"
+                />
+              </div>
+              <div className="lg:col-span-3">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Email</label>
+                <div className="relative mt-1">
+                  <Mail className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value.slice(0, 120) })}
+                    placeholder="jane@school.edu"
+                    className="h-8 w-full rounded-md border border-border/60 bg-background/60 pl-7 pr-2 text-xs outline-none focus:border-primary/60"
+                  />
+                </div>
+              </div>
+              <div className="lg:col-span-3">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Mobile</label>
+                <div className="relative mt-1">
+                  <Phone className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    value={form.mobile}
+                    onChange={(e) => setForm({ ...form, mobile: e.target.value.slice(0, 20) })}
+                    placeholder="+91 98765 ..."
+                    className="h-8 w-full rounded-md border border-border/60 bg-background/60 pl-7 pr-2 font-mono text-xs outline-none focus:border-primary/60"
+                  />
+                </div>
+              </div>
+
+              {/* Expertise */}
+              <div className="lg:col-span-7">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Primary Expertise* ({form.expertise.length})</label>
+                <div className="mt-1 flex flex-wrap gap-1 rounded-md border border-border/60 bg-background/40 p-1.5">
+                  {TECHS.map((tech) => {
+                    const on = form.expertise.includes(tech);
+                    return (
+                      <button
+                        key={tech}
+                        type="button"
+                        onClick={() => setForm({ ...form, expertise: toggleArr(form.expertise, tech) })}
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition",
+                          on ? "border-primary/60 bg-primary/15 text-primary" : "border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                        )}
+                      >
+                        {on && <Check className="h-2.5 w-2.5" />} {tech}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="lg:col-span-2">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</label>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, status: form.status === "Active" ? "Inactive" : "Active" })}
+                  className={cn(
+                    "mt-1 flex h-8 w-full items-center justify-between rounded-md border px-2 text-xs font-semibold",
+                    form.status === "Active" ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-rose-500/40 bg-rose-500/10 text-rose-300"
+                  )}
+                >
+                  <span>{form.status}</span>
+                  {form.status === "Active" ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                </button>
+              </div>
+
+              {/* Submit */}
+              <div className="flex items-end lg:col-span-3">
+                <button
+                  type="button"
+                  onClick={submit}
+                  className="inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-primary/40 bg-primary/15 px-3 text-xs font-semibold text-primary hover:bg-primary/25"
+                >
+                  {editingId ? <><Save className="h-3 w-3" /> Update Teacher</> : <><UserPlus className="h-3 w-3" /> Create Teacher</>}
+                </button>
+              </div>
+
+              {/* Class & Section assignment */}
+              <div className="lg:col-span-12">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Class &amp; Section Assignment ({form.sectionIds.length} selected)
+                  </label>
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <span>Class</span>
+                    <select
+                      value={classFilter}
+                      onChange={(e) => setClassFilter(Number(e.target.value))}
+                      className="h-6 rounded border border-border/60 bg-background/60 px-1 text-[10px] outline-none focus:border-primary/60"
+                    >
+                      {classes.map((c) => <option key={c.grade} value={c.grade}>Class {c.grade}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-1 flex flex-wrap gap-1 rounded-md border border-border/60 bg-background/40 p-1.5">
+                  {(classes.find((c) => c.grade === classFilter)?.sections ?? []).map((s) => {
+                    const on = form.sectionIds.includes(s.id);
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setForm({ ...form, sectionIds: toggleArr(form.sectionIds, s.id) })}
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-mono",
+                          on ? "border-primary/60 bg-primary/15 text-primary" : "border-border/60 text-muted-foreground hover:border-primary/40"
+                        )}
+                      >
+                        {on && <Check className="h-2.5 w-2.5" />} Class {classFilter}-{s.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {form.sectionIds.length > 0 && (
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {form.sectionIds.map((sid) => (
+                      <span key={sid} className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-mono text-primary">
+                        {sectionLabel(sid)}
+                        <button onClick={() => setForm({ ...form, sectionIds: form.sectionIds.filter((x) => x !== sid) })}>
+                          <XCircle className="h-2.5 w-2.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {error && (
+              <div className="mt-2 flex items-center gap-1 rounded-md border border-rose-500/40 bg-rose-500/10 px-2 py-1 text-[10px] text-rose-300">
+                <AlertTriangle className="h-3 w-3" /> {error}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Roster Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/30 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold">Employee Code</th>
+                <th className="px-3 py-2 text-left font-semibold">Name</th>
+                <th className="px-3 py-2 text-left font-semibold">Expertise</th>
+                <th className="px-3 py-2 text-left font-semibold">Class · Section</th>
+                {!maskPII && <th className="px-3 py-2 text-left font-semibold">Email</th>}
+                {!maskPII && <th className="px-3 py-2 text-left font-semibold">Mobile</th>}
+                {maskPII && <th className="px-3 py-2 text-left font-semibold">Contact</th>}
+                <th className="px-3 py-2 text-left font-semibold">Status</th>
+                <th className="px-3 py-2 text-right font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
+              {teachers.map((t) => (
+                <tr key={t.id} className={cn("hover:bg-accent/20", t.status === "Inactive" && "opacity-60")}>
+                  <td className="px-3 py-1.5 font-mono text-[11px] font-semibold text-primary">{t.code}</td>
+                  <td className="px-3 py-1.5">{t.name}</td>
+                  <td className="px-3 py-1.5">
+                    <div className="flex flex-wrap gap-1">
+                      {t.expertise.slice(0, 4).map((e) => (
+                        <span key={e} className="rounded-full border border-border/60 px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">{e}</span>
+                      ))}
+                      {t.expertise.length > 4 && <span className="text-[9px] text-muted-foreground">+{t.expertise.length - 4}</span>}
+                    </div>
+                  </td>
+                  <td className="px-3 py-1.5">
+                    {t.sectionIds.length === 0 ? <span className="text-[10px] text-muted-foreground">Unassigned</span> : (
+                      <div className="flex flex-wrap gap-1">
+                        {t.sectionIds.slice(0, 4).map((sid) => (
+                          <span key={sid} className="rounded border border-primary/30 bg-primary/10 px-1 py-0.5 font-mono text-[9px] text-primary">
+                            {sectionLabel(sid)}
+                          </span>
+                        ))}
+                        {t.sectionIds.length > 4 && <span className="text-[9px] text-muted-foreground">+{t.sectionIds.length - 4}</span>}
+                      </div>
+                    )}
+                  </td>
+                  {!maskPII && <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{t.email || "—"}</td>}
+                  {!maskPII && <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{t.mobile || "—"}</td>}
+                  {maskPII && (
+                    <td className="px-3 py-1.5">
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <Lock className="h-2.5 w-2.5" /> <span className="font-mono">{mask(t.email)}</span> · <span className="font-mono">{mask(t.mobile)}</span>
+                      </div>
+                    </td>
+                  )}
+                  <td className="px-3 py-1.5"><StatusPill s={t.status} /></td>
+                  <td className="px-3 py-1.5">
+                    <div className="flex items-center justify-end gap-1">
+                      {!maskPII && (
+                        <button onClick={() => startEdit(t)} title="Edit Profile" className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-[10px] font-semibold hover:border-primary/50">
+                          <Pencil className="h-3 w-3" /> Edit
+                        </button>
+                      )}
+                      <button
+                        onClick={() => toggleStatus(t.id)}
+                        title={t.status === "Active" ? "Deactivate" : "Activate"}
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold",
+                          t.status === "Active"
+                            ? "border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
+                            : "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                        )}
+                      >
+                        {t.status === "Active" ? <><PowerOff className="h-3 w-3" /> Deactivate</> : <><Power className="h-3 w-3" /> Activate</>}
+                      </button>
+                      {!maskPII && (
+                        <button onClick={() => remove(t.id)} title="Remove Teacher" className="inline-flex items-center rounded-md border border-border/60 p-1 hover:border-rose-500/50 hover:text-rose-300">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {teachers.length === 0 && (
+                <tr><td colSpan={maskPII ? 6 : 7} className="px-3 py-6 text-center text-muted-foreground">No teachers onboarded yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
