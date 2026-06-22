@@ -2947,18 +2947,15 @@ function PracticeLabsPanel({ student }: { student: Student }) {
   const selectedTask = tasks.find((t) => t.id === selectedTaskId);
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
     <LabSnapshotCtx.Provider value={{ register }}>
-      <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
-      {/* (replaced wrapper open tag above; original wrapper closed below) */}
-      {null}
+      <section className="relative rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200">
             <Sparkles className="h-3 w-3" /> Technology Practice Labs
           </div>
-          <h3 className="mt-1 font-display text-base font-bold tracking-tight">Hey {studentName.split(" ")[0]} — pick a lab and build something live.</h3>
+          <h3 className="mt-1 font-display text-base font-bold tracking-tight">Hey {student.name.split(" ")[0]} — pick a lab and build something live.</h3>
         </div>
         <div className="flex items-center gap-2">
           {savedFlash && (
@@ -2967,18 +2964,18 @@ function PracticeLabsPanel({ student }: { student: Student }) {
             </span>
           )}
           <button
-            onClick={saveProgress}
+            onClick={saveDraft}
             className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition-all hover:border-indigo-400/40 hover:bg-white/[0.07]"
           >
-            <Save className="h-3.5 w-3.5" /> Save Progress
+            <Save className="h-3.5 w-3.5" /> Save Draft
           </button>
           <button
-            onClick={submitLab}
+            onClick={submitAssignment}
             className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
           >
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
             <Send className="relative h-3.5 w-3.5" />
-            <span className="relative">Submit Lab</span>
+            <span className="relative">Submit Assignment</span>
           </button>
         </div>
       </div>
@@ -3048,7 +3045,89 @@ function PracticeLabsPanel({ student }: { student: Student }) {
           </div>
         )}
       </div>
+
+      {/* Floating "Link to Assignment" drawer */}
+      {active && (
+        <div className={cn(
+          "pointer-events-none absolute bottom-4 right-4 z-30 flex max-w-[92%] flex-col items-end gap-2 transition-all",
+        )}>
+          <div className={cn(
+            "pointer-events-auto w-[340px] origin-bottom-right overflow-hidden rounded-2xl border border-indigo-400/30 bg-slate-950/85 shadow-[0_30px_60px_-20px_rgba(99,102,241,0.55)] backdrop-blur-xl transition-all duration-300",
+            drawerOpen ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0 translate-y-2"
+          )}>
+            <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-200">
+                <Paperclip className="h-3.5 w-3.5" /> Link to Assignment
+              </div>
+              <button onClick={() => setDrawerOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="space-y-2 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Active tasks for you</div>
+              {eligibleTasks.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-white/10 bg-white/[0.02] p-3 text-[11px] text-muted-foreground">
+                  Nothing pending — every active assignment is already submitted. Saved work goes straight to your portfolio.
+                </div>
+              ) : (
+                <div className="relative">
+                  <select
+                    value={selectedTaskId}
+                    onChange={(e) => setSelectedTaskId(e.target.value)}
+                    className="w-full appearance-none rounded-lg border border-white/10 bg-slate-900/80 px-2.5 py-2 pr-7 text-[12px] outline-none focus:border-indigo-400/60"
+                  >
+                    {eligibleTasks.map((t) => {
+                      const d = daysUntil(t.deadline);
+                      const tag = d < 0 ? `${Math.abs(d)}d overdue` : d === 0 ? "due today" : `${d}d left`;
+                      return <option key={t.id} value={t.id}>{t.title} · {tag}</option>;
+                    })}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                </div>
+              )}
+              {selectedTask && (
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2 text-[10.5px] text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1 text-indigo-200"><ClipboardList className="h-3 w-3" /> {selectedTask.type === "project" ? "Project" : "Assignment"}</span>
+                    <span>{selectedTask.maxMarks} marks</span>
+                  </div>
+                  <div className="mt-0.5 inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {selectedTask.deadline}</div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-1.5 pt-1">
+                <button
+                  onClick={attachAsset}
+                  disabled={!selectedTaskId}
+                  className="inline-flex items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[11px] font-semibold hover:border-indigo-400/40 hover:bg-white/[0.07] disabled:opacity-50"
+                >
+                  <Paperclip className="h-3.5 w-3.5" /> Attach Asset
+                </button>
+                <button
+                  onClick={submitAssignment}
+                  disabled={!selectedTaskId}
+                  className="group relative inline-flex items-center justify-center gap-1 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] disabled:opacity-50"
+                >
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  <Send className="relative h-3.5 w-3.5" /> <span className="relative">Submit</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {!drawerOpen && (
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="pointer-events-auto group inline-flex items-center gap-1.5 rounded-full border border-indigo-400/40 bg-slate-950/85 px-3 py-2 text-[11px] font-semibold text-indigo-100 shadow-[0_10px_25px_-10px_rgba(99,102,241,0.7)] backdrop-blur transition-all hover:scale-[1.03]"
+            >
+              <Paperclip className="h-3.5 w-3.5" /> Link to Assignment
+              <span className="inline-flex items-center justify-center rounded-full bg-indigo-500/30 px-1.5 text-[10px]">{eligibleTasks.length}</span>
+              <ChevronUp className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      )}
     </section>
+    </LabSnapshotCtx.Provider>
   );
 }
 
