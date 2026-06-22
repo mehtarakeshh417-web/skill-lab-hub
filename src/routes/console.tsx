@@ -566,21 +566,46 @@ function PlaceholderPanel({ role }: { role: Role }) {
 }
 
 // =========================================================================
-// School Admin Panel
+// Shared School Store (teachers + classes)
 // =========================================================================
 
-const TECHS = ["HTML", "CSS", "Python", "Scratch", "Java", "MySQL", "JavaScript", "C++", "MS Word", "MS Excel"] as const;
+const TECHS = [
+  "Scratch Junior", "Scratch", "HTML", "Python", "Java", "MySQL",
+  "Word Processor", "Spreadsheet", "Presentation", "Paint",
+] as const;
 type Tech = typeof TECHS[number];
 
-type SchoolTeacher = { id: string; code: string; name: string; expertise: Tech[] };
-const SCHOOL_TEACHERS: SchoolTeacher[] = [
-  { id: "t1", code: "EMP-014-01", name: "Anita Rao", expertise: ["Python", "MySQL"] },
-  { id: "t2", code: "EMP-014-02", name: "Rakesh Verma", expertise: ["HTML", "CSS", "Scratch"] },
-  { id: "t3", code: "EMP-014-03", name: "Priya Sharma", expertise: ["Java", "C++"] },
-  { id: "t4", code: "EMP-014-04", name: "Sandeep Mehta", expertise: ["MS Word", "MS Excel"] },
-  { id: "t5", code: "EMP-014-05", name: "Neha Kapoor", expertise: ["JavaScript", "HTML"] },
-  { id: "t6", code: "EMP-014-06", name: "Vikram Joshi", expertise: ["Python", "Scratch"] },
+type SchoolTeacher = {
+  id: string;
+  code: string;
+  name: string;
+  expertise: Tech[];
+  sectionIds: string[];
+  status: "Active" | "Inactive";
+  email: string;
+  mobile: string;
+};
+
+let _teachers: SchoolTeacher[] = [
+  { id: "t1", code: "EMP-014-01", name: "Anita Rao",      expertise: ["Python", "MySQL"],           sectionIds: ["c6-A", "c9-A"], status: "Active",   email: "anita@mta.in",   mobile: "+91 98765 11111" },
+  { id: "t2", code: "EMP-014-02", name: "Rakesh Verma",   expertise: ["HTML", "Scratch"],            sectionIds: ["c1-A", "c2-A"], status: "Active",   email: "rakesh@mta.in",  mobile: "+91 98765 22222" },
+  { id: "t3", code: "EMP-014-03", name: "Priya Sharma",   expertise: ["Java"],                       sectionIds: ["c9-A"],          status: "Active",   email: "priya@mta.in",   mobile: "+91 98765 33333" },
+  { id: "t4", code: "EMP-014-04", name: "Sandeep Mehta",  expertise: ["Word Processor", "Spreadsheet", "Presentation"], sectionIds: ["c7-A", "c8-A"], status: "Inactive", email: "sandeep@mta.in", mobile: "+91 98765 44444" },
+  { id: "t5", code: "EMP-014-05", name: "Neha Kapoor",    expertise: ["Paint", "HTML"],              sectionIds: ["c3-A"],          status: "Active",   email: "neha@mta.in",    mobile: "+91 98765 55555" },
+  { id: "t6", code: "EMP-014-06", name: "Vikram Joshi",   expertise: ["Scratch Junior", "Scratch"],  sectionIds: ["c1-B", "c2-B"], status: "Active",   email: "vikram@mta.in",  mobile: "+91 98765 66666" },
 ];
+const teacherListeners = new Set<() => void>();
+function setTeachers(updater: (t: SchoolTeacher[]) => SchoolTeacher[]) {
+  _teachers = updater(_teachers);
+  teacherListeners.forEach((l) => l());
+}
+function useTeachers() {
+  return useSyncExternalStore(
+    (cb) => { teacherListeners.add(cb); return () => teacherListeners.delete(cb); },
+    () => _teachers,
+    () => _teachers,
+  );
+}
 
 type SectionRec = { id: string; defaultLabel: string; label: string; students: number };
 type ClassRec = { grade: number; sections: SectionRec[] };
