@@ -705,7 +705,7 @@ function SchoolAdminPanel() {
         <h2 className="mb-2 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">School Dashboard</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
-            { label: "Teachers", value: SCHOOL_TEACHERS.length, icon: GraduationCap, color: "from-violet-500/20 to-violet-500/0" },
+            { label: "Teachers", value: teachers.length, icon: GraduationCap, color: "from-violet-500/20 to-violet-500/0" },
             { label: "Students", value: totalStudents, icon: Users, color: "from-sky-500/20 to-sky-500/0" },
             { label: "Classes", value: classes.length, icon: BookOpen, color: "from-indigo-500/20 to-indigo-500/0" },
             { label: "Sections", value: totalSections, icon: Layers, color: "from-emerald-500/20 to-emerald-500/0" },
@@ -892,8 +892,8 @@ function SchoolAdminPanel() {
             </thead>
             <tbody className="divide-y divide-border/40">
               {mappings.map((m, i) => {
-                const teacher = SCHOOL_TEACHERS.find((t) => t.id === m.teacherId)!;
-                const compatible = teacher.expertise.includes(m.tech);
+                const teacher = teachers.find((t) => t.id === m.teacherId);
+                const compatible = teacher ? teacher.expertise.includes(m.tech) : false;
                 const secs = sectionsLookup(m.classGrade);
                 return (
                   <tr key={m.id} className="hover:bg-accent/20">
@@ -926,7 +926,7 @@ function SchoolAdminPanel() {
                         onChange={(e) => updateMapping(m.id, { teacherId: e.target.value })}
                         className="h-7 rounded-md border border-border/60 bg-background/60 px-1.5 text-xs outline-none focus:border-primary/60"
                       >
-                        {SCHOOL_TEACHERS.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        {teachers.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                       </select>
                     </td>
                     <td className="px-3 py-1.5">
@@ -943,7 +943,7 @@ function SchoolAdminPanel() {
                     </td>
                     <td className="px-3 py-1.5">
                       <div className="flex flex-wrap gap-1">
-                        {teacher.expertise.map((e) => (
+                        {(teacher?.expertise ?? []).map((e: Tech) => (
                           <span key={e} className={cn(
                             "rounded-full border px-1.5 py-0.5 text-[9px] font-mono",
                             e === m.tech ? "border-primary/50 bg-primary/15 text-primary" : "border-border/60 text-muted-foreground"
