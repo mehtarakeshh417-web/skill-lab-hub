@@ -3530,6 +3530,15 @@ function TaskManagementPanel() {
                         <Send className="h-3 w-3" /> Publish
                       </button>
                     )}
+                    {t.type === "project" && t.status === "active" && (
+                      <button
+                        onClick={() => setRubricTask(t)}
+                        className="group/eval relative inline-flex items-center gap-1 overflow-hidden rounded-md border border-fuchsia-400/40 bg-gradient-to-r from-fuchsia-500/15 to-indigo-500/15 px-2 py-1 text-[10px] font-bold text-fuchsia-200 shadow-[0_0_14px_-4px_rgba(217,70,239,0.6)] transition-all hover:scale-[1.04] hover:border-fuchsia-400/70 hover:text-fuchsia-100"
+                      >
+                        <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover/eval:translate-x-full" />
+                        <Award className="relative h-3 w-3" /> Rubric
+                      </button>
+                    )}
                     {t.status !== "archived" && (
                       <button onClick={() => archiveTask(t.id)} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-[10px] hover:border-amber-400/50 hover:text-amber-200">
                         <Archive className="h-3 w-3" /> Archive
