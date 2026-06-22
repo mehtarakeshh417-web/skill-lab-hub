@@ -1640,11 +1640,14 @@ function TeacherManagementPanel({ maskPII }: { maskPII: boolean }) {
 
   const toggleStatus = (id: string) => {
     setTeachers((arr) => arr.map((t) => t.id === id ? { ...t, status: t.status === "Active" ? "Inactive" : "Active" } : t));
+    const t = _teachers.find((x) => x.id === id);
+    if (t) toast.success("Account Status Updated", { description: `${t.name} → ${t.status === "Active" ? "Inactive" : "Active"}` });
   };
   const remove = (id: string) => {
     if (!confirm("Remove this teacher from the roster?")) return;
     setTeachers((arr) => arr.filter((t) => t.id !== id));
     if (editingId === id) cancelEdit();
+    toast.success("Teacher removed from roster");
   };
 
   const mask = (v: string) => v ? "•".repeat(Math.min(10, Math.max(6, v.length))) : "—";
