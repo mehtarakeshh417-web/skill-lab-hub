@@ -3560,6 +3560,12 @@ function TaskManagementPanel() {
           )}
         </div>
       </section>
+
+      <InnovationGallery />
+
+      {rubricTask && (
+        <RubricEvaluationModal task={rubricTask} onClose={() => setRubricTask(null)} />
+      )}
     </div>
   );
 }
