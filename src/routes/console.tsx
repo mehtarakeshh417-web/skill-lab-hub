@@ -2555,6 +2555,90 @@ function TaskManagementPanel() {
   const [tab, setTab] = useState<TaskStatus>("active");
   const [flash, setFlash] = useState<string | null>(null);
 
+  // ===== Quiz Builder State =====
+  const [quizStructure, setQuizStructure] = useState<QuizStructure>("mcq");
+  const [numQuestions, setNumQuestions] = useState<number>(5);
+  const [marksPerQ, setMarksPerQ] = useState<number>(2);
+  const [method, setMethod] = useState<"manual" | "gemini">("manual");
+  const [aiTopic, setAiTopic] = useState<string>("");
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
+
+  const newQid = () => `q${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
+  const blankQuestionOfKind = (kind: QuizKind): QuizQuestion => {
+    if (kind === "mcq") return { id: newQid(), kind, question: "", options: ["", "", "", ""], correctIndex: 0 };
+    if (kind === "tf")  return { id: newQid(), kind, question: "", correctBool: true };
+    return { id: newQid(), kind: "fill", question: "The capital of France is ____.", answer: "" };
+  };
+  const pickKindForStructure = (s: QuizStructure, i: number): QuizKind => {
+    if (s === "hybrid") return (["mcq", "tf", "fill"] as QuizKind[])[i % 3];
+    return s as QuizKind;
+  };
+  const seedManualQuiz = () => {
+    const next: QuizQuestion[] = [];
+    for (let i = 0; i < numQuestions; i++) next.push(blankQuestionOfKind(pickKindForStructure(quizStructure, i)));
+    setQuiz(next);
+  };
+  const updateQuestion = (id: string, patch: Partial<QuizQuestion>) =>
+    setQuiz((qs) => qs.map((q) => (q.id === id ? { ...q, ...patch } as QuizQuestion : q)));
+  const updateOption = (id: string, idx: number, value: string) =>
+    setQuiz((qs) => qs.map((q) => q.id === id && q.options ? { ...q, options: q.options.map((o, i) => i === idx ? value : o) } : q));
+  const deleteQuestion = (id: string) => setQuiz((qs) => qs.filter((q) => q.id !== id));
+  const addQuestion = (kind: QuizKind) => setQuiz((qs) => [...qs, blankQuestionOfKind(kind)]);
+
+  const generateWithGemini = async () => {
+    if (!aiTopic.trim()) { setAiError("Enter a topic to generate."); return; }
+    setAiLoading(true); setAiError(null);
+    const structureDesc = quizStructure === "hybrid"
+      ? "a mix of multiple-choice, true/false, and fill-in-the-blank"
+      : quizStructure === "mcq" ? "multiple-choice questions only"
+      : quizStructure === "tf" ? "true/false questions only"
+      : "fill-in-the-blank questions only";
+    const schema = `Each item in the array MUST match one of these shapes exactly:
+{"kind":"mcq","question":"...","options":["A","B","C","D"],"correctIndex":0}
+{"kind":"tf","question":"...","correctBool":true}
+{"kind":"fill","question":"sentence with ____ blank","answer":"..."}`;
+    const sys = `You are an assessment generator. Return ONLY a JSON array (no prose, no markdown fences) of exactly ${numQuestions} questions about "${aiTopic.trim()}" at ${aiDifficulty.toUpperCase()} difficulty. Use ${structureDesc}. ${schema}`;
+    try {
+      const apiKey = "AIzaSyDO1AYYJEn8Xs16v93_sMeyT_n3wJEp1JM";
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: sys }] }],
+          generationConfig: { temperature: 0.7, responseMimeType: "application/json" },
+        }),
+      });
+      if (!res.ok) throw new Error(`Gemini ${res.status}`);
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]";
+      const cleaned = text.replace(/```json|```/g, "").trim();
+      const arr = JSON.parse(cleaned);
+      if (!Array.isArray(arr)) throw new Error("Bad response shape");
+      const normalized: QuizQuestion[] = arr.slice(0, numQuestions).map((q: any) => {
+        const kind: QuizKind = q.kind === "tf" || q.kind === "fill" ? q.kind : "mcq";
+        if (kind === "mcq") {
+          const opts = Array.isArray(q.options) && q.options.length >= 2 ? q.options.slice(0, 4).map(String) : ["", "", "", ""];
+          while (opts.length < 4) opts.push("");
+          return { id: newQid(), kind, question: String(q.question ?? ""), options: opts, correctIndex: Math.max(0, Math.min(opts.length - 1, Number(q.correctIndex) || 0)) };
+        }
+        if (kind === "tf") {
+          return { id: newQid(), kind, question: String(q.question ?? ""), correctBool: Boolean(q.correctBool) };
+        }
+        return { id: newQid(), kind: "fill", question: String(q.question ?? ""), answer: String(q.answer ?? "") };
+      });
+      if (normalized.length === 0) throw new Error("No questions returned");
+      setQuiz(normalized);
+    } catch (e: any) {
+      setAiError(e?.message ?? "Generation failed. Try a different topic.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const sectionLabel = (sid: string) => {
     for (const c of classes) {
       const s = c.sections.find((x) => x.id === sid);
