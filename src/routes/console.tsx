@@ -3720,3 +3720,260 @@ function PaintLab() {
     </div>
   );
 }
+
+// =========================================================================
+// Digital Portfolio Hub + Snapshot Viewer Modal
+// =========================================================================
+function PortfolioHub({ studentId }: { studentId: string }) {
+  const portfolio = usePortfolio();
+  const mine = useMemo(
+    () => portfolio.filter((p) => p.studentId === studentId).sort((a, b) => b.createdAt - a.createdAt),
+    [portfolio, studentId]
+  );
+  const [filter, setFilter] = useState<"all" | PortfolioStatus>("all");
+  const [viewing, setViewing] = useState<PortfolioItem | null>(null);
+  const shown = mine.filter((p) => filter === "all" || p.status === filter);
+
+  const counts = {
+    all: mine.length,
+    draft: mine.filter((p) => p.status === "draft").length,
+    submitted: mine.filter((p) => p.status === "submitted").length,
+    evaluated: mine.filter((p) => p.status === "evaluated").length,
+  };
+
+  const statusMeta: Record<PortfolioStatus, { label: string; cls: string }> = {
+    draft: { label: "Draft", cls: "border-amber-400/40 bg-amber-500/10 text-amber-200" },
+    submitted: { label: "Submitted for Review", cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200" },
+    evaluated: { label: "Graded", cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200" },
+  };
+
+  const removeItem = (id: string) => setPortfolio((p) => p.filter((x) => x.id !== id));
+
+  return (
+    <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-fuchsia-950/20 p-4 shadow-[0_24px_60px_-30px_rgba(217,70,239,0.4)] backdrop-blur-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+            <FolderKanban className="h-3 w-3" /> Digital Portfolio Hub
+          </div>
+          <h3 className="mt-1 font-display text-base font-bold tracking-tight">Every lab artefact you've saved, in one place.</h3>
+        </div>
+        <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 p-1">
+          {(["all", "draft", "submitted", "evaluated"] as const).map((f) => {
+            const active = filter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-all capitalize",
+                  active
+                    ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {f === "all" ? "All" : statusMeta[f].label}
+                <span className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-bold", active ? "bg-white/20" : "bg-muted/60 text-foreground")}>{counts[f]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {shown.length === 0 ? (
+        <div className="mt-4 rounded-xl border border-dashed border-border/60 bg-background/30 p-8 text-center text-[12px] text-muted-foreground">
+          Nothing here yet — open a lab, build something, then tap <span className="text-indigo-300 font-semibold">Save Draft</span> or <span className="text-fuchsia-300 font-semibold">Submit Assignment</span>.
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {shown.map((item) => {
+            const Icon = LAB_ICON[item.snapshot.kind];
+            const tint = LAB_TINT[item.snapshot.kind];
+            const sm = statusMeta[item.status];
+            return (
+              <article
+                key={item.id}
+                className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-900/30 p-3 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_18px_50px_-15px_rgba(99,102,241,0.45)]"
+              >
+                <div className={cn("pointer-events-none absolute -inset-12 rounded-full bg-gradient-to-br opacity-30 blur-3xl transition-opacity group-hover:opacity-60", tint)} />
+                <div className="relative flex items-start gap-2.5">
+                  <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-950/70 ring-1 ring-white/5">
+                    <Icon className="h-4 w-4 text-indigo-200" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[12px] font-semibold">{item.snapshot.labName}</div>
+                    <div className="truncate text-[10px] text-muted-foreground">
+                      {item.taskTitle ? `↳ ${item.taskTitle}` : "Personal practice"}
+                    </div>
+                  </div>
+                  <span className={cn("rounded-full border px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap", sm.cls)}>{sm.label}</span>
+                </div>
+
+                <div className="relative mt-3 grid grid-cols-2 gap-2 text-[10px] text-muted-foreground">
+                  <div className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {formatTime(item.createdAt)}</div>
+                  <div className="inline-flex items-center justify-end gap-1"><FileText className="h-3 w-3" /> {formatBytes(item.snapshot.bytes)}</div>
+                </div>
+
+                <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-2.5">
+                  <button
+                    onClick={() => setViewing(item)}
+                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10.5px] font-semibold hover:border-indigo-400/40 hover:bg-white/[0.08]"
+                  >
+                    <Eye className="h-3 w-3" /> View Snapshot
+                  </button>
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className="inline-flex items-center justify-center rounded-md border border-white/10 px-1.5 py-1 text-muted-foreground hover:border-rose-400/50 hover:text-rose-200"
+                    aria-label="Remove"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {viewing && <SnapshotViewer item={viewing} onClose={() => setViewing(null)} />}
+    </section>
+  );
+}
+
+function SnapshotViewer({ item, onClose }: { item: PortfolioItem; onClose: () => void }) {
+  const s = item.snapshot;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950 to-slate-900 shadow-[0_40px_100px_-20px_rgba(99,102,241,0.45)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
+          <div className="min-w-0">
+            <div className="text-[10px] uppercase tracking-wider text-indigo-200">Snapshot · {formatTime(item.createdAt)}</div>
+            <div className="truncate text-sm font-semibold">{s.labName}{item.taskTitle ? ` · ${item.taskTitle}` : ""}</div>
+          </div>
+          <button onClick={onClose} className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground">Close ×</button>
+        </div>
+        <div className="max-h-[72vh] overflow-auto p-4">
+          <SnapshotRenderer snapshot={s} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SnapshotRenderer({ snapshot }: { snapshot: LabSnapshot }) {
+  const s = snapshot;
+  if (s.kind === "html") {
+    const p = s.payload as { html: string; css: string };
+    return (
+      <div className="grid gap-3 lg:grid-cols-2">
+        <iframe title="snap" srcDoc={s.preview} sandbox="allow-scripts allow-modals" className="h-[360px] w-full rounded-lg border border-white/10 bg-white" />
+        <pre className="max-h-[360px] overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-emerald-200">{p.html}\n\n/* css */\n{p.css}</pre>
+      </div>
+    );
+  }
+  if (s.kind === "sql") {
+    const p = s.payload as { query: string; cols: string[]; rows: Record<string, string|number>[]; error?: string };
+    return (
+      <div className="space-y-3">
+        <pre className="rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[12px] text-emerald-200">{p.query}</pre>
+        {p.error ? (
+          <div className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-3 text-[12px] text-rose-200">⚠ {p.error}</div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-white/10">
+            <table className="w-full text-[11px]">
+              <thead className="bg-white/[0.04] text-[10px] uppercase text-indigo-200">
+                <tr>{p.cols.map((c) => <th key={c} className="px-3 py-2 text-left">{c}</th>)}</tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {p.rows.map((r, i) => (
+                  <tr key={i}>{p.cols.map((c) => <td key={c} className="px-3 py-1.5 font-mono">{String(r[c] ?? "")}</td>)}</tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+  if (s.kind === "java") {
+    const p = s.payload as { code: string; out: string[]; mode: string };
+    return (
+      <div className="grid gap-3 lg:grid-cols-2">
+        <pre className="max-h-[420px] overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-amber-200">{p.code}</pre>
+        <pre className="max-h-[420px] overflow-auto rounded-lg border border-white/10 bg-black p-3 font-mono text-[11px] text-emerald-300">{p.out.length ? p.out.join("\n") : "(no output captured)"}</pre>
+      </div>
+    );
+  }
+  if (s.kind === "scratchjr") {
+    const p = s.payload as { program: { kind: string }[] };
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {p.program.map((b, i) => (
+          <span key={i} className="rounded-md bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-1 text-[11px] font-semibold text-white">{b.kind}</span>
+        ))}
+        {p.program.length === 0 && <span className="text-[11px] text-muted-foreground">Empty program</span>}
+      </div>
+    );
+  }
+  if (s.kind === "word") {
+    return (
+      <div
+        className="min-h-[200px] rounded-lg border border-white/10 bg-white p-6 text-[13px] leading-relaxed text-slate-900 shadow-inner"
+        style={{ fontFamily: "'Georgia', serif" }}
+        dangerouslySetInnerHTML={{ __html: (s.payload as { html: string }).html || "(empty document)" }}
+      />
+    );
+  }
+  if (s.kind === "excel") {
+    const grid = (s.payload as { grid: Record<string, string> }).grid;
+    const cells = Object.entries(grid);
+    return (
+      <div className="overflow-x-auto rounded-lg border border-white/10">
+        <table className="w-full text-[11px]">
+          <thead className="bg-white/[0.04] text-[10px] uppercase text-indigo-200">
+            <tr><th className="px-3 py-2 text-left">Cell</th><th className="px-3 py-2 text-left">Value</th></tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {cells.map(([k, v]) => (
+              <tr key={k}><td className="px-3 py-1.5 font-mono text-indigo-200">{k}</td><td className="px-3 py-1.5 font-mono">{v}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  if (s.kind === "ppt") {
+    const p = s.payload as { slides: { id: string; title: string; body: string; theme: string }[] };
+    return (
+      <div className="grid gap-3 sm:grid-cols-2">
+        {p.slides.map((sl, i) => (
+          <div key={sl.id} className={cn("aspect-video overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br p-4", sl.theme)}>
+            <div className="text-[10px] text-white/70">Slide {i + 1}</div>
+            <div className="mt-1 text-lg font-bold text-white">{sl.title}</div>
+            <div className="mt-2 whitespace-pre-wrap text-[12px] text-white/90">{sl.body}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (s.kind === "paint") {
+    const url = (s.payload as { dataUrl: string }).dataUrl;
+    return url
+      ? <img src={url} alt="snapshot" className="mx-auto max-h-[60vh] rounded-lg border border-white/10 bg-white" />
+      : <div className="text-[12px] text-muted-foreground">Canvas was empty at capture.</div>;
+  }
+  // scratch / fallback
+  return (
+    <pre className="overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-indigo-200">
+      {JSON.stringify(s.payload, null, 2)}
+    </pre>
+  );
+}
