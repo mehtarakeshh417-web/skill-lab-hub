@@ -10,6 +10,7 @@ import {
   generatePassword,
   type SchoolRegistration,
 } from "@/lib/registrations";
+import { registerMockAccount } from "@/lib/mock-auth";
 import {
   Bell, ShieldCheck, Users, School2, GraduationCap, Briefcase,
   CheckCircle2, XCircle, Search, ChevronDown, Eye, EyeOff,
@@ -6051,13 +6052,24 @@ function PortalManagerDashboard({
       return;
     }
     const city = window.prompt("City") || "—";
+    const upperCode = code.toUpperCase();
+    const username = (window.prompt("Login username for this school (used to sign in)", upperCode.toLowerCase()) || upperCode.toLowerCase()).trim();
+    const password = generatePassword(10);
     setSchools((arr) => [{
-      id: `s-${Date.now()}`, code: code.toUpperCase(), name, city,
+      id: `s-${Date.now()}`, code: upperCode, name, city,
       status: "Approved", email: "Masked for Privacy", mobile: "Masked for Privacy",
       created: new Date().toISOString().slice(0, 10), disabled: false,
     }, ...arr]);
-    log("CREATED_SCHOOL", code.toUpperCase());
-    toast.success("School added", { description: code.toUpperCase() });
+    const reg = registerMockAccount({
+      username, password, role: "school", fullName: name,
+      email: `${username}@avartan.app`, schoolCode: upperCode, schoolName: name,
+    });
+    log("CREATED_SCHOOL", upperCode);
+    toast.success("School added", {
+      description: reg.ok
+        ? `${upperCode} · login: ${username} / ${password}`
+        : `${upperCode} (login skipped: ${reg.reason})`,
+    });
   };
   const toggleSchool = (id: string) => {
     setSchools((arr) => arr.map((s) => s.id === id ? { ...s, disabled: !s.disabled } : s));
@@ -6092,13 +6104,25 @@ function PortalManagerDashboard({
     const schoolCode = window.prompt(`Assign to school (one of: ${schoolCodes})`) || schools[0]?.code;
     const sch = schools.find((s) => s.code === schoolCode);
     if (!sch) { toast.error("Unknown school code"); return; }
+    const username = (window.prompt("Login username for this teacher", code.toLowerCase()) || code.toLowerCase()).trim();
+    const password = generatePassword(10);
     setTeachers((arr) => [{
       id: `t-${Date.now()}`, school_id: sch.id, code, name,
       expertise: ["HTML"], classes: ["VIII-A"], status: "Active",
       mobile: "Masked for Privacy", email: "Masked for Privacy", disabled: false,
     }, ...arr]);
+    const reg = registerMockAccount({
+      username, password, role: "teacher", fullName: name,
+      email: `${username}@avartan.app`,
+      schoolCode: sch.code, schoolName: sch.name,
+      teacherId: code, teacherName: name,
+    });
     log("CREATED_TEACHER", code);
-    toast.success("Teacher onboarded", { description: `${name} · ${sch.code}` });
+    toast.success("Teacher onboarded", {
+      description: reg.ok
+        ? `${name} · ${sch.code} · login: ${username} / ${password}`
+        : `${name} · ${sch.code} (login skipped: ${reg.reason})`,
+    });
   };
 
   const toggleStudent = (id: string) => {
@@ -6118,13 +6142,28 @@ function PortalManagerDashboard({
     const cls = window.prompt("Class (e.g. VIII-A)") || "VIII-A";
     const sch = schools[0];
     if (!sch) { toast.error("No schools available"); return; }
+    const admission = `ADM-${1000 + Math.floor(Math.random() * 9000)}`;
+    const username = (window.prompt("Login username for this student", admission.toLowerCase()) || admission.toLowerCase()).trim();
+    const password = generatePassword(10);
+    const firstTeacher = teachers.find((t) => t.school_id === sch.id);
     setStudents((arr) => [{
       id: `st-${Date.now()}`, school_id: sch.id, class: cls,
-      admission: `ADM-${1000 + Math.floor(Math.random() * 9000)}`, name,
+      admission, name,
       status: "Active", mobile: "Masked for Privacy", email: "Masked for Privacy", disabled: false,
     }, ...arr]);
+    const reg = registerMockAccount({
+      username, password, role: "student", fullName: name,
+      email: `${username}@avartan.app`,
+      schoolCode: sch.code, schoolName: sch.name,
+      teacherId: firstTeacher?.code, teacherName: firstTeacher?.name,
+      classSection: cls, meta: { admissionId: admission },
+    });
     log("CREATED_STUDENT", name);
-    toast.success("Student enrolled", { description: name });
+    toast.success("Student enrolled", {
+      description: reg.ok
+        ? `${name} · login: ${username} / ${password}`
+        : `${name} (login skipped: ${reg.reason})`,
+    });
   };
   const bulkUploadStudents = () => {
     const n = Number(window.prompt("Simulate CSV upload — how many students? (max 25)") || 0);
@@ -6158,12 +6197,24 @@ function PortalManagerDashboard({
   const addRep = () => {
     const name = window.prompt("Sales rep name"); if (!name) return;
     const region = window.prompt("Region (e.g. South · Chennai)") || "—";
+    const code = `REP-X-${String(reps.length + 1).padStart(3, "0")}`;
+    const username = (window.prompt("Login username for this sales rep", code.toLowerCase()) || code.toLowerCase()).trim();
+    const password = generatePassword(10);
     setReps((arr) => [{
-      id: `sr-${Date.now()}`, code: `REP-X-${String(arr.length + 1).padStart(3, "0")}`, name, region,
+      id: `sr-${Date.now()}`, code, name, region,
       schools: [], status: "Active", mobile: "Masked for Privacy", email: "Masked for Privacy",
     }, ...arr]);
+    // Sales reps map into the admin role family so they can survey their territory.
+    const reg = registerMockAccount({
+      username, password, role: "admin", fullName: name,
+      email: `${username}@avartan.app`, meta: { repCode: code, region },
+    });
     log("CREATED_REP", name);
-    toast.success("Sales rep added", { description: name });
+    toast.success("Sales rep added", {
+      description: reg.ok
+        ? `${name} · login: ${username} / ${password}`
+        : `${name} (login skipped: ${reg.reason})`,
+    });
   };
   const assignSchoolToRep = (id: string) => {
     const codes = schools.map((s) => s.code).join(", ");

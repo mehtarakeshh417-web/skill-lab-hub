@@ -1,6 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
+import {
+  getMockSession,
+  mockSignOut,
+  seedDefaultMockAccounts,
+  subscribeMockSession,
+  type MockSession,
+} from "./mock-auth";
 
 export type AppRole = "admin" | "portal_manager" | "school" | "teacher" | "student";
 
@@ -24,8 +31,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mock, setMock] = useState<MockSession | null>(null);
 
   useEffect(() => {
+    // Make sure the five default seed accounts exist before anything else.
+    seedDefaultMockAccounts();
+    const initialMock = getMockSession();
+    if (initialMock) {
+      setMock(initialMock);
+      setRole(initialMock.role);
+      setLoading(false);
+    }
+    const unsubMock = subscribeMockSession(() => {
+      const next = getMockSession();
+      setMock(next);
+      if (next) {
+        setRole(next.role);
+        setLoading(false);
+      } else if (!session) {
+        setRole(null);
+      }
+    });
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s?.user) {
@@ -42,25 +69,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
         }, 0);
       } else {
-        setRole(null);
+        if (!getMockSession()) {
+          setRole(null);
+        }
         setLoading(false);
       }
     });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (!data.session) setLoading(false);
+      if (!data.session && !getMockSession()) setLoading(false);
     });
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      sub.subscription.unsubscribe();
+      unsubMock();
+    };
   }, []);
 
+  const mockUser: User | null = mock
+    ? ({
+        id: `mock-${mock.username}`,
+        email: mock.email,
+        user_metadata: { full_name: mock.fullName, username: mock.username },
+        app_metadata: { provider: "mock" },
+        aud: "authenticated",
+        created_at: new Date(mock.issuedAt).toISOString(),
+      } as unknown as User)
+    : null;
+
   const value: AuthState = {
-    user: session?.user ?? null,
+    user: session?.user ?? mockUser,
     session,
     role,
     loading,
     signOut: async () => {
+      mockSignOut();
+      setMock(null);
+      setRole(null);
       await supabase.auth.signOut();
     },
   };

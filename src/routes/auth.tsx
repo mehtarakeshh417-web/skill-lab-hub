@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, ROLE_HOME } from "@/lib/auth";
+import { mockSignIn } from "@/lib/mock-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +39,16 @@ function AuthPage() {
     e.preventDefault();
     if (!identifier || !password) return;
     setSubmitting(true);
+    // 1) Mock-auth seed matrix takes priority (admin/manager/school/teacher/student)
+    const mock = mockSignIn(identifier, password);
+    if (mock.ok && mock.session) {
+      setSubmitting(false);
+      toast.success(`Welcome, ${mock.session.fullName}`, {
+        description: `Signed in as ${mock.session.role.replace("_", " ")}`,
+      });
+      navigate({ to: ROLE_HOME[mock.session.role], replace: true });
+      return;
+    }
     const email = resolveEmail(identifier);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
@@ -83,6 +94,15 @@ function AuthPage() {
               </div>
               <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                 <span>manager</span><span className="text-primary-foreground/80">manager123</span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                <span>school</span><span className="text-primary-foreground/80">school123</span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                <span>teacher</span><span className="text-primary-foreground/80">teacher123</span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                <span>student</span><span className="text-primary-foreground/80">student123</span>
               </div>
             </div>
           </div>
