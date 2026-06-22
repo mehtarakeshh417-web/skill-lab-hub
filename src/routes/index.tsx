@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/lib/theme";
+import {
+  addRegistration,
+  isSchoolCodeTaken,
+  useRegistrations,
+} from "@/lib/registrations";
 import {
   Code2,
   Sparkles,
@@ -25,6 +32,14 @@ import {
   Users,
   Cpu,
   Play,
+  Building2,
+  UserSquare2,
+  MapPin,
+  Briefcase,
+  ClipboardList,
+  Loader2,
+  AlertCircle,
+  Send,
 } from "lucide-react";
 import auroraImg from "@/assets/aurora.jpg";
 
@@ -73,6 +88,7 @@ function Landing() {
       <Technologies />
       <FeatureBento />
       <Roles />
+      <RegisterSchool />
       <Testimonials />
       <CTA />
       <Footer />
