@@ -1869,6 +1869,79 @@ function useTasks() {
   );
 }
 
+// ========================================================================
+// Portfolio store + Lab → Assignment snapshot registry
+// ========================================================================
+export type LabKind = "html" | "sql" | "java" | "scratch" | "scratchjr" | "word" | "excel" | "ppt" | "paint";
+export type LabSnapshot = {
+  kind: LabKind;
+  labName: string;
+  payload: unknown;
+  preview?: string; // html string OR data URL OR text
+  previewKind?: "html" | "image" | "text" | "grid" | "slides" | "blocks";
+  bytes: number;
+};
+export type PortfolioStatus = "draft" | "submitted" | "evaluated";
+export type PortfolioItem = {
+  id: string;
+  studentId: string;
+  taskId?: string;
+  taskTitle?: string;
+  status: PortfolioStatus;
+  createdAt: number;
+  grade?: number;
+  snapshot: LabSnapshot;
+};
+let _portfolio: PortfolioItem[] = [];
+const portfolioListeners = new Set<() => void>();
+function setPortfolio(updater: (p: PortfolioItem[]) => PortfolioItem[]) {
+  _portfolio = updater(_portfolio);
+  portfolioListeners.forEach((l) => l());
+}
+function usePortfolio() {
+  return useSyncExternalStore(
+    (cb) => { portfolioListeners.add(cb); return () => portfolioListeners.delete(cb); },
+    () => _portfolio,
+    () => _portfolio,
+  );
+}
+
+type SnapshotGetter = () => LabSnapshot | null;
+const LabSnapshotCtx = createContext<{ register: (g: SnapshotGetter | null) => void }>({ register: () => {} });
+function useRegisterSnapshot(getter: SnapshotGetter, deps: ReadonlyArray<unknown>) {
+  const { register } = useContext(LabSnapshotCtx);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { register(getter); return () => register(null); }, deps);
+}
+
+function approxBytes(v: unknown): number {
+  try { return new Blob([typeof v === "string" ? v : JSON.stringify(v)]).size; } catch { return 0; }
+}
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(2)} MB`;
+}
+function formatTime(ts: number): string {
+  const d = new Date(ts);
+  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+const LAB_ICON: Record<LabKind, typeof Code2> = {
+  html: Code2, sql: Database, java: Coffee, scratch: Cat, scratchjr: Baby,
+  word: FileType2, excel: Sheet, ppt: Presentation, paint: Palette,
+};
+const LAB_TINT: Record<LabKind, string> = {
+  html: "from-orange-500/30 to-rose-500/20",
+  sql: "from-sky-500/30 to-indigo-500/20",
+  java: "from-amber-500/30 to-orange-500/20",
+  scratch: "from-amber-400/30 to-yellow-500/20",
+  scratchjr: "from-pink-500/30 to-fuchsia-500/20",
+  word: "from-blue-500/30 to-indigo-500/20",
+  excel: "from-emerald-500/30 to-teal-500/20",
+  ppt: "from-rose-500/30 to-orange-500/20",
+  paint: "from-fuchsia-500/30 to-violet-500/20",
+};
+
 function TaskManagementPanel() {
   const tasks = useTasks();
   const students = useStudents();
