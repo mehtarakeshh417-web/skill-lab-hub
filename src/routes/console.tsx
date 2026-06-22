@@ -73,6 +73,16 @@ const seedAudit: AuditEntry[] = [
   { id: "a3", ts: "2026-06-21 17:32", actor: "admin", action: "DISABLED_USER", target: "school:SCH-HYD-007" },
   { id: "a4", ts: "2026-06-21 14:08", actor: "manager", action: "REJECTED_SCHOOL", target: "SCH-HYD-007" },
   { id: "a5", ts: "2026-06-20 11:00", actor: "system", action: "PURGED_DELETED_ENTRIES", target: "batch:2026-06-W3" },
+  { id: "a6", ts: "2026-06-20 09:42", actor: "teacher:anita", action: "PUBLISHED_ASSIGNMENT", target: "task:Python Loops" },
+  { id: "a7", ts: "2026-06-19 18:27", actor: "system", action: "BACKUP_COMPLETED", target: "snapshot:nightly-0619" },
+  { id: "a8", ts: "2026-06-19 16:11", actor: "admin", action: "API_KEY_ROTATED", target: "key:gemini-prod" },
+  { id: "a9", ts: "2026-06-19 12:03", actor: "school:s2", action: "ADDED_TEACHER", target: "EMP-014-06" },
+  { id: "a10", ts: "2026-06-18 21:48", actor: "system", action: "RATE_LIMIT_RESET", target: "gateway:gemini" },
+  { id: "a11", ts: "2026-06-18 15:30", actor: "teacher:rakesh", action: "EVALUATED_SUBMISSION", target: "portfolio:pf-2206-html" },
+  { id: "a12", ts: "2026-06-18 10:15", actor: "school:s5", action: "ENROLLED_STUDENTS", target: "batch:c1-A x12" },
+  { id: "a13", ts: "2026-06-17 23:55", actor: "system", action: "STORAGE_THRESHOLD", target: "bucket:portfolio @ 72%" },
+  { id: "a14", ts: "2026-06-17 17:09", actor: "manager", action: "EXPORTED_REPORT", target: "csv:platform-weekly" },
+  { id: "a15", ts: "2026-06-17 09:22", actor: "admin", action: "GRANTED_ROLE", target: "manager:ops-priya" },
 ];
 
 // ---------- Helpers ----------
