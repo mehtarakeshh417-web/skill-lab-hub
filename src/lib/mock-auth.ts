@@ -120,6 +120,23 @@ export function listMockAccounts(): MockAccount[] {
   return readAccounts();
 }
 
+export function getMockAccount(username: string): MockAccount | undefined {
+  return readAccounts().find(
+    (a) => a.username.toLowerCase() === username.toLowerCase()
+  );
+}
+
+export function subscribeMockAccounts(cb: () => void): () => void {
+  if (!isBrowser()) return () => {};
+  const handler = () => cb();
+  window.addEventListener("avartan-mock-accounts", handler);
+  window.addEventListener("storage", handler);
+  return () => {
+    window.removeEventListener("avartan-mock-accounts", handler);
+    window.removeEventListener("storage", handler);
+  };
+}
+
 export function seedDefaultMockAccounts() {
   // Touches storage to ensure the five seeds exist on first run.
   readAccounts();
