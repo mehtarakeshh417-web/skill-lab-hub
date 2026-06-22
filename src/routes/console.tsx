@@ -298,6 +298,7 @@ function ConsolePage() {
             ) : role === "teacher" ? (
               <div className="space-y-4">
                 <StudentManagementPanel canEdit />
+                <TaskManagementPanel />
               </div>
             ) : (
               <PlaceholderPanel role={role} />
