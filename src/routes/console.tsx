@@ -14,7 +14,7 @@ import {
   Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, Eraser, Brush, ChevronLeft, ChevronRight,
   Paperclip, Image as ImageIcon, ChevronUp,
   Activity, BarChart3, LineChart, FileType, Server, Globe2, Cpu, Zap, ShieldAlert, KeyRound, RefreshCw,
-  Wand2, BrainCircuit, ListChecks, ToggleRight as ToggleRightIcon, Type as TypeIcon, Shuffle, CircleDot, CircleCheck, X as XIcon,
+  Wand2, BrainCircuit, ListChecks, Type as TypeIcon, Shuffle, CircleDot, CircleCheck, X as XIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
