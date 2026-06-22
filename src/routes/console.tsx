@@ -253,6 +253,13 @@ function ConsolePage() {
           <main className="p-4 lg:p-6">
             {showUnified ? (
               <div className="space-y-4">
+                {isAdmin && (
+                  <SuperAdminControlCenter
+                    schools={schools}
+                    audit={audit}
+                    onToggleSchool={toggleDisabled}
+                  />
+                )}
                 <UnifiedAdminPanel
                   isAdmin={isAdmin}
                   stats={stats}
