@@ -97,6 +97,7 @@ function Header() {
           <a href="#about" className="hover:text-foreground">About</a>
         </nav>
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link
             to="/auth"
             className="group relative inline-flex h-9 items-center gap-1.5 overflow-hidden rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold tracking-wide text-foreground backdrop-blur-xl transition-all duration-300 hover:border-primary/50 hover:bg-white/[0.07] hover:shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.6)]"
