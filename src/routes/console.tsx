@@ -7,6 +7,7 @@ import {
   Trash2, Filter, Download, MoreHorizontal, Lock,
   Pencil, Check, Plus, Layers, BookOpen, Save, Link2,
   UserPlus, Mail, Phone, Power, PowerOff,
+  Upload, FileSpreadsheet, Loader2, Calendar as CalendarIcon, UserCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
