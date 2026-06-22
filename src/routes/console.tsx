@@ -2394,6 +2394,20 @@ export type Task = {
   submissions: number;
   pendingEval: number;
   createdAt: string;
+  quiz?: QuizQuestion[];
+  quizMeta?: { structure: QuizStructure; marksPerQuestion: number; source: "manual" | "gemini"; topic?: string; difficulty?: "easy" | "medium" | "hard" };
+};
+
+export type QuizStructure = "mcq" | "tf" | "fill" | "hybrid";
+export type QuizKind = "mcq" | "tf" | "fill";
+export type QuizQuestion = {
+  id: string;
+  kind: QuizKind;
+  question: string;
+  options?: string[];            // mcq
+  correctIndex?: number;         // mcq
+  correctBool?: boolean;         // tf
+  answer?: string;               // fill
 };
 
 const STUDENT_GROUPS = ["Coding Club", "Robotics Squad", "Design Studio", "Math Olympiad"] as const;
