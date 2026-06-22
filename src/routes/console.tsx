@@ -2021,20 +2021,25 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
   const cancel = () => { setEditingId(null); setForm(blank()); setError(null); };
 
   const submit = () => {
-    if (!form.roll.trim() || !form.name.trim()) { setError("Roll Number and Full Name are required."); return; }
-    if (!form.dob) { setError("Date of Birth is required."); return; }
-    const clash = students.some((s) => s.roll.toLowerCase() === form.roll.trim().toLowerCase() && s.id !== editingId);
-    if (clash) { setError("Roll Number must be unique."); return; }
+    const roll = form.roll.trim();
+    const name = form.name.trim();
+    if (!roll || !name) { setError("Roll Number and Full Name are required."); toast.error("Missing required fields"); return; }
+    if (!form.dob) { setError("Date of Birth is required."); toast.error("Date of birth is required"); return; }
+    if (new Date(form.dob).getTime() > Date.now()) { setError("Date of Birth cannot be in the future."); toast.error("Invalid date of birth"); return; }
+    const clash = students.some((s) => s.roll.toLowerCase() === roll.toLowerCase() && s.id !== editingId);
+    if (clash) { setError("Roll Number must be unique."); toast.error("Roll number already exists"); return; }
 
     setSubmitting(true);
     setTimeout(() => {
       if (editingId) {
-        setStudents((arr) => arr.map((s) => s.id === editingId ? { ...s, ...form, roll: form.roll.trim(), name: form.name.trim() } : s));
+        setStudents((arr) => arr.map((s) => s.id === editingId ? { ...s, ...form, roll, name } : s));
+        toast.success("Student profile updated", { description: `${name} · ${roll}` });
       } else {
         setStudents((arr) => [
-          { id: `st${Date.now()}`, ...form, roll: form.roll.trim(), name: form.name.trim() },
+          { id: `st${Date.now()}`, ...form, roll, name },
           ...arr,
         ]);
+        toast.success("Student added to roster", { description: `${name} · Grade ${form.classGrade}` });
       }
       setSubmitting(false);
       cancel();
