@@ -101,14 +101,33 @@ function Header() {
           <ThemeToggle />
           <Link
             to="/auth"
-            className="group relative inline-flex h-9 items-center gap-1.5 overflow-hidden rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold tracking-wide text-foreground backdrop-blur-xl transition-all duration-300 hover:border-primary/50 hover:bg-white/[0.07] hover:shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.6)]"
+            className="group relative inline-flex h-10 items-center gap-2 overflow-hidden rounded-full p-[1.5px] text-xs font-semibold tracking-wide text-foreground transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
           >
-            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-            <span className="relative inline-flex h-1.5 w-1.5 items-center justify-center">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/70 opacity-70" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_2px_hsl(var(--primary)/0.7)]" />
+            {/* Animated conic gradient ring */}
+            <span
+              className="pointer-events-none absolute inset-0 rounded-full opacity-80 transition-opacity duration-500 group-hover:opacity-100"
+              style={{
+                background:
+                  "conic-gradient(from 0deg, hsl(var(--primary)) 0deg, transparent 120deg, hsl(var(--primary)/0.7) 220deg, transparent 320deg, hsl(var(--primary)) 360deg)",
+                animation: "spin 6s linear infinite",
+              }}
+            />
+            {/* Glass interior */}
+            <span className="relative z-10 inline-flex h-full w-full items-center gap-2 rounded-full bg-background/85 px-4 backdrop-blur-2xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_10px_40px_-12px_hsl(var(--primary)/0.55)] transition-shadow duration-500 group-hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_18px_55px_-12px_hsl(var(--primary)/0.85)]">
+              {/* Shimmer sweep */}
+              <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
+                <span className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-700 group-hover:left-full group-hover:opacity-100" />
+              </span>
+              {/* Pulse dot */}
+              <span className="relative inline-flex h-2 w-2 items-center justify-center">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/80 opacity-70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-gradient-to-br from-primary to-primary-glow shadow-[0_0_12px_3px_hsl(var(--primary)/0.85)]" />
+              </span>
+              <span className="relative bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text font-bold tracking-wider text-transparent">
+                Sign in
+              </span>
+              <ArrowRight className="relative h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:translate-x-0.5" />
             </span>
-            <span className="relative">Sign in</span>
           </Link>
           <Button variant="hero" size="sm" asChild>
             <Link to="/auth">Get started <ArrowRight className="h-4 w-4" /></Link>
