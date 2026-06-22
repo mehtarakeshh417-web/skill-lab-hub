@@ -567,6 +567,577 @@ function PlaceholderPanel({ role }: { role: Role }) {
 }
 
 // =========================================================================
+// Super-Admin Control Center
+// =========================================================================
+type GlobalUserRow = {
+  id: string;
+  name: string;
+  email: string;
+  role: "School Admin" | "Portal Manager" | "Teacher" | "Student" | "Super Admin";
+  school: string;
+  schoolCode: string;
+  lastActive: string;
+  blocked: boolean;
+};
+
+const SUPER_ADMIN_USERS: GlobalUserRow[] = [
+  { id: "u-sa1", name: "Aarav Mehta",     email: "aarav@avartan.io",       role: "Super Admin",    school: "Avartan HQ",            schoolCode: "AVRT-HQ",     lastActive: "2m ago", blocked: false },
+  { id: "u-pm1", name: "Ritika Nair",     email: "ritika@avartan.io",      role: "Portal Manager", school: "Avartan HQ",            schoolCode: "AVRT-HQ",     lastActive: "18m ago", blocked: false },
+  { id: "u-pm2", name: "Karan Patel",     email: "karan@avartan.io",       role: "Portal Manager", school: "Avartan HQ",            schoolCode: "AVRT-HQ",     lastActive: "3h ago",  blocked: false },
+  { id: "u-sc1", name: "Sunita Bhat",     email: "principal@mta.in",       role: "School Admin",   school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "9m ago",  blocked: false },
+  { id: "u-sc2", name: "Dr. Joseph Lal",  email: "lab@pil.school",         role: "School Admin",   school: "Pune Innovation Lab",   schoolCode: "SCH-PUN-031", lastActive: "1d ago",  blocked: false },
+  { id: "u-sc3", name: "Meena Iyer",      email: "ops@bskhub.org",         role: "School Admin",   school: "Bengaluru Skills Hub",  schoolCode: "SCH-BLR-022", lastActive: "5h ago",  blocked: true  },
+  { id: "u-t1",  name: "Anita Rao",       email: "anita@mta.in",           role: "Teacher",        school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "11m ago", blocked: false },
+  { id: "u-t2",  name: "Rakesh Verma",    email: "rakesh@mta.in",          role: "Teacher",        school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "44m ago", blocked: false },
+  { id: "u-t3",  name: "Priya Sharma",    email: "priya@mta.in",           role: "Teacher",        school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "2h ago",  blocked: false },
+  { id: "u-t4",  name: "Sandeep Mehta",   email: "sandeep@mta.in",         role: "Teacher",        school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "yesterday", blocked: true },
+  { id: "u-t5",  name: "Neha Kapoor",     email: "neha@mta.in",            role: "Teacher",        school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "6h ago",  blocked: false },
+  { id: "u-t6",  name: "Vikram Joshi",    email: "vikram@pil.school",      role: "Teacher",        school: "Pune Innovation Lab",   schoolCode: "SCH-PUN-031", lastActive: "1h ago",  blocked: false },
+  { id: "u-st1", name: "Ira Khanna",      email: "ira@parent.com",         role: "Student",        school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "8m ago",  blocked: false },
+  { id: "u-st2", name: "Veer Singh",      email: "veer@parent.com",        role: "Student",        school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "22m ago", blocked: false },
+  { id: "u-st3", name: "Tara Mehta",      email: "tara@parent.com",        role: "Student",        school: "Pune Innovation Lab",   schoolCode: "SCH-PUN-031", lastActive: "3d ago",  blocked: true  },
+  { id: "u-st4", name: "Arjun Nair",      email: "arjun@parent.com",       role: "Student",        school: "Bengaluru Skills Hub",  schoolCode: "SCH-BLR-022", lastActive: "1h ago",  blocked: false },
+  { id: "u-st5", name: "Sara Joseph",     email: "sara@parent.com",        role: "Student",        school: "Delhi Public Pilot",    schoolCode: "SCH-DEL-001", lastActive: "30m ago", blocked: false },
+  { id: "u-st6", name: "Rohan Gupta",     email: "rohan@parent.com",       role: "Student",        school: "Mumbai Tech Academy",   schoolCode: "SCH-MUM-014", lastActive: "4h ago",  blocked: false },
+  { id: "u-st7", name: "Mihika Roy",      email: "mihika@parent.com",      role: "Student",        school: "Pune Innovation Lab",   schoolCode: "SCH-PUN-031", lastActive: "12m ago", blocked: false },
+];
+
+const LAB_USAGE = [
+  { name: "Scratch",     volume: 4820, color: "from-amber-400 to-orange-500",   accent: "text-amber-300" },
+  { name: "Scratch Jr",  volume: 3915, color: "from-pink-400 to-fuchsia-500",   accent: "text-fuchsia-300" },
+  { name: "HTML & CSS",  volume: 3672, color: "from-rose-400 to-rose-600",     accent: "text-rose-300" },
+  { name: "Python",      volume: 3120, color: "from-sky-400 to-blue-500",      accent: "text-sky-300" },
+  { name: "Spreadsheet", volume: 2580, color: "from-emerald-400 to-teal-500",  accent: "text-emerald-300" },
+  { name: "Word",        volume: 2240, color: "from-indigo-400 to-blue-500",   accent: "text-indigo-300" },
+  { name: "SQL",         volume: 1980, color: "from-cyan-400 to-sky-500",      accent: "text-cyan-300" },
+  { name: "Java",        volume: 1410, color: "from-orange-400 to-amber-500",  accent: "text-orange-300" },
+  { name: "Presentation",volume: 1295, color: "from-rose-400 to-pink-500",     accent: "text-pink-300" },
+  { name: "Paint",       volume: 1060, color: "from-fuchsia-400 to-violet-500",accent: "text-violet-300" },
+];
+
+function sparkPath(values: number[], w = 120, h = 32): string {
+  if (values.length === 0) return "";
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = max - min || 1;
+  const stepX = w / (values.length - 1 || 1);
+  return values.map((v, i) => {
+    const x = i * stepX;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+}
+
+function Sparkline({ values, color = "#a5b4fc", up = true }: { values: number[]; color?: string; up?: boolean }) {
+  const d = sparkPath(values);
+  const w = 120, h = 32;
+  const area = `${d} L${w},${h} L0,${h} Z`;
+  const gradId = useMemo(() => `sg-${Math.random().toString(36).slice(2, 8)}`, []);
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} className="block">
+      <defs>
+        <linearGradient id={gradId} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.45" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gradId})`} />
+      <path d={d} fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={w} cy={(() => {
+        const min = Math.min(...values), max = Math.max(...values);
+        const range = max - min || 1;
+        return h - ((values[values.length - 1] - min) / range) * (h - 4) - 2;
+      })()} r="2.5" fill={color} className={cn(up ? "" : "opacity-80")} />
+    </svg>
+  );
+}
+
+type ToastKind = "ok" | "info" | "warn";
+function SuperAdminControlCenter({
+  schools, audit, onToggleSchool,
+}: {
+  schools: typeof seedSchools;
+  audit: AuditEntry[];
+  onToggleSchool: (id: string) => void;
+}) {
+  const [users, setUsers] = useState<GlobalUserRow[]>(SUPER_ADMIN_USERS);
+  const [q, setQ] = useState("");
+  const [schoolFilter, setSchoolFilter] = useState<string>("all");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [stateFilter, setStateFilter] = useState<"all" | "active" | "blocked">("all");
+
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ kind: ToastKind; msg: string } | null>(null);
+  const showToast = (kind: ToastKind, msg: string) => {
+    setToast({ kind, msg });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Sync block state of "School Admin" rows with the global schools state
+  // (when admin toggles a school from the queue, the directory reflects it).
+  useEffect(() => {
+    setUsers((prev) => prev.map((u) => {
+      if (u.role !== "School Admin") return u;
+      const sc = schools.find((s) => s.code === u.schoolCode);
+      return sc ? { ...u, blocked: sc.disabled } : u;
+    }));
+  }, [schools]);
+
+  const totals = useMemo(() => {
+    const teachers = users.filter((u) => u.role === "Teacher").length;
+    const students = users.filter((u) => u.role === "Student").length;
+    const blocked = users.filter((u) => u.blocked).length;
+    return {
+      schools: schools.length,
+      licenses: schools.filter((s) => !s.disabled && s.status !== "Rejected").length,
+      teachers,
+      students,
+      blocked,
+    };
+  }, [users, schools]);
+
+  const filteredUsers = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return users.filter((u) => {
+      if (schoolFilter !== "all" && u.schoolCode !== schoolFilter) return false;
+      if (roleFilter !== "all" && u.role !== roleFilter) return false;
+      if (stateFilter !== "all" && (stateFilter === "blocked" ? !u.blocked : u.blocked)) return false;
+      if (!term) return true;
+      return u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term) || u.school.toLowerCase().includes(term);
+    });
+  }, [users, q, schoolFilter, roleFilter, stateFilter]);
+
+  const toggleBlock = (id: string) => {
+    setUsers((prev) => prev.map((u) => {
+      if (u.id !== id) return u;
+      const next = { ...u, blocked: !u.blocked };
+      // Stream a synthetic audit entry into the toast
+      showToast(next.blocked ? "warn" : "ok",
+        `${next.blocked ? "Blocked" : "Unblocked"} ${u.name} (${u.role}) — ${u.school}`);
+      return next;
+    }));
+  };
+
+  // Activity log — extends the global audit + adds simulated streaming entries.
+  const STREAM_LOG: AuditEntry[] = [
+    { id: "sa1", ts: "2026-06-22 09:42", actor: "super_admin", action: "BACKUP_COMPLETED",  target: "snapshot:nightly-2026-06-22" },
+    { id: "sa2", ts: "2026-06-22 09:31", actor: "super_admin", action: "USER_BLOCKED",      target: "teacher:EMP-014-04" },
+    { id: "sa3", ts: "2026-06-22 09:18", actor: "manager",     action: "APPROVED_SCHOOL",   target: "SCH-MUM-014" },
+    { id: "sa4", ts: "2026-06-22 08:55", actor: "system",      action: "LICENSE_RENEWED",   target: "school:SCH-PUN-031" },
+    { id: "sa5", ts: "2026-06-22 08:21", actor: "super_admin", action: "TEACHER_CREATED",   target: "EMP-031-04" },
+    { id: "sa6", ts: "2026-06-22 07:50", actor: "system",      action: "API_KEY_ROTATED",   target: "gateway:lab-stream" },
+    { id: "sa7", ts: "2026-06-21 22:14", actor: "system",      action: "BACKUP_COMPLETED",  target: "snapshot:nightly-2026-06-21" },
+    { id: "sa8", ts: "2026-06-21 18:09", actor: "super_admin", action: "USER_UNBLOCKED",    target: "student:ADM-3101" },
+    { id: "sa9", ts: "2026-06-21 14:32", actor: "manager",     action: "REJECTED_SCHOOL",   target: "SCH-HYD-007" },
+  ];
+  const liveAudit = useMemo(() => [...audit, ...STREAM_LOG].slice(0, 24), [audit]);
+
+  // ---- Export helpers ----
+  const buildCsv = (): string => {
+    const header = ["id","name","email","role","school","schoolCode","lastActive","blocked"].join(",");
+    const rows = filteredUsers.map((u) => [u.id,u.name,u.email,u.role,JSON.stringify(u.school),u.schoolCode,u.lastActive,u.blocked].join(","));
+    return [header, ...rows].join("\n");
+  };
+  const triggerDownload = (filename: string, mime: string, content: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  };
+
+  const runExport = (kind: "csv" | "xlsx" | "pdf") => {
+    setExportOpen(false);
+    setExporting(kind);
+    setTimeout(() => {
+      const ts = new Date().toISOString().slice(0, 10);
+      if (kind === "csv") {
+        triggerDownload(`avartan-users-${ts}.csv`, "text/csv;charset=utf-8", buildCsv());
+      } else if (kind === "xlsx") {
+        // mock XLSX = CSV with .xls extension (Excel will open it cleanly)
+        triggerDownload(`avartan-users-${ts}.xls`, "application/vnd.ms-excel", buildCsv());
+      } else {
+        const txt = `AVARTAN SKILL LAB — Global System Summary\nGenerated: ${new Date().toLocaleString()}\n\nSchools: ${totals.schools}\nActive licenses: ${totals.licenses}\nTeachers: ${totals.teachers}\nStudents: ${totals.students}\nBlocked accounts: ${totals.blocked}\n\n(mock PDF stream)`;
+        triggerDownload(`avartan-summary-${ts}.txt`, "text/plain", txt);
+      }
+      setExporting(null);
+      showToast("ok", kind === "csv" ? "CSV stream built and downloaded." : kind === "xlsx" ? "Excel layout exported successfully." : "PDF summary report generated.");
+    }, 1400);
+  };
+
+  const uniqueSchoolCodes = useMemo(
+    () => Array.from(new Set(users.map((u) => `${u.schoolCode}|${u.school}`))).map((k) => {
+      const [code, name] = k.split("|"); return { code, name };
+    }),
+    [users]
+  );
+  const uniqueRoles: GlobalUserRow["role"][] = ["Super Admin", "Portal Manager", "School Admin", "Teacher", "Student"];
+
+  const sparkSeries = {
+    schools:  [12, 13, 14, 14, 16, 17, 18, 19, 20, 22, 23, 24],
+    licenses: [10, 11, 13, 13, 15, 16, 17, 18, 18, 20, 21, 22],
+    teachers: [60, 62, 66, 70, 74, 78, 81, 84, 88, 91, 94, 98],
+    students: [820, 870, 905, 960, 1020, 1080, 1130, 1190, 1240, 1300, 1360, 1420],
+  };
+
+  const maxLab = Math.max(...LAB_USAGE.map((l) => l.volume));
+  const ROLE_COLOR: Record<GlobalUserRow["role"], string> = {
+    "Super Admin":   "border-amber-400/40 bg-amber-500/10 text-amber-200",
+    "Portal Manager":"border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200",
+    "School Admin":  "border-indigo-400/40 bg-indigo-500/10 text-indigo-200",
+    "Teacher":       "border-sky-400/40 bg-sky-500/10 text-sky-200",
+    "Student":       "border-emerald-400/40 bg-emerald-500/10 text-emerald-200",
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Hero / Header with Export */}
+      <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-950/60 via-slate-950/70 to-fuchsia-950/30 p-5 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-fuchsia-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-300/60 to-transparent" />
+
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200">
+              <ShieldCheck className="h-3 w-3" /> Super-Admin Control Center
+            </div>
+            <h2 className="mt-1 font-display text-xl font-bold tracking-tight">Global platform analytics &amp; system health</h2>
+            <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1"><Activity className="h-3 w-3 text-emerald-300" /> All regions nominal</span>
+              <span className="inline-flex items-center gap-1"><Server className="h-3 w-3 text-indigo-300" /> Edge p95 142ms</span>
+              <span className="inline-flex items-center gap-1"><Cpu className="h-3 w-3 text-fuchsia-300" /> DB load 38%</span>
+            </div>
+          </div>
+
+          <div className="relative">
+            <button
+              onClick={() => setExportOpen((o) => !o)}
+              disabled={!!exporting}
+              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3.5 py-2 text-[12px] font-semibold text-white shadow-[0_12px_28px_-12px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97] disabled:opacity-70"
+            >
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              {exporting ? <Loader2 className="relative h-4 w-4 animate-spin" /> : <Download className="relative h-4 w-4" />}
+              <span className="relative">{exporting ? `Building ${exporting.toUpperCase()}…` : "Export Global System Data"}</span>
+              {!exporting && <ChevronDown className={cn("relative h-3.5 w-3.5 transition-transform", exportOpen && "rotate-180")} />}
+            </button>
+            {exportOpen && (
+              <div className="absolute right-0 z-30 mt-2 w-60 overflow-hidden rounded-xl border border-white/10 bg-slate-950/90 shadow-[0_30px_60px_-20px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+                {[
+                  { id: "csv"  as const, label: "Download CSV",         hint: ".csv", Icon: FileText },
+                  { id: "xlsx" as const, label: "Download Excel Layout",hint: ".xls", Icon: FileSpreadsheet },
+                  { id: "pdf"  as const, label: "Export PDF Summary",   hint: ".pdf", Icon: FileType },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => runExport(opt.id)}
+                    className="group/opt flex w-full items-center justify-between gap-2 border-b border-white/5 px-3 py-2 text-left text-[12px] last:border-b-0 hover:bg-white/[0.05]"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-indigo-200 group-hover/opt:border-indigo-400/50">
+                        <opt.Icon className="h-3.5 w-3.5" />
+                      </span>
+                      <span className="font-medium">{opt.label}</span>
+                    </span>
+                    <span className="font-mono text-[10px] text-muted-foreground">{opt.hint}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Scorecards */}
+        <div className="relative mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            { label: "Registered Schools",  value: totals.schools,  delta: "+8% MoM",  color: "#a5b4fc", series: sparkSeries.schools,  Icon: School2 },
+            { label: "Active Licenses",     value: totals.licenses, delta: "+5% MoM",  color: "#34d399", series: sparkSeries.licenses, Icon: KeyRound },
+            { label: "Registered Teachers", value: totals.teachers, delta: "+12% MoM", color: "#f472b6", series: sparkSeries.teachers, Icon: GraduationCap },
+            { label: "Active Students",     value: totals.students, delta: "+18% MoM", color: "#7dd3fc", series: sparkSeries.students, Icon: Users },
+          ].map((c) => (
+            <div key={c.label} className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-indigo-400/40 hover:bg-white/[0.05]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <c.Icon className="h-3 w-3" /> {c.label}
+                  </div>
+                  <div className="mt-1 font-display text-2xl font-bold tabular-nums">{c.value.toLocaleString()}</div>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-300">
+                  <TrendingUp className="h-2.5 w-2.5" /> {c.delta}
+                </span>
+              </div>
+              <div className="mt-2 -mx-1">
+                <Sparkline values={c.series} color={c.color} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Lab adoption + System health */}
+      <section className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+        <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-indigo-300" />
+              <h3 className="font-display text-sm font-semibold">Platform adoption by lab technology</h3>
+            </div>
+            <span className="text-[10px] text-muted-foreground">last 30 days · sessions</span>
+          </div>
+          <div className="space-y-2">
+            {LAB_USAGE.map((l) => {
+              const pct = (l.volume / maxLab) * 100;
+              return (
+                <div key={l.name} className="group grid grid-cols-[110px_1fr_60px] items-center gap-3">
+                  <div className={cn("text-[11px] font-semibold", l.accent)}>{l.name}</div>
+                  <div className="relative h-2.5 overflow-hidden rounded-full bg-white/[0.04]">
+                    <div
+                      className={cn("h-full rounded-full bg-gradient-to-r shadow-[0_0_18px_-4px_rgba(99,102,241,0.6)] transition-all duration-700", l.color)}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">{l.volume.toLocaleString()}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 shadow-[0_24px_60px_-30px_rgba(217,70,239,0.35)] backdrop-blur-xl">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <LineChart className="h-4 w-4 text-fuchsia-300" />
+              <h3 className="font-display text-sm font-semibold">System health</h3>
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_1px_rgba(16,185,129,0.7)]" /> Operational
+            </span>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: "API gateway",      pct: 99.98, color: "from-emerald-400 to-teal-500", Icon: Globe2 },
+              { label: "Database cluster", pct: 99.92, color: "from-sky-400 to-indigo-500",   Icon: Server },
+              { label: "Lab compile farm", pct: 98.40, color: "from-amber-400 to-orange-500", Icon: Zap },
+              { label: "Auth & sessions",  pct: 99.99, color: "from-fuchsia-400 to-pink-500", Icon: ShieldCheck },
+            ].map((h) => (
+              <div key={h.label}>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground"><h.Icon className="h-3 w-3" /> {h.label}</span>
+                  <span className="font-mono tabular-nums text-foreground">{h.pct.toFixed(2)}%</span>
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
+                  <div className={cn("h-full rounded-full bg-gradient-to-r", h.color)} style={{ width: `${h.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Global User Directory */}
+      <section className="rounded-2xl border border-white/10 bg-slate-950/60 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Users2 className="h-4 w-4 text-indigo-300" />
+            <div>
+              <h3 className="font-display text-sm font-semibold">Global User Directory · Master Block List</h3>
+              <p className="text-[10px] text-muted-foreground">{filteredUsers.length} of {users.length} accounts · {totals.blocked} blocked</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search name, email, school…"
+                className="h-8 w-56 rounded-lg border border-white/10 bg-slate-950/70 pl-7 pr-2 text-[11px] outline-none focus:border-indigo-400/60"
+              />
+            </div>
+            <select value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/70 px-2 text-[11px] outline-none focus:border-indigo-400/60">
+              <option value="all">All schools</option>
+              {uniqueSchoolCodes.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+            </select>
+            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/70 px-2 text-[11px] outline-none focus:border-indigo-400/60">
+              <option value="all">All roles</option>
+              {uniqueRoles.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] p-0.5">
+              {(["all", "active", "blocked"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStateFilter(s)}
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all",
+                    stateFilter === s
+                      ? s === "blocked"
+                        ? "bg-rose-500/20 text-rose-200 shadow-[0_4px_16px_-8px_rgba(244,63,94,0.7)]"
+                        : "bg-gradient-to-r from-indigo-500/80 to-fuchsia-500/80 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >{s}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11.5px]">
+            <thead className="bg-white/[0.03] text-[10px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold">User</th>
+                <th className="px-3 py-2 text-left font-semibold">Role</th>
+                <th className="px-3 py-2 text-left font-semibold">School</th>
+                <th className="px-3 py-2 text-left font-semibold">Last Active</th>
+                <th className="px-3 py-2 text-right font-semibold">Account Access</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {filteredUsers.map((u) => (
+                <tr key={u.id} className={cn("transition-colors hover:bg-white/[0.03]", u.blocked && "opacity-80")}>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative">
+                        <div className={cn(
+                          "flex h-8 w-8 items-center justify-center rounded-full border text-[10px] font-bold",
+                          u.blocked ? "border-rose-400/40 bg-rose-500/10 text-rose-200" : "border-white/10 bg-slate-900/80 text-indigo-200"
+                        )}>
+                          {u.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                        </div>
+                        {!u.blocked && <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-slate-950 shadow-[0_0_6px_1px_rgba(16,185,129,0.7)]" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className={cn("truncate font-semibold", u.blocked && "line-through decoration-rose-400/60 decoration-1")}>{u.name}</div>
+                        <div className="truncate font-mono text-[10px] text-muted-foreground">{u.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-semibold", ROLE_COLOR[u.role])}>{u.role}</span>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="truncate">{u.school}</div>
+                    <div className="font-mono text-[10px] text-muted-foreground">{u.schoolCode}</div>
+                  </td>
+                  <td className="px-3 py-2 text-[11px] text-muted-foreground">{u.lastActive}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center justify-end gap-2">
+                      <span className={cn("text-[10px] font-semibold uppercase tracking-wider", u.blocked ? "text-rose-300" : "text-emerald-300")}>
+                        {u.blocked ? "Blocked" : "Active"}
+                      </span>
+                      <button
+                        onClick={() => {
+                          toggleBlock(u.id);
+                          // Reflect School Admin block into the schools state too
+                          if (u.role === "School Admin") {
+                            const sc = schools.find((s) => s.code === u.schoolCode);
+                            if (sc) onToggleSchool(sc.id);
+                          }
+                        }}
+                        role="switch"
+                        aria-checked={!u.blocked}
+                        aria-label={`Account access: ${u.blocked ? "Blocked" : "Active"}`}
+                        className={cn(
+                          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/50",
+                          u.blocked
+                            ? "border-rose-400/40 bg-gradient-to-r from-rose-500/40 to-rose-600/40 shadow-[inset_0_0_10px_rgba(244,63,94,0.4)]"
+                            : "border-emerald-400/40 bg-gradient-to-r from-emerald-500/50 to-teal-500/50 shadow-[0_0_14px_-2px_rgba(16,185,129,0.55)]"
+                        )}
+                      >
+                        <span className={cn(
+                          "inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-1 ring-black/10 transition-transform duration-300",
+                          u.blocked ? "translate-x-0.5" : "translate-x-[22px]"
+                        )} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredUsers.length === 0 && (
+                <tr><td colSpan={5} className="px-3 py-8 text-center text-[12px] text-muted-foreground">No accounts match the active filters.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Audit trail */}
+      <section className="rounded-2xl border border-white/10 bg-slate-950/60 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
+        <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-indigo-300" />
+            <div>
+              <h3 className="font-display text-sm font-semibold">Audit Trail · Streaming Activity Log</h3>
+              <p className="text-[10px] text-muted-foreground">Cross-platform administrative timeline</p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300">
+            <RefreshCw className="h-3 w-3 animate-spin" style={{ animationDuration: "4s" }} /> live
+          </span>
+        </div>
+        <div className="max-h-[420px] overflow-y-auto">
+          <table className="w-full text-[11.5px]">
+            <thead className="sticky top-0 bg-slate-950/95 text-[10px] uppercase tracking-wider text-muted-foreground backdrop-blur">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold">Timestamp</th>
+                <th className="px-3 py-2 text-left font-semibold">Actor</th>
+                <th className="px-3 py-2 text-left font-semibold">Event</th>
+                <th className="px-3 py-2 text-left font-semibold">Target</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {liveAudit.map((a) => {
+                const action = a.action;
+                const tone =
+                  action.startsWith("DELETED") || action.startsWith("REJECTED") || action.startsWith("DISABLED") || action.includes("BLOCKED")
+                    ? "bg-rose-500/15 text-rose-200 border-rose-400/30"
+                    : action.startsWith("APPROVED") || action.startsWith("ENABLED") || action.includes("UNBLOCKED") || action.includes("COMPLETED") || action.includes("RENEWED") || action.includes("CREATED")
+                    ? "bg-emerald-500/15 text-emerald-200 border-emerald-400/30"
+                    : action.includes("ROTATED")
+                    ? "bg-amber-500/15 text-amber-200 border-amber-400/30"
+                    : "bg-sky-500/15 text-sky-200 border-sky-400/30";
+                return (
+                  <tr key={a.id} className="hover:bg-white/[0.03]">
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{a.ts}</td>
+                    <td className="px-3 py-1.5">
+                      <span className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/[0.03] px-1.5 py-0.5 font-mono text-[10px]">
+                        <UserCircle2 className="h-3 w-3 text-indigo-300" /> {a.actor}
+                      </span>
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <span className={cn("inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[10px] font-semibold", tone)}>{action.replace(/_/g, " ")}</span>
+                    </td>
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{a.target}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Toast */}
+      {toast && (
+        <div className="pointer-events-none fixed bottom-6 right-6 z-[60] animate-in fade-in slide-in-from-bottom-2">
+          <div className={cn(
+            "pointer-events-auto flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-[12px] font-semibold shadow-[0_20px_50px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl",
+            toast.kind === "ok"   && "border-emerald-400/40 bg-emerald-500/15 text-emerald-100",
+            toast.kind === "warn" && "border-amber-400/40 bg-amber-500/15 text-amber-100",
+            toast.kind === "info" && "border-indigo-400/40 bg-indigo-500/15 text-indigo-100",
+          )}>
+            {toast.kind === "ok"   && <CheckCircle2 className="h-4 w-4" />}
+            {toast.kind === "warn" && <ShieldAlert  className="h-4 w-4" />}
+            {toast.kind === "info" && <Sparkles    className="h-4 w-4" />}
+            <span>{toast.msg}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =========================================================================
 // Shared School Store (teachers + classes)
 // =========================================================================
 
