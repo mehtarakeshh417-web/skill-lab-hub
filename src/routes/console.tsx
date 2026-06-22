@@ -5120,3 +5120,760 @@ function SnapshotRenderer({ snapshot }: { snapshot: LabSnapshot }) {
     </pre>
   );
 }
+
+// =========================================================================
+// Project Lifecycle Engine — Kanban Workspace, Rubric Evaluation, Showcase
+// =========================================================================
+
+type KanbanCol = "todo" | "progress" | "review" | "deployed";
+type KanbanCard = { id: string; title: string; tag: string; col: KanbanCol };
+
+const KANBAN_META: Record<KanbanCol, { label: string; cls: string; ring: string; dot: string }> = {
+  todo:     { label: "To Do",       cls: "border-slate-400/30 bg-slate-500/10 text-slate-200",     ring: "shadow-[0_0_18px_-4px_rgba(148,163,184,0.55)]", dot: "bg-slate-300" },
+  progress: { label: "In Progress", cls: "border-amber-400/40 bg-amber-500/10 text-amber-200",    ring: "shadow-[0_0_22px_-4px_rgba(251,191,36,0.65)]",  dot: "bg-amber-300 shadow-[0_0_8px_2px_rgba(251,191,36,0.7)]" },
+  review:   { label: "Code Review", cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200", ring: "shadow-[0_0_22px_-4px_rgba(99,102,241,0.65)]",  dot: "bg-indigo-300 shadow-[0_0_8px_2px_rgba(99,102,241,0.7)]" },
+  deployed: { label: "Deployed",    cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200", ring: "shadow-[0_0_22px_-4px_rgba(16,185,129,0.7)]",  dot: "bg-emerald-300 shadow-[0_0_8px_2px_rgba(16,185,129,0.75)]" },
+};
+
+function seedKanbanFor(task: Task): KanbanCard[] {
+  const base: KanbanCard[] = [
+    { id: "k1", title: "Project kickoff & scope doc",         tag: "Planning",   col: "deployed" },
+    { id: "k2", title: "Wireframe & component contracts",     tag: "Design",     col: "deployed" },
+    { id: "k3", title: "Implement data layer / schema",       tag: "Backend",    col: "review" },
+    { id: "k4", title: "Build primary UI flow",               tag: "Frontend",   col: "progress" },
+    { id: "k5", title: "Write unit tests for core modules",   tag: "Quality",    col: "progress" },
+    { id: "k6", title: "Integrate auth & role gating",        tag: "Security",   col: "todo" },
+    { id: "k7", title: "Polish empty/error states",           tag: "UX",         col: "todo" },
+    { id: "k8", title: "Ship v1 to production target",        tag: "DevOps",     col: "todo" },
+  ];
+  // Slight variation so different tasks look different
+  const offset = (task.id.charCodeAt(task.id.length - 1) || 0) % 3;
+  if (offset === 1) base[5].col = "progress";
+  if (offset === 2) base[6].col = "review";
+  return base;
+}
+
+function ProjectWorkspaceModal({
+  task, onClose, onSubmit,
+}: { task: Task; onClose: () => void; onSubmit: () => void }) {
+  const [tab, setTab] = useState<"agile" | "deploy">("agile");
+  const [cards, setCards] = useState<KanbanCard[]>(() => seedKanbanFor(task));
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overCol, setOverCol] = useState<KanbanCol | null>(null);
+
+  // Deploy state
+  const [repo, setRepo] = useState("github.com/avartan-lab/" + task.title.toLowerCase().replace(/\s+/g, "-").slice(0, 28));
+  const [target, setTarget] = useState<"Vercel" | "Netlify" | "Cloudflare">("Vercel");
+  const [branch, setBranch] = useState("main");
+  const [building, setBuilding] = useState(false);
+  const [buildLog, setBuildLog] = useState<string[]>([]);
+  const [liveUrl, setLiveUrl] = useState<string | null>(null);
+
+  const cols: KanbanCol[] = ["todo", "progress", "review", "deployed"];
+
+  const moveCard = (id: string, col: KanbanCol) => {
+    setCards((cs) => cs.map((c) => (c.id === id ? { ...c, col } : c)));
+  };
+
+  const addCard = (col: KanbanCol) => {
+    const title = window.prompt("New task title");
+    if (!title) return;
+    setCards((cs) => [...cs, { id: `k${Date.now()}`, title, tag: "Custom", col }]);
+  };
+
+  const triggerBuild = () => {
+    if (building) return;
+    setBuilding(true);
+    setLiveUrl(null);
+    setBuildLog([]);
+    const lines = [
+      "$ git fetch origin " + branch,
+      "→ Resolving deltas... done.",
+      "$ pnpm install --frozen-lockfile",
+      "→ 1,284 packages installed in 12.3s",
+      "$ pnpm run build",
+      "→ Compiled 248 modules · 0 errors · 0 warnings",
+      "→ Bundling client (487KB → 142KB gz)",
+      "→ Uploading artifacts to " + target + "...",
+      "→ Provisioning edge functions...",
+      "✓ Production deployment complete",
+    ];
+    let i = 0;
+    const tick = () => {
+      setBuildLog((l) => [...l, lines[i]]);
+      i++;
+      if (i < lines.length) setTimeout(tick, 280);
+      else {
+        const slug = task.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 24).replace(/^-|-$/g, "");
+        const url = `https://${slug}-${task.id}.${target.toLowerCase()}.app`;
+        setLiveUrl(url);
+        setBuilding(false);
+        toast.success("Production deployment successful", { description: url });
+      }
+    };
+    setTimeout(tick, 200);
+  };
+
+  const submitProject = () => {
+    onSubmit();
+    toast.success("Project submitted for review", { description: task.title });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/95 via-slate-950/90 to-indigo-950/40 shadow-[0_40px_120px_-30px_rgba(99,102,241,0.65)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent" />
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 border-b border-white/5 p-4">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+              <FolderKanban className="h-3 w-3" /> Project Lifecycle Workspace
+            </div>
+            <h3 className="mt-1.5 truncate font-display text-base font-bold tracking-tight">{task.title}</h3>
+            <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{task.instructions || "Build and ship your project end to end."}</p>
+          </div>
+          <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Close">
+            <XIcon className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex items-center gap-1 border-b border-white/5 px-3 py-2">
+          {([
+            { id: "agile" as const, label: "Agile Board", icon: ListChecks },
+            { id: "deploy" as const, label: "Deployment Links", icon: Rocket },
+          ]).map(({ id, label, icon: Icon }) => {
+            const active = tab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-300",
+                  active
+                    ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.8)]"
+                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" /> {label}
+              </button>
+            );
+          })}
+          <div className="ml-auto inline-flex items-center gap-2">
+            <button
+              onClick={submitProject}
+              className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-indigo-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_12px_28px_-10px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+            >
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <Send className="relative h-3.5 w-3.5" />
+              <span className="relative">Submit Project</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {tab === "agile" && (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {cols.map((col) => {
+                const meta = KANBAN_META[col];
+                const items = cards.filter((c) => c.col === col);
+                const isOver = overCol === col;
+                return (
+                  <div
+                    key={col}
+                    onDragOver={(e) => { e.preventDefault(); setOverCol(col); }}
+                    onDragLeave={() => setOverCol((c) => (c === col ? null : c))}
+                    onDrop={(e) => { e.preventDefault(); if (dragId) moveCard(dragId, col); setDragId(null); setOverCol(null); }}
+                    className={cn(
+                      "relative flex min-h-[260px] flex-col rounded-xl border bg-slate-950/60 p-2.5 backdrop-blur-xl transition-all duration-300",
+                      isOver ? "border-indigo-400/70 bg-indigo-500/10 scale-[1.01]" : "border-white/10",
+                      meta.ring
+                    )}
+                  >
+                    <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
+                      <div className="inline-flex items-center gap-1.5">
+                        <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">{meta.label}</span>
+                        <span className={cn("rounded-full border px-1.5 py-0.5 text-[9px] font-bold", meta.cls)}>{items.length}</span>
+                      </div>
+                      <button onClick={() => addCard(col)} className="rounded-md p-0.5 text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Add card">
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="mt-2 flex flex-col gap-2">
+                      {items.map((card) => (
+                        <div
+                          key={card.id}
+                          draggable
+                          onDragStart={() => setDragId(card.id)}
+                          onDragEnd={() => { setDragId(null); setOverCol(null); }}
+                          className={cn(
+                            "group cursor-grab rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-900/40 p-2.5 shadow-[0_8px_22px_-12px_rgba(0,0,0,0.7)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_14px_36px_-12px_rgba(99,102,241,0.55)] active:cursor-grabbing",
+                            dragId === card.id && "opacity-50"
+                          )}
+                        >
+                          <div className="text-[12px] font-semibold leading-snug">{card.title}</div>
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className={cn("rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide", meta.cls)}>{card.tag}</span>
+                            <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                              {cols.filter((c) => c !== card.col).map((c) => (
+                                <button
+                                  key={c}
+                                  onClick={() => moveCard(card.id, c)}
+                                  className={cn("h-1.5 w-1.5 rounded-full transition-transform hover:scale-150", KANBAN_META[c].dot)}
+                                  title={`Move to ${KANBAN_META[c].label}`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {items.length === 0 && (
+                        <div className="rounded-lg border border-dashed border-white/10 px-2 py-4 text-center text-[10px] text-muted-foreground">
+                          Drop a card here
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {tab === "deploy" && (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {/* DevOps card */}
+              <div className="rounded-xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_18px_50px_-20px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200">
+                  <Cpu className="h-3 w-3" /> Continuous Delivery Pipeline
+                </div>
+                <h4 className="mt-2 font-display text-sm font-bold">Connect Repository &amp; Target</h4>
+                <div className="mt-3 space-y-2.5">
+                  <label className="block">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">GitHub Repository</span>
+                    <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/10 bg-slate-950/60 px-2 focus-within:border-indigo-400/60 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.18)]">
+                      <Link2 className="h-3.5 w-3.5 text-indigo-300" />
+                      <input value={repo} onChange={(e) => setRepo(e.target.value)} className="h-9 w-full bg-transparent text-[12px] outline-none" />
+                    </div>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="block">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Deploy Target</span>
+                      <select value={target} onChange={(e) => setTarget(e.target.value as typeof target)} className="mt-1 h-9 w-full rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[12px] outline-none focus:border-indigo-400/60">
+                        <option>Vercel</option>
+                        <option>Netlify</option>
+                        <option>Cloudflare</option>
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Branch</span>
+                      <input value={branch} onChange={(e) => setBranch(e.target.value)} className="mt-1 h-9 w-full rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[12px] outline-none focus:border-indigo-400/60" />
+                    </label>
+                  </div>
+                  <button
+                    onClick={triggerBuild}
+                    disabled={building}
+                    className={cn(
+                      "group relative mt-1 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg px-4 py-2.5 text-[12px] font-bold text-white transition-all duration-300",
+                      building
+                        ? "cursor-not-allowed bg-slate-700/60"
+                        : "bg-gradient-to-r from-emerald-500 via-indigo-500 to-fuchsia-500 shadow-[0_16px_40px_-12px_rgba(99,102,241,0.85)] hover:scale-[1.02] active:scale-[0.98]"
+                    )}
+                  >
+                    {!building && <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />}
+                    {building ? <Loader2 className="relative h-4 w-4 animate-spin" /> : <Rocket className="relative h-4 w-4" />}
+                    <span className="relative">{building ? "Building production bundle..." : "Trigger Production Build"}</span>
+                  </button>
+                  {liveUrl && (
+                    <div className="mt-2 flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 shadow-[0_0_30px_-8px_rgba(16,185,129,0.7)] animate-in fade-in slide-in-from-bottom-1">
+                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-200">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Live URL
+                      </div>
+                      <a href="#" onClick={(e) => e.preventDefault()} className="truncate font-mono text-[11px] text-emerald-200 hover:text-emerald-100 hover:underline">{liveUrl}</a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Console */}
+              <div className="rounded-xl border border-white/10 bg-slate-950/80 p-3 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                  <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+                    <span className="ml-2 font-mono text-[10px] text-muted-foreground">build · {target.toLowerCase()}</span>
+                  </div>
+                  {building && <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-300" />}
+                </div>
+                <div className="mt-2 h-[280px] overflow-auto rounded-md bg-black/50 p-2 font-mono text-[11px] leading-relaxed">
+                  {buildLog.length === 0 && !building && (
+                    <div className="text-muted-foreground">// Trigger a build to stream the deploy log here.</div>
+                  )}
+                  {buildLog.map((line, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "animate-in fade-in slide-in-from-left-1 duration-200",
+                        line.startsWith("✓") ? "text-emerald-300" :
+                        line.startsWith("→") ? "text-indigo-300" :
+                        line.startsWith("$") ? "text-fuchsia-300" : "text-foreground"
+                      )}
+                    >
+                      {line}
+                    </div>
+                  ))}
+                  {building && (
+                    <div className="mt-1 inline-flex items-center gap-1 text-indigo-300">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-400" /> running...
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----- Rubric Evaluation Modal (Teacher) -----
+
+type RubricScores = { architecture: number; ux: number; data: number; cleanliness: number };
+const RUBRIC_CRITERIA: { key: keyof RubricScores; label: string; tint: string; glow: string }[] = [
+  { key: "architecture", label: "Code Architecture & Logic",    tint: "from-indigo-500 to-violet-500",  glow: "rgba(99,102,241,0.7)" },
+  { key: "ux",           label: "UI/UX Excellence & Polish",    tint: "from-fuchsia-500 to-rose-500",   glow: "rgba(217,70,239,0.7)" },
+  { key: "data",         label: "Database / Data Efficiency",   tint: "from-emerald-500 to-teal-500",   glow: "rgba(16,185,129,0.7)" },
+  { key: "cleanliness",  label: "Code Cleanliness & Comments",  tint: "from-amber-500 to-orange-500",   glow: "rgba(251,191,36,0.7)" },
+];
+
+function letterGrade(total: number): { grade: string; cls: string } {
+  if (total >= 95) return { grade: "A+", cls: "text-emerald-300 shadow-[0_0_28px_rgba(16,185,129,0.8)]" };
+  if (total >= 85) return { grade: "A",  cls: "text-emerald-300 shadow-[0_0_22px_rgba(16,185,129,0.7)]" };
+  if (total >= 75) return { grade: "B+", cls: "text-indigo-300 shadow-[0_0_22px_rgba(99,102,241,0.7)]" };
+  if (total >= 65) return { grade: "B",  cls: "text-indigo-300 shadow-[0_0_18px_rgba(99,102,241,0.6)]" };
+  if (total >= 55) return { grade: "C+", cls: "text-amber-300 shadow-[0_0_18px_rgba(251,191,36,0.6)]" };
+  if (total >= 45) return { grade: "C",  cls: "text-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.55)]" };
+  if (total >= 35) return { grade: "D",  cls: "text-orange-300 shadow-[0_0_16px_rgba(251,146,60,0.55)]" };
+  return { grade: "F", cls: "text-rose-300 shadow-[0_0_18px_rgba(244,63,94,0.7)]" };
+}
+
+function RubricEvaluationModal({ task, onClose }: { task: Task; onClose: () => void }) {
+  const students = useStudents();
+  const submitters = useMemo(() => {
+    const pool = students.filter((s) => task.targets.classGrades.includes(s.classGrade) || task.targets.sectionIds.includes(s.sectionId));
+    const n = Math.max(3, Math.min(task.submissions || 5, pool.length || 5));
+    return (pool.length ? pool : students).slice(0, n);
+  }, [students, task]);
+
+  const [activeId, setActiveId] = useState(submitters[0]?.id ?? "");
+  const [scoresByStudent, setScoresByStudent] = useState<Record<string, RubricScores>>(() => {
+    const init: Record<string, RubricScores> = {};
+    submitters.forEach((s, i) => {
+      const seed = (s.id.charCodeAt(s.id.length - 1) || i) % 8;
+      init[s.id] = {
+        architecture: 14 + seed,
+        ux:           16 + ((seed + 2) % 8),
+        data:         12 + ((seed + 5) % 10),
+        cleanliness:  15 + ((seed + 3) % 9),
+      };
+    });
+    return init;
+  });
+  const [graded, setGraded] = useState<Set<string>>(new Set());
+
+  const current = scoresByStudent[activeId] ?? { architecture: 0, ux: 0, data: 0, cleanliness: 0 };
+  const total = current.architecture + current.ux + current.data + current.cleanliness;
+  const { grade, cls } = letterGrade(total);
+
+  const setScore = (k: keyof RubricScores, v: number) => {
+    setScoresByStudent((m) => ({ ...m, [activeId]: { ...current, [k]: v } }));
+  };
+
+  const commit = () => {
+    setGraded((g) => new Set([...g, activeId]));
+    toast.success("Rubric saved", {
+      description: `${students.find((s) => s.id === activeId)?.name ?? "Student"} · ${total}/100 · ${grade}`,
+    });
+    // Move to next ungraded student
+    const next = submitters.find((s) => !graded.has(s.id) && s.id !== activeId);
+    if (next) setActiveId(next.id);
+  };
+
+  const finalize = () => {
+    setTasks((all) => all.map((t) => (
+      t.id === task.id ? { ...t, pendingEval: Math.max(0, t.pendingEval - graded.size) } : t
+    )));
+    toast.success("Rubric evaluations published", { description: `${graded.size || 1} submission${graded.size === 1 ? "" : "s"} sent to student feedback inbox.` });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/95 via-slate-950/90 to-fuchsia-950/30 shadow-[0_40px_120px_-30px_rgba(217,70,239,0.55)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-fuchsia-400/70 to-transparent" />
+        <div className="flex items-start justify-between gap-3 border-b border-white/5 p-4">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+              <Award className="h-3 w-3" /> Rubric Evaluation
+            </div>
+            <h3 className="mt-1.5 truncate font-display text-base font-bold">{task.title}</h3>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Score across four engineering dimensions · live total + letter grade.</p>
+          </div>
+          <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-white/5 hover:text-foreground"><XIcon className="h-4 w-4" /></button>
+        </div>
+
+        <div className="grid flex-1 grid-cols-1 overflow-hidden md:grid-cols-[220px_1fr]">
+          {/* Submitter list */}
+          <div className="max-h-[420px] overflow-y-auto border-b border-white/5 p-2 md:max-h-none md:border-b-0 md:border-r">
+            <div className="px-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Submissions ({submitters.length})</div>
+            {submitters.map((s) => {
+              const isGraded = graded.has(s.id);
+              const sc = scoresByStudent[s.id];
+              const t = sc ? sc.architecture + sc.ux + sc.data + sc.cleanliness : 0;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setActiveId(s.id)}
+                  className={cn(
+                    "group mb-1 flex w-full items-center gap-2 rounded-lg border px-2 py-1.5 text-left transition-all",
+                    activeId === s.id
+                      ? "border-indigo-400/60 bg-indigo-500/10 shadow-[0_0_18px_-6px_rgba(99,102,241,0.7)]"
+                      : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]"
+                  )}
+                >
+                  <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-900 text-[10px] font-bold">
+                    {s.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                    {isGraded && <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-emerald-400 shadow-[0_0_8px_2px_rgba(16,185,129,0.7)]" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[11px] font-semibold">{s.name}</div>
+                    <div className="truncate text-[9px] text-muted-foreground">{s.roll} · {t}/100</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Rubric */}
+          <div className="overflow-y-auto p-4">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-slate-950/80 to-indigo-950/30 p-4 shadow-[0_18px_50px_-20px_rgba(99,102,241,0.55)]">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Cumulative Score</div>
+                <div className="mt-0.5 inline-flex items-baseline gap-1.5">
+                  <span className="font-display text-4xl font-bold text-indigo-200 tabular-nums transition-all duration-300">{total}</span>
+                  <span className="text-sm text-muted-foreground">/ 100</span>
+                </div>
+                <div className="mt-1 h-1.5 w-48 overflow-hidden rounded-full bg-muted/40">
+                  <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500 transition-[width] duration-500" style={{ width: `${total}%` }} />
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Letter Grade</div>
+                <div className={cn("font-display text-5xl font-black tabular-nums transition-all duration-300", cls)}>{grade}</div>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {RUBRIC_CRITERIA.map((c) => {
+                const v = current[c.key];
+                return (
+                  <div key={c.key} className="rounded-xl border border-white/10 bg-white/[0.02] p-3 backdrop-blur transition-colors hover:bg-white/[0.04]">
+                    <div className="flex items-center justify-between">
+                      <div className="text-[12px] font-semibold">{c.label}</div>
+                      <div className="inline-flex items-baseline gap-1">
+                        <span className="font-display text-lg font-bold tabular-nums" style={{ textShadow: `0 0 12px ${c.glow}` }}>{v}</span>
+                        <span className="text-[10px] text-muted-foreground">/ 25</span>
+                      </div>
+                    </div>
+                    <div className="relative mt-2">
+                      <input
+                        type="range" min={0} max={25} step={1} value={v}
+                        onChange={(e) => setScore(c.key, Number(e.target.value))}
+                        className="w-full accent-indigo-400"
+                        style={{ background: `linear-gradient(to right, transparent ${(v / 25) * 100}%, rgba(148,163,184,0.15) ${(v / 25) * 100}%)` }}
+                      />
+                      <div className={cn("pointer-events-none absolute -bottom-1 left-0 h-1 rounded-full bg-gradient-to-r", c.tint)} style={{ width: `${(v / 25) * 100}%`, boxShadow: `0 0 12px ${c.glow}` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-2 border-t border-white/5 pt-3">
+              <div className="text-[10px] text-muted-foreground">
+                {graded.size} of {submitters.length} graded
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={commit} className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-400/40 bg-indigo-500/10 px-3 py-1.5 text-[11px] font-semibold text-indigo-200 transition-all hover:bg-indigo-500/20">
+                  <Save className="h-3.5 w-3.5" /> Save &amp; Next
+                </button>
+                <button
+                  onClick={finalize}
+                  className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-indigo-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_12px_28px_-10px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+                >
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  <CheckCheck className="relative h-3.5 w-3.5" />
+                  <span className="relative">Publish Evaluations</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----- Innovation Gallery & Team Showcase -----
+
+type ShowcaseTeammate = { name: string; initials: string; tint: string };
+type ShowcaseProject = {
+  id: string;
+  title: string;
+  blurb: string;
+  stack: string[];
+  category: "Web" | "Data" | "Design" | "Story" | "Productivity";
+  team: ShowcaseTeammate[];
+  preview: { kind: "html" | "paint"; bg: string; title: string };
+  liveUrl: string;
+  repoUrl: string;
+};
+
+const SHOWCASE_PROJECTS: ShowcaseProject[] = [
+  {
+    id: "sp1", title: "Library Companion Portal", blurb: "Search, reserve and review books with role-based dashboards.",
+    stack: ["HTML5", "MySQL", "Java"], category: "Web",
+    team: [
+      { name: "Aditya Shah", initials: "AS", tint: "from-indigo-500 to-violet-500" },
+      { name: "Diya Kulkarni", initials: "DK", tint: "from-fuchsia-500 to-rose-500" },
+      { name: "Veer Singh", initials: "VS", tint: "from-emerald-500 to-teal-500" },
+    ],
+    preview: { kind: "html", bg: "from-indigo-500/30 via-fuchsia-500/20 to-emerald-500/20", title: "library-companion" },
+    liveUrl: "https://library-companion.vercel.app", repoUrl: "github.com/avartan-lab/library-companion",
+  },
+  {
+    id: "sp2", title: "Eco Class Tracker", blurb: "Spreadsheet-driven CO₂ ledger for school energy use.",
+    stack: ["Excel", "Python"], category: "Data",
+    team: [
+      { name: "Myra Bansal", initials: "MB", tint: "from-emerald-500 to-teal-500" },
+      { name: "Ishaan Pandey", initials: "IP", tint: "from-sky-500 to-indigo-500" },
+    ],
+    preview: { kind: "html", bg: "from-emerald-500/30 via-teal-500/20 to-sky-500/20", title: "eco-tracker" },
+    liveUrl: "https://eco-tracker.netlify.app", repoUrl: "github.com/avartan-lab/eco-tracker",
+  },
+  {
+    id: "sp3", title: "Pixel Pal Logo Studio", blurb: "Pixel-art logo generator with brand palette presets.",
+    stack: ["Paint", "HTML5"], category: "Design",
+    team: [
+      { name: "Tara Mehta", initials: "TM", tint: "from-fuchsia-500 to-purple-500" },
+      { name: "Reyansh Das", initials: "RD", tint: "from-amber-500 to-orange-500" },
+    ],
+    preview: { kind: "paint", bg: "from-fuchsia-500/35 via-purple-500/20 to-rose-500/20", title: "pixel-pal" },
+    liveUrl: "https://pixel-pal.cloudflare.app", repoUrl: "github.com/avartan-lab/pixel-pal",
+  },
+  {
+    id: "sp4", title: "Family Story Scratch", blurb: "Animated 3-scene story showcasing intergenerational stories.",
+    stack: ["Scratch Jr", "Paint"], category: "Story",
+    team: [
+      { name: "Sara Joseph", initials: "SJ", tint: "from-pink-500 to-rose-500" },
+      { name: "Arjun Nair", initials: "AN", tint: "from-orange-500 to-amber-500" },
+      { name: "Aanya Iyer", initials: "AI", tint: "from-indigo-500 to-fuchsia-500" },
+    ],
+    preview: { kind: "html", bg: "from-pink-500/30 via-rose-500/20 to-amber-500/20", title: "family-story" },
+    liveUrl: "https://family-story.vercel.app", repoUrl: "github.com/avartan-lab/family-story",
+  },
+  {
+    id: "sp5", title: "Pitch Deck Vault", blurb: "Reusable PowerPoint templates with smart speaker notes.",
+    stack: ["PowerPoint", "HTML5"], category: "Productivity",
+    team: [
+      { name: "Pari Saxena", initials: "PS", tint: "from-amber-500 to-yellow-500" },
+      { name: "Krishna Menon", initials: "KM", tint: "from-indigo-500 to-violet-500" },
+    ],
+    preview: { kind: "html", bg: "from-amber-500/30 via-orange-500/20 to-rose-500/20", title: "pitch-vault" },
+    liveUrl: "https://pitch-vault.netlify.app", repoUrl: "github.com/avartan-lab/pitch-vault",
+  },
+  {
+    id: "sp6", title: "Schema Studio Mini", blurb: "Visual schema designer that exports MySQL DDL.",
+    stack: ["MySQL", "HTML5", "Java"], category: "Data",
+    team: [
+      { name: "Vihaan Gupta", initials: "VG", tint: "from-sky-500 to-blue-500" },
+      { name: "Anaya Sen", initials: "AS", tint: "from-emerald-500 to-cyan-500" },
+    ],
+    preview: { kind: "html", bg: "from-sky-500/30 via-blue-500/20 to-indigo-500/20", title: "schema-studio" },
+    liveUrl: "https://schema-studio.vercel.app", repoUrl: "github.com/avartan-lab/schema-studio",
+  },
+];
+
+function InnovationGallery() {
+  const cats = ["All", "Web", "Data", "Design", "Story", "Productivity"] as const;
+  type Cat = typeof cats[number];
+  const [cat, setCat] = useState<Cat>("All");
+  const [stack, setStack] = useState<string>("all");
+  const allStacks = useMemo(() => Array.from(new Set(SHOWCASE_PROJECTS.flatMap((p) => p.stack))), []);
+  const filtered = SHOWCASE_PROJECTS.filter((p) =>
+    (cat === "All" || p.category === cat) && (stack === "all" || p.stack.includes(stack))
+  );
+
+  return (
+    <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 via-indigo-950/30 to-fuchsia-950/20 p-5 shadow-[0_30px_80px_-30px_rgba(99,102,241,0.5)] backdrop-blur-xl">
+      <div className="pointer-events-none absolute -top-32 -right-24 h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent" />
+
+      <div className="relative flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+            <Trophy className="h-3 w-3" /> Innovation Gallery &amp; Team Showcase
+          </div>
+          <h3 className="mt-1 font-display text-base font-bold tracking-tight">Public portfolio of student &amp; team projects</h3>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Filterable by stack and category — visible to admins, visitors and partner schools.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <select value={stack} onChange={(e) => setStack(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[11px] outline-none focus:border-indigo-400/60">
+            <option value="all">All Stacks</option>
+            {allStacks.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div className="relative mt-3 flex flex-wrap items-center gap-1">
+        {cats.map((c) => {
+          const active = cat === c;
+          return (
+            <button
+              key={c}
+              onClick={() => setCat(c)}
+              className={cn(
+                "rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-300",
+                active
+                  ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_8px_22px_-8px_rgba(99,102,241,0.75)]"
+                  : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {c}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="relative mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {filtered.map((p) => (
+          <article
+            key={p.id}
+            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-indigo-400/60 hover:shadow-[0_30px_70px_-20px_rgba(99,102,241,0.65)]"
+          >
+            <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+
+            {/* Preview frame */}
+            <div className={cn("relative h-40 w-full overflow-hidden bg-gradient-to-br", p.preview.bg)}>
+              <div className="absolute inset-3 rounded-lg border border-white/20 bg-slate-950/70 backdrop-blur-md">
+                <div className="flex items-center gap-1 border-b border-white/10 px-2 py-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400/80" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
+                  <span className="ml-2 truncate font-mono text-[9px] text-white/60">{p.preview.title}.app</span>
+                </div>
+                <div className="p-2.5">
+                  {p.preview.kind === "paint" ? (
+                    <div className="grid grid-cols-6 gap-0.5">
+                      {Array.from({ length: 36 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="aspect-square rounded-sm transition-all duration-500 group-hover:scale-110"
+                          style={{
+                            background: `hsl(${(i * 23) % 360} 80% ${40 + (i % 5) * 8}%)`,
+                            transitionDelay: `${i * 8}ms`,
+                            opacity: (i * 7) % 11 < 8 ? 1 : 0.15,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <div className="h-2 w-3/4 rounded bg-white/30" />
+                      <div className="h-2 w-full rounded bg-white/15" />
+                      <div className="h-2 w-5/6 rounded bg-white/15" />
+                      <div className="mt-2 grid grid-cols-3 gap-1">
+                        <div className="h-8 rounded bg-indigo-400/40" />
+                        <div className="h-8 rounded bg-fuchsia-400/40" />
+                        <div className="h-8 rounded bg-emerald-400/40" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-200 shadow-[0_0_14px_-2px_rgba(16,185,129,0.6)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_2px_rgba(16,185,129,0.7)]" /> Live
+              </span>
+            </div>
+
+            <div className="flex flex-1 flex-col p-3.5">
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="font-display text-sm font-bold leading-tight">{p.title}</h4>
+                <span className="inline-flex items-center rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-indigo-200">{p.category}</span>
+              </div>
+              <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{p.blurb}</p>
+
+              <div className="mt-2 flex flex-wrap gap-1">
+                {p.stack.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setStack(s)}
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-semibold text-foreground/90 transition-all hover:border-indigo-400/40 hover:text-indigo-200"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-2.5">
+                <div className="flex items-center -space-x-2">
+                  {p.team.map((t, i) => (
+                    <div
+                      key={t.name}
+                      title={t.name}
+                      className={cn("relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-slate-950 bg-gradient-to-br text-[9px] font-bold text-white shadow-[0_4px_12px_-3px_rgba(0,0,0,0.6)]", t.tint)}
+                      style={{ zIndex: 10 - i }}
+                    >
+                      {t.initials}
+                    </div>
+                  ))}
+                  <div className="ml-3 text-[10px] text-muted-foreground">{p.team.length} contributor{p.team.length === 1 ? "" : "s"}</div>
+                </div>
+              </div>
+
+              <div className="mt-3 flex items-center gap-2">
+                <a
+                  href="#" onClick={(e) => { e.preventDefault(); toast.info("Opening repository", { description: p.repoUrl }); }}
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[10px] font-semibold backdrop-blur transition-all hover:border-indigo-400/40 hover:bg-white/[0.07]"
+                >
+                  <Code2 className="h-3 w-3" /> View Source
+                </a>
+                <a
+                  href="#" onClick={(e) => { e.preventDefault(); toast.success("Launching live demo", { description: p.liveUrl }); }}
+                  className="group/btn relative inline-flex flex-1 items-center justify-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-indigo-500 px-2 py-1.5 text-[10px] font-bold text-white shadow-[0_10px_25px_-10px_rgba(16,185,129,0.75)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+                >
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
+                  <Rocket className="relative h-3 w-3" />
+                  <span className="relative">Launch Demo</span>
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
+        {filtered.length === 0 && (
+          <div className="col-span-full rounded-xl border border-dashed border-border/60 bg-background/30 p-8 text-center text-[12px] text-muted-foreground">
+            No projects match the current filters.
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
