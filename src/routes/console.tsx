@@ -2831,7 +2831,13 @@ function TaskManagementPanel() {
   const toggleIn = <T,>(arr: T[], val: T): T[] => (arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
 
   const publish = (status: TaskStatus) => {
-    if (!form.title.trim()) { setFlash("Title is required."); setTimeout(() => setFlash(null), 1800); return; }
+    if (!form.title.trim()) { setFlash("Title is required."); setTimeout(() => setFlash(null), 1800); toast.error("Title is required"); return; }
+    if (form.maxMarks <= 0) { setFlash("Max Marks must be greater than 0."); setTimeout(() => setFlash(null), 1800); toast.error("Max Marks must be > 0"); return; }
+    if (quiz.length > 0) {
+      if (marksPerQ <= 0) { toast.error("Marks per question must be > 0"); return; }
+      const bad = quiz.find((q) => !q.question.trim());
+      if (bad) { toast.error("Every quiz question needs a stem"); return; }
+    }
     const id = `tk${Date.now()}`;
     const total = status === "draft" ? 0 : recipientsCount;
     const hasQuiz = quiz.length > 0;
@@ -2853,6 +2859,8 @@ function TaskManagementPanel() {
     setQuiz([]); setAiTopic(""); setAiError(null);
     setFlash(status === "draft" ? "Saved as draft." : `Published to ${total} recipient${total === 1 ? "" : "s"}.`);
     setTimeout(() => setFlash(null), 2200);
+    if (status === "draft") toast.success("Draft saved", { description: form.title.trim() });
+    else toast.success("Assignment published", { description: `Sent to ${total} recipient${total === 1 ? "" : "s"}` });
   };
 
   const removeTask = (id: string) => setTasks((t) => t.filter((x) => x.id !== id));
