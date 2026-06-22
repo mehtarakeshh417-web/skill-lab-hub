@@ -2924,6 +2924,267 @@ function TaskManagementPanel() {
           </div>
         </div>
 
+        {/* ===== Quiz Builder + AI Generation ===== */}
+        <div className="relative mt-4 rounded-xl border border-border/60 bg-gradient-to-br from-slate-950/60 via-slate-900/40 to-indigo-950/40 p-3 backdrop-blur-xl">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold">
+              <BrainCircuit className="h-3.5 w-3.5 text-indigo-300" /> Quiz Structure & Generation
+              <span className="ml-1 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-indigo-200">Beta</span>
+            </div>
+            {quiz.length > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
+                <CheckCheck className="h-3 w-3" /> {quiz.length} q · {quiz.length * marksPerQ} marks
+              </span>
+            )}
+          </div>
+
+          {/* Structure segmented controller */}
+          <div className="mb-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            {([
+              { id: "mcq" as const, label: "MCQ", icon: ListChecks },
+              { id: "tf" as const, label: "True / False", icon: ToggleRight },
+              { id: "fill" as const, label: "Fill Blanks", icon: TypeIcon },
+              { id: "hybrid" as const, label: "Hybrid Mix", icon: Shuffle },
+            ]).map(({ id, label, icon: Icon }) => {
+              const active = quizStructure === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setQuizStructure(id)}
+                  className={cn(
+                    "group inline-flex items-center justify-center gap-1.5 rounded-lg border px-2.5 py-2 text-[11px] font-semibold transition-all duration-300",
+                    active
+                      ? "border-indigo-400/60 bg-gradient-to-br from-indigo-500/30 to-fuchsia-500/20 text-white shadow-[0_8px_24px_-10px_rgba(99,102,241,0.7)]"
+                      : "border-border/60 bg-background/50 text-muted-foreground hover:border-indigo-400/40 hover:text-foreground"
+                  )}
+                >
+                  <Icon className={cn("h-3.5 w-3.5", active && "text-indigo-200")} /> {label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Numeric + method controls */}
+          <div className="grid gap-2 md:grid-cols-3">
+            <div className="grid gap-1">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Total Questions</label>
+              <input type="number" min={1} max={30} value={numQuestions}
+                onChange={(e) => setNumQuestions(Math.max(1, Math.min(30, Number(e.target.value) || 1)))}
+                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+              />
+            </div>
+            <div className="grid gap-1">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Marks / Question</label>
+              <input type="number" min={1} max={20} value={marksPerQ}
+                onChange={(e) => setMarksPerQ(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+              />
+            </div>
+            <div className="grid gap-1">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Methodology</label>
+              <div className="inline-flex items-center gap-1 rounded-lg border border-border/60 bg-background/60 p-1">
+                {([
+                  { id: "manual" as const, label: "Manual", icon: Pencil },
+                  { id: "gemini" as const, label: "Gemini AI", icon: Wand2 },
+                ]).map(({ id, label, icon: Icon }) => {
+                  const active = method === id;
+                  return (
+                    <button key={id} onClick={() => setMethod(id)}
+                      className={cn(
+                        "flex-1 inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium transition-all",
+                        active
+                          ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}>
+                      <Icon className="h-3.5 w-3.5" /> {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* AI sub-form */}
+          {method === "gemini" && (
+            <div className="relative mt-3 rounded-xl border border-indigo-400/30 bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/5 to-transparent p-3">
+              <div className="grid gap-3 md:grid-cols-[1.4fr_1fr_auto]">
+                <div className="grid gap-1">
+                  <label className="text-[10px] font-medium uppercase tracking-wider text-indigo-200/80">Topic / Concept</label>
+                  <input value={aiTopic} onChange={(e) => setAiTopic(e.target.value)}
+                    placeholder="e.g. Photosynthesis · CSS Flexbox · World War II"
+                    className="w-full rounded-lg border border-indigo-400/30 bg-background/70 px-3 py-2 text-sm outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-400/30"
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-[10px] font-medium uppercase tracking-wider text-indigo-200/80">Difficulty</label>
+                  <div className="inline-flex items-center gap-1 rounded-lg border border-indigo-400/30 bg-background/60 p-1">
+                    {(["easy", "medium", "hard"] as const).map((d) => {
+                      const active = aiDifficulty === d;
+                      const tones = d === "easy" ? "from-emerald-500 to-teal-500" : d === "medium" ? "from-amber-500 to-orange-500" : "from-rose-500 to-fuchsia-500";
+                      return (
+                        <button key={d} onClick={() => setAiDifficulty(d)}
+                          className={cn(
+                            "flex-1 rounded-md px-2 py-1.5 text-[11px] font-semibold capitalize transition-all",
+                            active ? `bg-gradient-to-r ${tones} text-white shadow-[0_4px_16px_-6px_rgba(0,0,0,0.5)]` : "text-muted-foreground hover:text-foreground"
+                          )}>
+                          {d}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="flex items-end">
+                  <button onClick={generateWithGemini} disabled={aiLoading}
+                    className="group inline-flex h-[38px] w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 px-3 text-[11px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(139,92,246,0.8)] transition-transform hover:scale-[1.02] disabled:opacity-60 md:w-auto">
+                    <Wand2 className={cn("h-3.5 w-3.5", aiLoading && "animate-pulse")} /> {aiLoading ? "Generating…" : "Generate"}
+                  </button>
+                </div>
+              </div>
+              {aiError && (
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[10px] text-rose-200">
+                  <AlertTriangle className="h-3 w-3" /> {aiError}
+                </div>
+              )}
+            </div>
+          )}
+
+          {method === "manual" && quiz.length === 0 && (
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-border/60 bg-background/40 px-3 py-3">
+              <div className="text-[11px] text-muted-foreground">Start building a {numQuestions}-question {quizStructure.toUpperCase()} set manually.</div>
+              <button onClick={seedManualQuiz}
+                className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-[0_6px_20px_-8px_rgba(99,102,241,0.7)]">
+                <Plus className="h-3 w-3" /> Seed Blank Questions
+              </button>
+            </div>
+          )}
+
+          {/* Editable Review Canvas */}
+          {quiz.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold">
+                  <Pencil className="h-3.5 w-3.5 text-indigo-300" /> Editable Review Canvas
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => addQuestion("mcq")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-indigo-400/50">+ MCQ</button>
+                  <button onClick={() => addQuestion("tf")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-indigo-400/50">+ T/F</button>
+                  <button onClick={() => addQuestion("fill")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-indigo-400/50">+ Fill</button>
+                  <button onClick={() => setQuiz([])} className="ml-1 inline-flex items-center gap-1 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[10px] font-medium text-rose-200 hover:bg-rose-500/20">
+                    <Trash2 className="h-3 w-3" /> Clear
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                {quiz.map((q, qi) => (
+                  <div key={q.id} className="group relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 to-slate-900/30 p-3 backdrop-blur transition-all hover:border-indigo-400/40 hover:shadow-[0_10px_30px_-15px_rgba(99,102,241,0.5)]">
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-500/20 px-1.5 text-[10px] font-bold text-indigo-200">{qi + 1}</span>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {q.kind === "mcq" ? <ListChecks className="h-3 w-3" /> : q.kind === "tf" ? <ToggleRight className="h-3 w-3" /> : <TypeIcon className="h-3 w-3" />}
+                          {q.kind}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">· {marksPerQ} mk</span>
+                      </div>
+                      <button onClick={() => deleteQuestion(q.id)} className="rounded-md p-1 text-rose-300 opacity-0 transition-opacity hover:bg-rose-500/10 group-hover:opacity-100">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    <textarea
+                      value={q.question}
+                      onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
+                      rows={2}
+                      placeholder="Question stem…"
+                      className="w-full resize-none rounded-md border border-border/60 bg-background/70 px-2.5 py-1.5 text-[12px] outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                    />
+
+                    {q.kind === "mcq" && q.options && (
+                      <div className="mt-2 grid gap-1.5">
+                        {q.options.map((opt, oi) => {
+                          const correct = q.correctIndex === oi;
+                          return (
+                            <div key={oi} className={cn("flex items-center gap-2 rounded-md border px-2 py-1 transition-all",
+                              correct ? "border-emerald-400/60 bg-emerald-500/10" : "border-border/60 bg-background/60")}>
+                              <button onClick={() => updateQuestion(q.id, { correctIndex: oi })} className="shrink-0">
+                                {correct ? <CircleCheck className="h-4 w-4 text-emerald-300" /> : <CircleDot className="h-4 w-4 text-muted-foreground" />}
+                              </button>
+                              <input
+                                value={opt}
+                                onChange={(e) => updateOption(q.id, oi, e.target.value)}
+                                placeholder={`Option ${String.fromCharCode(65 + oi)}`}
+                                className="w-full bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/60"
+                              />
+                              {q.options!.length > 2 && (
+                                <button onClick={() => updateQuestion(q.id, { options: q.options!.filter((_, i) => i !== oi), correctIndex: q.correctIndex === oi ? 0 : (q.correctIndex! > oi ? q.correctIndex! - 1 : q.correctIndex) })}
+                                  className="text-rose-300/70 hover:text-rose-300"><XIcon className="h-3 w-3" /></button>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {q.options.length < 6 && (
+                          <button onClick={() => updateQuestion(q.id, { options: [...q.options!, ""] })}
+                            className="self-start rounded-md border border-dashed border-border/60 px-2 py-1 text-[10px] text-muted-foreground hover:border-indigo-400/40 hover:text-foreground">
+                            + Add option
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {q.kind === "tf" && (
+                      <div className="mt-2 inline-flex items-center gap-1 rounded-lg border border-border/60 bg-background/60 p-1">
+                        {([true, false] as const).map((b) => {
+                          const active = q.correctBool === b;
+                          return (
+                            <button key={String(b)} onClick={() => updateQuestion(q.id, { correctBool: b })}
+                              className={cn("rounded-md px-3 py-1 text-[11px] font-semibold transition-all",
+                                active
+                                  ? b ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_4px_14px_-4px_rgba(16,185,129,0.7)]"
+                                      : "bg-gradient-to-r from-rose-500 to-fuchsia-500 text-white shadow-[0_4px_14px_-4px_rgba(244,63,94,0.7)]"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}>
+                              {b ? "True" : "False"}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {q.kind === "fill" && (
+                      <div className="mt-2 grid gap-1">
+                        <label className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">Correct Answer (replaces ____)</label>
+                        <input
+                          value={q.answer ?? ""}
+                          onChange={(e) => updateQuestion(q.id, { answer: e.target.value })}
+                          placeholder="Expected answer"
+                          className="w-full rounded-md border border-emerald-400/30 bg-emerald-500/5 px-2 py-1 text-[12px] outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* AI Loading Overlay */}
+          {aiLoading && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl bg-slate-950/70 backdrop-blur-md">
+              <div className="flex flex-col items-center gap-3 rounded-xl border border-indigo-400/40 bg-gradient-to-br from-indigo-500/20 via-fuchsia-500/10 to-slate-900/60 px-6 py-5 shadow-[0_20px_60px_-20px_rgba(99,102,241,0.8)]">
+                <div className="relative h-10 w-10">
+                  <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500/30" />
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500">
+                    <Wand2 className="h-5 w-5 animate-pulse text-white" />
+                  </div>
+                </div>
+                <div className="text-[12px] font-semibold text-white">AI Prompting in Progress…</div>
+                <div className="text-[10px] text-indigo-200/80">Crafting {numQuestions} {quizStructure.toUpperCase()} questions on "{aiTopic || "your topic"}"</div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Actions */}
         <div className="relative mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
           <div className="text-[11px] text-muted-foreground">
