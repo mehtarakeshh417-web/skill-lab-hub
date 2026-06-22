@@ -111,6 +111,7 @@ function Header() {
         <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
           <a href="#technologies" className="hover:text-foreground">Technologies</a>
           <a href="#roles" className="hover:text-foreground">For You</a>
+          <a href="#register-school" className="hover:text-foreground">Register School</a>
           <a href="#about" className="hover:text-foreground">About</a>
         </nav>
         <div className="flex items-center gap-3">
