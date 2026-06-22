@@ -226,40 +226,11 @@ function ConsolePage() {
               </div>
 
               {/* Notifications */}
-              <div className="relative">
-                <Button variant="ghost" size="icon" className="relative h-8 w-8" onClick={() => setNotifsOpen((o) => !o)}>
-                  <Bell className="h-4 w-4" />
-                  {pendingCount > 0 && (
-                    <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
-                      {pendingCount}
-                    </span>
-                  )}
-                </Button>
-                {notifsOpen && (
-                  <div className="absolute right-0 top-10 z-50 w-80 overflow-hidden rounded-lg border border-border/60 bg-popover shadow-xl">
-                    <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
-                      <div className="text-xs font-semibold">Notifications</div>
-                      <button className="text-[10px] text-muted-foreground hover:text-foreground">Mark all read</button>
-                    </div>
-                    <div className="max-h-80 divide-y divide-border/60 overflow-y-auto">
-                      {seedNotifs.map((n) => (
-                        <div key={n.id} className="flex items-start gap-2 px-3 py-2 hover:bg-accent/40">
-                          <span className={cn(
-                            "mt-1 h-1.5 w-1.5 rounded-full",
-                            n.kind === "warn" && "bg-amber-400",
-                            n.kind === "ok" && "bg-emerald-400",
-                            n.kind === "info" && "bg-sky-400",
-                          )} />
-                          <div className="flex-1">
-                            <div className="text-xs leading-snug">{n.title}</div>
-                            <div className="mt-0.5 text-[10px] text-muted-foreground">{n.time}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <NotificationsBell
+                open={notifsOpen}
+                onOpenChange={setNotifsOpen}
+                pendingCount={pendingCount}
+              />
 
               <div className="flex items-center gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15">
