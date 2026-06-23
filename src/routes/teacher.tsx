@@ -78,7 +78,7 @@ const writeLS = (k: string, v: unknown) => {
 // ─────────────────────────────────────────────────────────────────────────────
 function TeacherWorkspace() {
   const { user } = useAuth();
-  const teacherUsername = user?.username || "teacher";
+  const teacherUsername = (user?.user_metadata as { username?: string } | undefined)?.username || "teacher";
 
   const [accounts, setAccounts] = useState<MockAccount[]>(() => listMockAccounts());
   useEffect(() => subscribeMockAccounts(() => setAccounts(listMockAccounts())), []);
