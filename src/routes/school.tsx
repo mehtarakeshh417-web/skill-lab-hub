@@ -30,6 +30,24 @@ import {
 } from "@/lib/mock-auth";
 import { cn } from "@/lib/utils";
 
+// ============================================================================
+// Curated Unsplash imagery (kids coding, STEM labs, digital interfaces).
+// ============================================================================
+const IMG = {
+  heroBanner:
+    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1600&q=80",
+  teachers:
+    "https://images.unsplash.com/photo-1610484826967-09c5720778c7?auto=format&fit=crop&w=1200&q=80",
+  structure:
+    "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80",
+  monitor:
+    "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1200&q=80",
+  treeKids:
+    "https://images.unsplash.com/photo-1596496050755-c923e73e42e3?auto=format&fit=crop&w=900&q=80",
+  emptyKids:
+    "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80",
+};
+
 export const Route = createFileRoute("/school")({
   head: () => ({ meta: [{ title: "School · Avartan Skill Lab" }] }),
   component: SchoolDashboard,
