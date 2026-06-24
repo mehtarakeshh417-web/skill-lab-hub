@@ -813,7 +813,25 @@ function MonitorPanel({
   };
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl shadow-indigo-950/20">
+        <img
+          src={IMG.monitor}
+          alt="Students collaborating around computers"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-indigo-900/30" />
+        <div className="relative flex items-center justify-between gap-4 p-6">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-200">Performance</div>
+            <h3 className="font-display text-xl font-bold text-white drop-shadow">Lifecycle &amp; outcomes</h3>
+            <p className="mt-1 max-w-md text-xs text-indigo-100/80">
+              Track every learner&apos;s completion rate, marks distribution, and outstanding work across classes.
+            </p>
+          </div>
+          <TrendingUp className="hidden h-12 w-12 text-indigo-300/80 drop-shadow sm:block" />
+        </div>
+      </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Avg marks distribution" value={`${avgMarks}%`} icon={TrendingUp} trend={`${filtered.length} students`} />
         <StatCard label="Assignment completion" value={`${completion}%`} icon={ClipboardList} trend="Live activity" />
