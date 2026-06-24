@@ -30,6 +30,24 @@ import {
 } from "@/lib/mock-auth";
 import { cn } from "@/lib/utils";
 
+// ============================================================================
+// Curated Unsplash imagery (kids coding, STEM labs, digital interfaces).
+// ============================================================================
+const IMG = {
+  heroBanner:
+    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1600&q=80",
+  teachers:
+    "https://images.unsplash.com/photo-1610484826967-09c5720778c7?auto=format&fit=crop&w=1200&q=80",
+  structure:
+    "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80",
+  monitor:
+    "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1200&q=80",
+  treeKids:
+    "https://images.unsplash.com/photo-1596496050755-c923e73e42e3?auto=format&fit=crop&w=900&q=80",
+  emptyKids:
+    "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80",
+};
+
 export const Route = createFileRoute("/school")({
   head: () => ({ meta: [{ title: "School · Avartan Skill Lab" }] }),
   component: SchoolDashboard,
@@ -181,29 +199,46 @@ function SchoolWorkspace() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-3xl border border-border bg-gradient-to-br from-indigo-500/10 via-card to-card p-5 shadow-elegant sm:flex sm:flex-wrap sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-sky-500 text-primary-foreground shadow-glow">
-            <School2 className="h-6 w-6" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              {schoolCode} · Institution Console
+      {/* Premium image-led hero banner */}
+      <header className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-indigo-950/30">
+        <img
+          src={IMG.heroBanner}
+          alt="School kids collaborating in a digital coding lab"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-indigo-950/40" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(99,102,241,0.35),transparent_60%)]" />
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 p-6 sm:flex sm:flex-wrap sm:justify-between sm:p-8">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-sky-500 text-white shadow-[0_0_30px_rgba(99,102,241,0.55)] ring-1 ring-white/30">
+              <School2 className="h-7 w-7" />
             </div>
-            <h2 className="truncate font-display text-xl font-bold tracking-tight sm:text-2xl">
-              {schoolName}
-            </h2>
+            <div className="min-w-0">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-200/90">
+                {schoolCode} · Institution Console
+              </div>
+              <h2 className="truncate font-display text-2xl font-bold tracking-tight text-white drop-shadow sm:text-3xl">
+                {schoolName}
+              </h2>
+              <p className="mt-1 hidden text-xs text-indigo-100/80 sm:block">
+                Steer every classroom, teacher, and lab from one elite command surface.
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-500">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_currentColor]" />
-            Online
-          </span>
-          <Button variant="outline" size="sm" onClick={() => exportSummaryCsv(schoolCode, classes, teachers, students)}>
-            <Download className="h-3.5 w-3.5" /> Export summary
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-emerald-500/15 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_currentColor]" />
+              Live
+            </span>
+            <Button
+              size="sm"
+              onClick={() => exportSummaryCsv(schoolCode, classes, teachers, students)}
+              className="bg-white/10 text-white backdrop-blur-md ring-1 ring-white/20 hover:bg-white/20"
+            >
+              <Download className="h-3.5 w-3.5" /> Export summary
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -298,20 +333,29 @@ function TeacherPanel({
   });
 
   return (
-    <section className="rounded-2xl border border-border bg-card shadow-elegant">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border p-4 sm:flex sm:justify-between">
-        <div className="min-w-0">
-          <h3 className="truncate font-display text-base font-semibold">Faculty roster</h3>
-          <p className="text-xs text-muted-foreground">Teachers provisioned for this school by the Portal Manager.</p>
-        </div>
+    <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-indigo-950/10 backdrop-blur-xl">
+      <div className="relative overflow-hidden border-b border-border/60">
+        <img
+          src={IMG.teachers}
+          alt="Teacher mentoring students in a digital coding classroom"
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-card via-card/85 to-card/30" />
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 sm:flex sm:justify-between sm:p-6">
+          <div className="min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">Faculty</div>
+            <h3 className="truncate font-display text-lg font-bold">Teacher roster &amp; allocation</h3>
+            <p className="text-xs text-muted-foreground">Teachers provisioned for this school by the Portal Manager.</p>
+          </div>
         <div className="relative shrink-0">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search teachers"
-            className="h-9 w-40 pl-8 text-xs sm:w-56"
+            className="h-11 w-44 pl-10 text-sm sm:w-64"
           />
+          </div>
         </div>
       </div>
       {filtered.length === 0 ? (
@@ -506,56 +550,109 @@ function StructurePanel({
   };
 
   return (
-    <div className="grid gap-4 lg:grid-cols-5">
-      {/* Setup terminal */}
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-elegant lg:col-span-3">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-between">
+    <div className="grid gap-6 lg:grid-cols-5">
+      {/* Setup terminal — God-level premium card */}
+      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-8 shadow-2xl shadow-indigo-950/20 ring-1 ring-white/5 backdrop-blur-xl lg:col-span-3">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-500/30 via-violet-500/20 to-transparent blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-gradient-to-tr from-sky-500/25 to-transparent blur-3xl"
+        />
+
+        {/* Header with kids-coding micro hero */}
+        <div className="relative mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-indigo-500/10 via-card to-sky-500/5 p-5">
           <div className="min-w-0">
-            <h3 className="truncate font-display text-base font-semibold">Structural setup</h3>
-            <p className="text-xs text-muted-foreground">Register classes and attach sections.</p>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">
+              Structural setup
+            </div>
+            <h3 className="truncate font-display text-xl font-bold tracking-tight">
+              Register classes &amp; attach sections
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Build the academic spine of your campus — every section can be assigned a lead instructor.
+            </p>
+          </div>
+          <div className="hidden h-20 w-32 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10 sm:block">
+            <img
+              src={IMG.structure}
+              alt="Diverse students learning to code together"
+              className="h-full w-full object-cover"
+            />
           </div>
         </div>
-        <div className="flex gap-2">
-          <Input
-            value={newClass}
-            onChange={(e) => setNewClass(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addClass()}
-            placeholder="New class (e.g. Class 9)"
-            className="h-9 text-sm"
-          />
-          <Button onClick={addClass} size="sm" variant="hero" className="shrink-0">
-            <Plus className="h-3.5 w-3.5" /> Class
+
+        {/* Premium "+ Class" input row */}
+        <div className="relative mb-6 flex flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Input
+              value={newClass}
+              onChange={(e) => setNewClass(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addClass()}
+              placeholder="New class (e.g. Class 9)"
+              className="h-14 rounded-xl px-6 text-lg font-medium shadow-inner shadow-black/5 transition-all focus-visible:shadow-[0_0_0_4px_rgba(99,102,241,0.18),0_0_30px_rgba(99,102,241,0.25)]"
+            />
+          </div>
+          <Button
+            onClick={addClass}
+            className="h-14 shrink-0 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 px-8 text-base font-semibold text-white shadow-lg shadow-indigo-500/40 transition-all hover:shadow-2xl hover:shadow-indigo-500/60 hover:-translate-y-0.5 active:scale-95"
+          >
+            <Plus className="h-5 w-5" /> Class
           </Button>
         </div>
-        <ul className="space-y-3">
+
+        <ul className="relative space-y-4">
           {classes.map((c) => (
-            <li key={c.id} className="rounded-xl border border-border bg-background/60 p-3">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-                <div className="truncate text-sm font-semibold">{c.grade}</div>
-                <div className="flex shrink-0 gap-1">
-                  <Button size="sm" variant="outline" onClick={() => addSection(c.id)}>
-                    <Plus className="h-3 w-3" /> Section
+            <li
+              key={c.id}
+              className="group rounded-2xl border border-border/60 bg-gradient-to-br from-background/80 via-background/40 to-background/20 p-5 shadow-lg shadow-black/5 ring-1 ring-white/5 backdrop-blur-md transition-all hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/10"
+            >
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 font-display text-sm font-bold text-white shadow-md shadow-indigo-500/40">
+                    {c.grade.replace(/\D/g, "") || "•"}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate font-display text-base font-bold">{c.grade}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {c.sections.length} section{c.sections.length === 1 ? "" : "s"}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => addSection(c.id)}
+                    className="h-10 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 px-5 text-xs font-semibold text-white shadow-md shadow-sky-500/40 transition-all hover:shadow-lg hover:shadow-sky-500/50 hover:-translate-y-0.5 active:scale-95"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Section
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => removeClass(c.id)}>
-                    <Trash2 className="h-3 w-3 text-destructive" />
-                  </Button>
+                  <button
+                    onClick={() => removeClass(c.id)}
+                    className="grid h-10 w-10 place-items-center rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 shadow-sm transition-all hover:bg-rose-500/20 hover:shadow-md hover:shadow-rose-500/30 active:scale-90"
+                    aria-label={`Remove ${c.grade}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
-              <ul className="mt-2 space-y-1.5">
+              <ul className="mt-3 space-y-2">
                 {c.sections.map((s) => (
                   <li
                     key={s.id}
-                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-border/60 bg-card px-2.5 py-2"
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm backdrop-blur-md transition-all hover:border-indigo-500/30 hover:bg-card"
                   >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
-                      <span className="truncate text-xs font-medium">{s.name}</span>
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-indigo-500 shadow-[0_0_10px_currentColor]" />
+                      <span className="truncate text-sm font-semibold">{s.name}</span>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
+                    <div className="flex shrink-0 items-center gap-2">
                       <select
                         value={s.teacherUsername ?? ""}
                         onChange={(e) => updateTeacher(c.id, s.id, e.target.value)}
-                        className="h-7 max-w-[140px] rounded-md border border-border bg-background px-2 text-[11px] outline-none focus:border-indigo-500"
+                        className="h-10 max-w-[180px] rounded-xl border border-border/70 bg-background/60 px-3 text-xs font-medium backdrop-blur-md outline-none transition-all focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.18)]"
                       >
                         <option value="">Unassigned</option>
                         {teachers.map((t) => (
@@ -566,9 +663,10 @@ function StructurePanel({
                       </select>
                       <button
                         onClick={() => removeSection(c.id, s.id)}
-                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        className="grid h-9 w-9 place-items-center rounded-lg border border-border/60 text-muted-foreground transition-all hover:border-rose-500/40 hover:bg-rose-500/10 hover:text-rose-400 active:scale-90"
+                        aria-label={`Remove ${s.name}`}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </li>
@@ -579,11 +677,21 @@ function StructurePanel({
         </ul>
       </section>
 
-      {/* Tree view */}
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-elegant lg:col-span-2">
-        <div className="mb-3 flex items-center gap-2">
-          <TreePine className="h-4 w-4 text-indigo-500" />
-          <h3 className="font-display text-base font-semibold">Allocation tree</h3>
+      {/* Tree view — premium */}
+      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-6 shadow-2xl shadow-indigo-950/20 ring-1 ring-white/5 backdrop-blur-xl lg:col-span-2">
+        <div className="relative mb-4 h-28 overflow-hidden rounded-2xl ring-1 ring-white/10">
+          <img
+            src={IMG.treeKids}
+            alt="Kids in a digital skill lab"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+          <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2">
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/15 backdrop-blur-md ring-1 ring-white/30">
+              <TreePine className="h-4 w-4 text-white" />
+            </div>
+            <div className="font-display text-base font-bold text-white drop-shadow">Allocation tree</div>
+          </div>
         </div>
         <div className="space-y-3 font-mono text-xs">
           {classes.map((c) => (
@@ -705,7 +813,25 @@ function MonitorPanel({
   };
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-5">
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl shadow-indigo-950/20">
+        <img
+          src={IMG.monitor}
+          alt="Students collaborating around computers"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-indigo-900/30" />
+        <div className="relative flex items-center justify-between gap-4 p-6">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-200">Performance</div>
+            <h3 className="font-display text-xl font-bold text-white drop-shadow">Lifecycle &amp; outcomes</h3>
+            <p className="mt-1 max-w-md text-xs text-indigo-100/80">
+              Track every learner&apos;s completion rate, marks distribution, and outstanding work across classes.
+            </p>
+          </div>
+          <TrendingUp className="hidden h-12 w-12 text-indigo-300/80 drop-shadow sm:block" />
+        </div>
+      </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Avg marks distribution" value={`${avgMarks}%`} icon={TrendingUp} trend={`${filtered.length} students`} />
         <StatCard label="Assignment completion" value={`${completion}%`} icon={ClipboardList} trend="Live activity" />
@@ -807,11 +933,19 @@ function EmptyState({
   body: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
-      <div className="grid h-10 w-10 place-items-center rounded-2xl bg-secondary text-muted-foreground">
-        <Icon className="h-5 w-5" />
+    <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+      <div className="relative h-28 w-44 overflow-hidden rounded-2xl ring-1 ring-border/60 shadow-lg">
+        <img
+          src={IMG.emptyKids}
+          alt="Students learning together"
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+        <div className="absolute bottom-2 left-2 grid h-9 w-9 place-items-center rounded-xl bg-white/15 text-white backdrop-blur-md ring-1 ring-white/30">
+          <Icon className="h-4 w-4" />
+        </div>
       </div>
-      <div className="font-display text-sm font-semibold">{title}</div>
+      <div className="font-display text-base font-bold">{title}</div>
       <p className="max-w-sm text-xs text-muted-foreground">{body}</p>
     </div>
   );
