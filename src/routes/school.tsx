@@ -550,56 +550,109 @@ function StructurePanel({
   };
 
   return (
-    <div className="grid gap-4 lg:grid-cols-5">
-      {/* Setup terminal */}
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-elegant lg:col-span-3">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-between">
+    <div className="grid gap-6 lg:grid-cols-5">
+      {/* Setup terminal — God-level premium card */}
+      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-8 shadow-2xl shadow-indigo-950/20 ring-1 ring-white/5 backdrop-blur-xl lg:col-span-3">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-500/30 via-violet-500/20 to-transparent blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-gradient-to-tr from-sky-500/25 to-transparent blur-3xl"
+        />
+
+        {/* Header with kids-coding micro hero */}
+        <div className="relative mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-indigo-500/10 via-card to-sky-500/5 p-5">
           <div className="min-w-0">
-            <h3 className="truncate font-display text-base font-semibold">Structural setup</h3>
-            <p className="text-xs text-muted-foreground">Register classes and attach sections.</p>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">
+              Structural setup
+            </div>
+            <h3 className="truncate font-display text-xl font-bold tracking-tight">
+              Register classes &amp; attach sections
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Build the academic spine of your campus — every section can be assigned a lead instructor.
+            </p>
+          </div>
+          <div className="hidden h-20 w-32 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10 sm:block">
+            <img
+              src={IMG.structure}
+              alt="Diverse students learning to code together"
+              className="h-full w-full object-cover"
+            />
           </div>
         </div>
-        <div className="flex gap-2">
-          <Input
-            value={newClass}
-            onChange={(e) => setNewClass(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addClass()}
-            placeholder="New class (e.g. Class 9)"
-            className="h-9 text-sm"
-          />
-          <Button onClick={addClass} size="sm" variant="hero" className="shrink-0">
-            <Plus className="h-3.5 w-3.5" /> Class
+
+        {/* Premium "+ Class" input row */}
+        <div className="relative mb-6 flex flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Input
+              value={newClass}
+              onChange={(e) => setNewClass(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addClass()}
+              placeholder="New class (e.g. Class 9)"
+              className="h-14 rounded-xl px-6 text-lg font-medium shadow-inner shadow-black/5 transition-all focus-visible:shadow-[0_0_0_4px_rgba(99,102,241,0.18),0_0_30px_rgba(99,102,241,0.25)]"
+            />
+          </div>
+          <Button
+            onClick={addClass}
+            className="h-14 shrink-0 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 px-8 text-base font-semibold text-white shadow-lg shadow-indigo-500/40 transition-all hover:shadow-2xl hover:shadow-indigo-500/60 hover:-translate-y-0.5 active:scale-95"
+          >
+            <Plus className="h-5 w-5" /> Class
           </Button>
         </div>
-        <ul className="space-y-3">
+
+        <ul className="relative space-y-4">
           {classes.map((c) => (
-            <li key={c.id} className="rounded-xl border border-border bg-background/60 p-3">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-                <div className="truncate text-sm font-semibold">{c.grade}</div>
-                <div className="flex shrink-0 gap-1">
-                  <Button size="sm" variant="outline" onClick={() => addSection(c.id)}>
-                    <Plus className="h-3 w-3" /> Section
+            <li
+              key={c.id}
+              className="group rounded-2xl border border-border/60 bg-gradient-to-br from-background/80 via-background/40 to-background/20 p-5 shadow-lg shadow-black/5 ring-1 ring-white/5 backdrop-blur-md transition-all hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/10"
+            >
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 font-display text-sm font-bold text-white shadow-md shadow-indigo-500/40">
+                    {c.grade.replace(/\D/g, "") || "•"}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate font-display text-base font-bold">{c.grade}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {c.sections.length} section{c.sections.length === 1 ? "" : "s"}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => addSection(c.id)}
+                    className="h-10 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 px-5 text-xs font-semibold text-white shadow-md shadow-sky-500/40 transition-all hover:shadow-lg hover:shadow-sky-500/50 hover:-translate-y-0.5 active:scale-95"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Section
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => removeClass(c.id)}>
-                    <Trash2 className="h-3 w-3 text-destructive" />
-                  </Button>
+                  <button
+                    onClick={() => removeClass(c.id)}
+                    className="grid h-10 w-10 place-items-center rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 shadow-sm transition-all hover:bg-rose-500/20 hover:shadow-md hover:shadow-rose-500/30 active:scale-90"
+                    aria-label={`Remove ${c.grade}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
-              <ul className="mt-2 space-y-1.5">
+              <ul className="mt-3 space-y-2">
                 {c.sections.map((s) => (
                   <li
                     key={s.id}
-                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-border/60 bg-card px-2.5 py-2"
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm backdrop-blur-md transition-all hover:border-indigo-500/30 hover:bg-card"
                   >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
-                      <span className="truncate text-xs font-medium">{s.name}</span>
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-indigo-500 shadow-[0_0_10px_currentColor]" />
+                      <span className="truncate text-sm font-semibold">{s.name}</span>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
+                    <div className="flex shrink-0 items-center gap-2">
                       <select
                         value={s.teacherUsername ?? ""}
                         onChange={(e) => updateTeacher(c.id, s.id, e.target.value)}
-                        className="h-7 max-w-[140px] rounded-md border border-border bg-background px-2 text-[11px] outline-none focus:border-indigo-500"
+                        className="h-10 max-w-[180px] rounded-xl border border-border/70 bg-background/60 px-3 text-xs font-medium backdrop-blur-md outline-none transition-all focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.18)]"
                       >
                         <option value="">Unassigned</option>
                         {teachers.map((t) => (
@@ -610,9 +663,10 @@ function StructurePanel({
                       </select>
                       <button
                         onClick={() => removeSection(c.id, s.id)}
-                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        className="grid h-9 w-9 place-items-center rounded-lg border border-border/60 text-muted-foreground transition-all hover:border-rose-500/40 hover:bg-rose-500/10 hover:text-rose-400 active:scale-90"
+                        aria-label={`Remove ${s.name}`}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </li>
@@ -623,11 +677,21 @@ function StructurePanel({
         </ul>
       </section>
 
-      {/* Tree view */}
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-elegant lg:col-span-2">
-        <div className="mb-3 flex items-center gap-2">
-          <TreePine className="h-4 w-4 text-indigo-500" />
-          <h3 className="font-display text-base font-semibold">Allocation tree</h3>
+      {/* Tree view — premium */}
+      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-6 shadow-2xl shadow-indigo-950/20 ring-1 ring-white/5 backdrop-blur-xl lg:col-span-2">
+        <div className="relative mb-4 h-28 overflow-hidden rounded-2xl ring-1 ring-white/10">
+          <img
+            src={IMG.treeKids}
+            alt="Kids in a digital skill lab"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+          <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2">
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/15 backdrop-blur-md ring-1 ring-white/30">
+              <TreePine className="h-4 w-4 text-white" />
+            </div>
+            <div className="font-display text-base font-bold text-white drop-shadow">Allocation tree</div>
+          </div>
         </div>
         <div className="space-y-3 font-mono text-xs">
           {classes.map((c) => (
