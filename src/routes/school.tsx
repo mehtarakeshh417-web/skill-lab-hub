@@ -199,29 +199,46 @@ function SchoolWorkspace() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-3xl border border-border bg-gradient-to-br from-indigo-500/10 via-card to-card p-5 shadow-elegant sm:flex sm:flex-wrap sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-sky-500 text-primary-foreground shadow-glow">
-            <School2 className="h-6 w-6" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              {schoolCode} · Institution Console
+      {/* Premium image-led hero banner */}
+      <header className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-indigo-950/30">
+        <img
+          src={IMG.heroBanner}
+          alt="School kids collaborating in a digital coding lab"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-indigo-950/40" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(99,102,241,0.35),transparent_60%)]" />
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 p-6 sm:flex sm:flex-wrap sm:justify-between sm:p-8">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-sky-500 text-white shadow-[0_0_30px_rgba(99,102,241,0.55)] ring-1 ring-white/30">
+              <School2 className="h-7 w-7" />
             </div>
-            <h2 className="truncate font-display text-xl font-bold tracking-tight sm:text-2xl">
-              {schoolName}
-            </h2>
+            <div className="min-w-0">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-200/90">
+                {schoolCode} · Institution Console
+              </div>
+              <h2 className="truncate font-display text-2xl font-bold tracking-tight text-white drop-shadow sm:text-3xl">
+                {schoolName}
+              </h2>
+              <p className="mt-1 hidden text-xs text-indigo-100/80 sm:block">
+                Steer every classroom, teacher, and lab from one elite command surface.
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-500">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_currentColor]" />
-            Online
-          </span>
-          <Button variant="outline" size="sm" onClick={() => exportSummaryCsv(schoolCode, classes, teachers, students)}>
-            <Download className="h-3.5 w-3.5" /> Export summary
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-emerald-500/15 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_currentColor]" />
+              Live
+            </span>
+            <Button
+              size="sm"
+              onClick={() => exportSummaryCsv(schoolCode, classes, teachers, students)}
+              className="bg-white/10 text-white backdrop-blur-md ring-1 ring-white/20 hover:bg-white/20"
+            >
+              <Download className="h-3.5 w-3.5" /> Export summary
+            </Button>
+          </div>
         </div>
       </header>
 
