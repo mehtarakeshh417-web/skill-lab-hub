@@ -333,20 +333,29 @@ function TeacherPanel({
   });
 
   return (
-    <section className="rounded-2xl border border-border bg-card shadow-elegant">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border p-4 sm:flex sm:justify-between">
-        <div className="min-w-0">
-          <h3 className="truncate font-display text-base font-semibold">Faculty roster</h3>
-          <p className="text-xs text-muted-foreground">Teachers provisioned for this school by the Portal Manager.</p>
-        </div>
+    <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-indigo-950/10 backdrop-blur-xl">
+      <div className="relative overflow-hidden border-b border-border/60">
+        <img
+          src={IMG.teachers}
+          alt="Teacher mentoring students in a digital coding classroom"
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-card via-card/85 to-card/30" />
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 sm:flex sm:justify-between sm:p-6">
+          <div className="min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">Faculty</div>
+            <h3 className="truncate font-display text-lg font-bold">Teacher roster &amp; allocation</h3>
+            <p className="text-xs text-muted-foreground">Teachers provisioned for this school by the Portal Manager.</p>
+          </div>
         <div className="relative shrink-0">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search teachers"
-            className="h-9 w-40 pl-8 text-xs sm:w-56"
+            className="h-11 w-44 pl-10 text-sm sm:w-64"
           />
+          </div>
         </div>
       </div>
       {filtered.length === 0 ? (
