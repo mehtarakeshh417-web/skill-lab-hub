@@ -933,11 +933,19 @@ function EmptyState({
   body: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
-      <div className="grid h-10 w-10 place-items-center rounded-2xl bg-secondary text-muted-foreground">
-        <Icon className="h-5 w-5" />
+    <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+      <div className="relative h-28 w-44 overflow-hidden rounded-2xl ring-1 ring-border/60 shadow-lg">
+        <img
+          src={IMG.emptyKids}
+          alt="Students learning together"
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+        <div className="absolute bottom-2 left-2 grid h-9 w-9 place-items-center rounded-xl bg-white/15 text-white backdrop-blur-md ring-1 ring-white/30">
+          <Icon className="h-4 w-4" />
+        </div>
       </div>
-      <div className="font-display text-sm font-semibold">{title}</div>
+      <div className="font-display text-base font-bold">{title}</div>
       <p className="max-w-sm text-xs text-muted-foreground">{body}</p>
     </div>
   );
