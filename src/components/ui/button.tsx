@@ -10,17 +10,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-r from-primary via-primary to-primary-glow text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5",
+          "btn-3d bg-gradient-to-r from-primary via-primary to-primary-glow text-primary-foreground",
         destructive:
-          "bg-gradient-to-r from-destructive to-destructive/90 text-destructive-foreground shadow-lg shadow-destructive/25 hover:shadow-xl hover:shadow-destructive/40 hover:-translate-y-0.5",
+          "btn-3d bg-gradient-to-r from-destructive to-destructive/90 text-destructive-foreground",
         outline:
           "border border-border/80 bg-background/40 backdrop-blur-xl shadow-md hover:bg-accent/40 hover:text-accent-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10",
         secondary:
           "bg-secondary/70 text-secondary-foreground backdrop-blur-xl border border-border/60 shadow-md hover:bg-secondary hover:shadow-lg hover:border-primary/30",
         ghost: "hover:bg-accent/40 hover:text-accent-foreground hover:backdrop-blur-xl",
         link: "text-primary underline-offset-4 hover:underline",
-        hero: "bg-gradient-brand text-primary-foreground shadow-glow hover:shadow-xl hover:shadow-primary/50 hover:-translate-y-0.5",
-        accent: "bg-gradient-accent text-accent-foreground shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/50 hover:-translate-y-0.5",
+        hero: "btn-3d bg-gradient-brand text-primary-foreground",
+        accent: "btn-3d bg-gradient-accent text-accent-foreground",
         soft: "bg-secondary/60 text-secondary-foreground border border-border/40 hover:bg-secondary/90",
       },
       size: {
