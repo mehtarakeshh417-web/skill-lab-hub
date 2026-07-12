@@ -770,7 +770,49 @@ function RegisterSchool() {
                   placeholder="e.g. Vice Principal / Director"
                   error={errors.designation}
                 />
-                <div />
+                <Field
+                  label="Login Username"
+                  icon={UserSquare2}
+                  value={form.username}
+                  onChange={(v) => update("username", v)}
+                  placeholder="e.g. dps-delhi"
+                  error={errors.username}
+                  hint="You will use this to sign in after approval."
+                />
+                <Field
+                  label="Login Password"
+                  icon={ShieldCheck}
+                  value={form.password}
+                  onChange={(v) => update("password", v)}
+                  placeholder="Choose a strong password"
+                  error={errors.password}
+                  type="password"
+                />
+                <Field
+                  label="Contact Email"
+                  icon={Send}
+                  value={form.email}
+                  onChange={(v) => update("email", v)}
+                  placeholder="principal@school.edu"
+                  error={errors.email}
+                />
+                <Field
+                  label="Phone Number"
+                  icon={Briefcase}
+                  value={form.phone}
+                  onChange={(v) => update("phone", v)}
+                  placeholder="+91 98xxxxxxxx"
+                  error={errors.phone}
+                />
+                <div className="sm:col-span-2">
+                  <Field
+                    label="Address"
+                    icon={MapPin}
+                    value={form.address}
+                    onChange={(v) => update("address", v)}
+                    placeholder="Street, city, state, PIN"
+                  />
+                </div>
                 <div className="sm:col-span-2">
                   <label className="block">
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Submission Notes <span className="text-muted-foreground/70 normal-case">(optional)</span></span>
