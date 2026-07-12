@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -50,10 +50,10 @@ function OnboardSchool() {
     },
   });
 
-  const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const update = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     const parsed = schoolOnboardingSchema.safeParse(form);
     if (!parsed.success) {
@@ -149,7 +149,7 @@ function OnboardSchool() {
   );
 }
 
-function Field({ label, className, children }: { label: string; className?: string; children: React.ReactNode }) {
+function Field({ label, className, children }: { label: string; className?: string; children: ReactNode }) {
   return (
     <label className={`flex flex-col gap-2 ${className ?? ""}`}>
       <span className="text-sm font-semibold text-foreground/80">{label}</span>

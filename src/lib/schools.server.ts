@@ -85,14 +85,15 @@ export async function createSchoolForActor(input: SchoolOnboardingInput, actorSu
   const loginEmail = `${username}@avartan.app`;
   const contactEmail = input.email.trim().toLowerCase();
 
-  const [codeCheck, usernameCheck, emailCheck] = await Promise.all([
+  const [codeCheck, usernameCheck, profileCheck, emailCheck] = await Promise.all([
     supabaseAdmin.from("schools").select("id").ilike("school_code", schoolCode).maybeSingle(),
     supabaseAdmin.from("schools").select("id").ilike("username", username).maybeSingle(),
+    supabaseAdmin.from("profiles").select("id").ilike("username", username).maybeSingle(),
     supabaseAdmin.from("schools").select("id").ilike("email", contactEmail).maybeSingle(),
   ]);
 
   if (codeCheck.data) throw new Error("School code already exists.");
-  if (usernameCheck.data) throw new Error("Username already exists.");
+  if (usernameCheck.data || profileCheck.data) throw new Error("Username already exists.");
   if (emailCheck.data) throw new Error("Email address is already attached to another school.");
 
   const created = await supabaseAdmin.auth.admin.createUser({
