@@ -73,37 +73,61 @@ export type Database = {
       }
       schools: {
         Row: {
+          address: string | null
           area: string | null
           city: string | null
           created_at: string
+          designation: string | null
+          email: string
           id: string
           name: string
+          notes: string | null
+          phone: string | null
+          principal_name: string | null
           school_code: string
           state: string | null
           status: string
+          updated_at: string
           user_id: string | null
+          username: string
         }
         Insert: {
+          address?: string | null
           area?: string | null
           city?: string | null
           created_at?: string
+          designation?: string | null
+          email: string
           id?: string
           name: string
+          notes?: string | null
+          phone?: string | null
+          principal_name?: string | null
           school_code: string
           state?: string | null
           status?: string
+          updated_at?: string
           user_id?: string | null
+          username: string
         }
         Update: {
+          address?: string | null
           area?: string | null
           city?: string | null
           created_at?: string
+          designation?: string | null
+          email?: string
           id?: string
           name?: string
+          notes?: string | null
+          phone?: string | null
+          principal_name?: string | null
           school_code?: string
           state?: string | null
           status?: string
+          updated_at?: string
           user_id?: string | null
+          username?: string
         }
         Relationships: []
       }
