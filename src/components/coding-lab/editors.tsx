@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Maximize2, Minimize2, RotateCw, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HTML_EDITOR_SRC_DOC } from "./html-editor-srcdoc";
 
 // =============================================================================
 // EditorWrapper — premium glassmorphic chrome around every live editor iframe.
@@ -341,9 +342,9 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
     title: "HTML · CSS · JS",
     subtitle: "Side-by-side editor with instant live preview",
     badge: "Web",
-    src: "https://onecompiler.com/embed/html",
+    srcDoc: HTML_EDITOR_SRC_DOC,
     caption:
-      "Powered by OneCompiler — multi-file HTML/CSS/JS sandbox with rendered preview pane.",
+      "Self-contained HTML / CSS / JS editor — live preview, console capture, auto-run, autosave and download.",
   },
   editor: {
     title: "Word Editor",
