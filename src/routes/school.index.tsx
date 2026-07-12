@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
+import { listMySchoolTeachers } from "@/lib/teachers.functions";
 import {
   getMockAccount,
   listMockAccounts,
@@ -155,6 +156,13 @@ function SchoolWorkspace() {
     enabled: Boolean(session),
     retry: false,
   });
+  const fetchTeachers = useServerFn(listMySchoolTeachers);
+  const { data: backendTeachers } = useQuery({
+    queryKey: ["school-teachers"],
+    queryFn: () => fetchTeachers(),
+    enabled: Boolean(session),
+    retry: false,
+  });
   const backendSchool = backendData?.schools[0];
   const username = (user?.user_metadata as { username?: string } | undefined)?.username
     ?? user?.email?.split("@")[0]
@@ -175,15 +183,30 @@ function SchoolWorkspace() {
     saveClasses(schoolCode, classes);
   }, [classes, schoolCode]);
 
-  const teachers = useMemo(
-    () =>
-      accounts.filter(
-        (a) =>
-          a.role === "teacher" &&
-          (a.schoolCode?.toUpperCase() ?? "").trim() === schoolCode
-      ),
-    [accounts, schoolCode]
-  );
+  const teachers = useMemo(() => {
+    const mock = accounts.filter(
+      (a) =>
+        a.role === "teacher" &&
+        (a.schoolCode?.toUpperCase() ?? "").trim() === schoolCode
+    );
+    const backend: MockAccount[] = (backendTeachers?.teachers ?? []).map((t) => ({
+      username: t.username,
+      password: "",
+      role: "teacher",
+      fullName: t.fullName,
+      email: t.email,
+      phone: t.phone,
+      schoolCode,
+      teacherId: t.employeeId || t.id.slice(0, 6).toUpperCase(),
+    } as MockAccount));
+    const seen = new Set<string>();
+    return [...backend, ...mock].filter((t) => {
+      const k = t.username.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [accounts, backendTeachers, schoolCode]);
   const students = useMemo(
     () =>
       accounts.filter(
