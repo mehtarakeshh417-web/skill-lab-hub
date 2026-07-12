@@ -242,17 +242,12 @@ function AuthPage() {
                   />
                   Keep me signed in
                 </label>
-                <button
-                  type="button"
+                <Link
+                  to="/forgot-password"
                   className="text-sm font-semibold text-indigo-500 hover:text-indigo-600"
-                  onClick={() =>
-                    toast.info("Contact your school administrator", {
-                      description: "Password resets are handled by your Admin or Portal Manager.",
-                    })
-                  }
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
 
               {fieldError.form ? (

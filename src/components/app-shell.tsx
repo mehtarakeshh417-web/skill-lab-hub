@@ -14,9 +14,15 @@ import {
   ClipboardList,
   BarChart3,
   Loader2,
+  KeyRound,
+  ScrollText,
+  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/notifications-bell";
+import { useServerFn } from "@tanstack/react-start";
+import { getMySecurityStatus } from "@/lib/security.functions";
+import { useState } from "react";
 
 type NavItem = { label: string; to: string; icon: typeof LayoutDashboard };
 
@@ -24,11 +30,14 @@ const NAV: Record<AppRole, NavItem[]> = {
   admin: [
     { label: "Overview", to: "/admin", icon: LayoutDashboard },
     { label: "Schools", to: "/admin", icon: School2 },
+    { label: "Users", to: "/admin/users", icon: UserCog },
+    { label: "Audit Trail", to: "/admin/audit-logs", icon: ScrollText },
     { label: "Analytics", to: "/admin", icon: BarChart3 },
   ],
   portal_manager: [
     { label: "Operations", to: "/manager", icon: LayoutDashboard },
     { label: "Schools", to: "/manager", icon: School2 },
+    { label: "Users", to: "/manager/users", icon: UserCog },
   ],
   sales_rep: [
     { label: "Dashboard", to: "/sales-rep", icon: LayoutDashboard },
@@ -77,18 +86,30 @@ export function AppShell({
   requireRole?: AppRole;
   title?: string;
 }) {
-  const { user, role, loading, signOut } = useAuth();
+  const { user, role, loading, signOut, session } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const secStatus = useServerFn(getMySecurityStatus);
+  const [secChecked, setSecChecked] = useState(false);
 
   useEffect(() => {
     if (loading) return;
     if (!user) {
       navigate({ to: "/auth", replace: true });
+      return;
     } else if (requireRole && role && role !== requireRole) {
       navigate({ to: ROLE_HOME[role], replace: true });
+      return;
     }
-  }, [user, role, loading, requireRole, navigate]);
+    if (user && session && !secChecked && !pathname.startsWith("/setup-security")) {
+      secStatus().then((s) => {
+        setSecChecked(true);
+        if ((s as { mustSetupSecurity: boolean }).mustSetupSecurity) {
+          navigate({ to: "/setup-security", replace: true });
+        }
+      }).catch(() => setSecChecked(true));
+    }
+  }, [user, session, role, loading, requireRole, navigate, secChecked, pathname, secStatus]);
 
   if (loading || !user || !role || (requireRole && role !== requireRole)) {
     return (
@@ -162,6 +183,9 @@ export function AppShell({
             </Button>
           </div>
           <div className="hidden lg:flex items-center gap-3">
+            <Link to="/settings/change-password" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+              <KeyRound className="h-3.5 w-3.5" /> Change password
+            </Link>
             <NotificationsBell />
           </div>
         </header>
