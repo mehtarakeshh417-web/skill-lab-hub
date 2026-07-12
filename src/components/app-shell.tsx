@@ -32,6 +32,10 @@ const NAV: Record<AppRole, NavItem[]> = {
     { label: "Teachers", to: "/manager", icon: GraduationCap },
     { label: "Students", to: "/manager", icon: Users },
   ],
+  sales_rep: [
+    { label: "Dashboard", to: "/sales-rep", icon: LayoutDashboard },
+    { label: "My Schools", to: "/sales-rep", icon: School2 },
+  ],
   school: [{ label: "Dashboard", to: "/school", icon: LayoutDashboard }],
   teacher: [{ label: "Dashboard", to: "/teacher", icon: LayoutDashboard }],
   student: [
@@ -44,6 +48,7 @@ const NAV: Record<AppRole, NavItem[]> = {
 const ROLE_LABEL: Record<AppRole, string> = {
   admin: "Administrator",
   portal_manager: "Portal Manager",
+  sales_rep: "Sales Representative",
   school: "School",
   teacher: "Teacher",
   student: "Student",
@@ -52,6 +57,7 @@ const ROLE_LABEL: Record<AppRole, string> = {
 const ROLE_ICON: Record<AppRole, typeof ShieldCheck> = {
   admin: ShieldCheck,
   portal_manager: Users,
+  sales_rep: Users,
   school: School2,
   teacher: GraduationCap,
   student: BookOpen,
