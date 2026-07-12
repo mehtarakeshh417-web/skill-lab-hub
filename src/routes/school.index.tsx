@@ -18,6 +18,7 @@ import {
   TreePine,
   ClipboardList,
   TrendingUp,
+  Upload,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
