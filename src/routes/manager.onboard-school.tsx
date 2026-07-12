@@ -127,6 +127,26 @@ function OnboardSchool() {
             <Field label="Notes" className="md:col-span-2">
               <Textarea rows={3} value={form.notes} onChange={update("notes")} placeholder="Grades, tracks, licenses…" />
             </Field>
+            <Field label="Sales representative *" className="md:col-span-2">
+              <select
+                value={form.salesRepId}
+                onChange={update("salesRepId")}
+                required
+                className="h-11 rounded-xl border border-input bg-background px-3 text-sm"
+              >
+                <option value="">Select an active sales rep…</option>
+                {(reps ?? []).filter((r) => r.status === "active").map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.fullName} — {r.designation || "Sales"}
+                  </option>
+                ))}
+              </select>
+              {(reps ?? []).length === 0 && (
+                <span className="text-xs text-muted-foreground">
+                  No sales reps yet. Create one from Sales Hierarchy first.
+                </span>
+              )}
+            </Field>
           </div>
 
           <div className="mt-8 rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 via-violet-500/5 to-transparent p-6">
