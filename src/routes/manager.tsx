@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
+import { useAuth } from "@/lib/auth";
 import { School2, Users, GraduationCap, UserCog, Plus, CheckCircle2, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/manager")({
@@ -12,9 +14,13 @@ export const Route = createFileRoute("/manager")({
 });
 
 function ManagerDashboard() {
+  const { session } = useAuth();
+  const getSchools = useServerFn(getSchoolDashboardData);
   const { data } = useQuery({
     queryKey: ["schools", "dashboard"],
-    queryFn: () => getSchoolDashboardData(),
+    queryFn: () => getSchools(),
+    enabled: Boolean(session),
+    retry: false,
   });
   const schools = data?.schools ?? [];
 

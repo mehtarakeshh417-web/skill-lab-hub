@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -147,9 +148,10 @@ function SchoolDashboard() {
 
 function SchoolWorkspace() {
   const { user, session } = useAuth();
+  const getSchools = useServerFn(getSchoolDashboardData);
   const { data: backendData } = useQuery({
     queryKey: ["schools", "dashboard", "mine"],
-    queryFn: () => getSchoolDashboardData(),
+    queryFn: () => getSchools(),
     enabled: Boolean(session),
     retry: false,
   });
