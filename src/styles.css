@@ -340,6 +340,10 @@
   position: relative;
   isolation: isolate;
 }
+.slab-3d > * {
+  position: relative;
+  z-index: 3;
+}
 .slab-3d::before {
   content: "";
   position: absolute;
