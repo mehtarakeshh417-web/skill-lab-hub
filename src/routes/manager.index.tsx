@@ -79,7 +79,12 @@ function ManagerDashboard() {
             </Button>
             <Button variant="soft" className="w-full justify-start"><GraduationCap className="h-4 w-4" /> Add teacher</Button>
             <Button variant="soft" className="w-full justify-start"><Users className="h-4 w-4" /> Bulk upload students</Button>
-            <Button variant="soft" className="w-full justify-start"><UserCog className="h-4 w-4" /> Add sales rep</Button>
+            <Button variant="soft" className="w-full justify-start" asChild>
+              <Link to="/manager/create-sales-rep"><UserCog className="h-4 w-4" /> Add sales rep</Link>
+            </Button>
+            <Button variant="soft" className="w-full justify-start" asChild>
+              <Link to="/manager/sales-hierarchy"><Users className="h-4 w-4" /> View sales hierarchy</Link>
+            </Button>
           </div>
         </div>
       </div>
