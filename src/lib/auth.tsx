@@ -56,6 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s?.user) {
+        mockSignOut();
+        setMock(null);
         // defer role fetch
         setTimeout(() => {
           supabase
