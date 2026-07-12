@@ -6,8 +6,9 @@ import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listSalesReps } from "@/lib/sales-reps.functions";
+import { listSchoolRegistrations } from "@/lib/registrations.functions";
 import { useAuth } from "@/lib/auth";
-import { School2, Users, GraduationCap, UserCog, Plus, CheckCircle2, Clock } from "lucide-react";
+import { School2, Users, GraduationCap, UserCog, Plus, CheckCircle2, Clock, ClipboardList } from "lucide-react";
 
 export const Route = createFileRoute("/manager/")({
   head: () => ({ meta: [{ title: "Portal Manager · Avartan Skill Lab" }] }),
@@ -18,6 +19,7 @@ function ManagerDashboard() {
   const { session } = useAuth();
   const getSchools = useServerFn(getSchoolDashboardData);
   const getReps = useServerFn(listSalesReps);
+  const getRegs = useServerFn(listSchoolRegistrations);
   const { data } = useQuery({
     queryKey: ["schools", "dashboard"],
     queryFn: () => getSchools(),
@@ -30,13 +32,19 @@ function ManagerDashboard() {
     enabled: Boolean(session),
     retry: false,
   });
+  const { data: regsData } = useQuery({
+    queryKey: ["school-registrations"],
+    queryFn: () => getRegs(),
+    enabled: Boolean(session),
+    retry: false,
+  });
   const schools = data?.schools ?? [];
 
   return (
     <AppShell requireRole="portal_manager" title="Operations">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Schools" value={data?.counts.schools ?? schools.length} icon={School2} />
-        <StatCard label="Teachers" value={data?.counts.teachers ?? 0} icon={GraduationCap} />
+        <StatCard label="Total schools" value={data?.counts.schools ?? schools.length} icon={School2} />
+        <StatCard label="Pending approvals" value={regsData?.counts.pending ?? 0} icon={ClipboardList} />
         <StatCard label="Students" value={data?.counts.students ?? 0} icon={Users} />
         <StatCard label="Sales reps" value={repsData?.counts.total ?? 0} icon={UserCog} />
       </div>
@@ -84,6 +92,16 @@ function ManagerDashboard() {
           <div className="mt-4 space-y-2">
             <Button variant="soft" className="w-full justify-start" asChild>
               <Link to="/manager/onboard-school"><School2 className="h-4 w-4" /> Create school</Link>
+            </Button>
+            <Button variant="soft" className="w-full justify-start" asChild>
+              <Link to="/manager/pending-schools">
+                <ClipboardList className="h-4 w-4" /> Pending approvals
+                {regsData?.counts.pending ? (
+                  <span className="ml-auto rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-500">
+                    {regsData.counts.pending}
+                  </span>
+                ) : null}
+              </Link>
             </Button>
             <Button variant="soft" className="w-full justify-start"><GraduationCap className="h-4 w-4" /> Add teacher</Button>
             <Button variant="soft" className="w-full justify-start"><Users className="h-4 w-4" /> Bulk upload students</Button>

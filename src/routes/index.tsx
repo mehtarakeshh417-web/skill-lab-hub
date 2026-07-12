@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { submitSchoolRegistration } from "@/lib/registrations.functions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/lib/theme";
 import {
   addRegistration,
-  isSchoolCodeTaken,
   useRegistrations,
 } from "@/lib/registrations";
 import {
@@ -588,6 +589,7 @@ function Footer() {
 function RegisterSchool() {
   const regs = useRegistrations();
   const recent = regs.slice(0, 4);
+  const submitFn = useServerFn(submitSchoolRegistration);
 
   const empty = {
     schoolName: "",
@@ -596,6 +598,11 @@ function RegisterSchool() {
     region: "",
     designation: "",
     notes: "",
+    username: "",
+    password: "",
+    email: "",
+    phone: "",
+    address: "",
   };
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -611,16 +618,19 @@ function RegisterSchool() {
     const code = form.schoolCode.trim().toUpperCase();
     if (!form.schoolName.trim() || form.schoolName.trim().length < 3) e.schoolName = "Please enter the full institutional name.";
     if (!code) e.schoolCode = "School code is required.";
-    else if (!/^[A-Z0-9-]{4,16}$/.test(code)) e.schoolCode = "Use 4–16 chars · uppercase letters, digits or hyphens.";
-    else if (isSchoolCodeTaken(code)) e.schoolCode = "That code is already taken — please pick another.";
+    else if (code.length < 3) e.schoolCode = "School code must be at least 3 characters.";
     if (!form.principalName.trim()) e.principalName = "Principal name is required.";
     if (!form.region.trim()) e.region = "Region / area is required.";
     if (!form.designation.trim()) e.designation = "Contact designation is required.";
+    if (!form.username.trim()) e.username = "Choose a login username.";
+    if (!form.password) e.password = "Choose a password.";
+    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) e.email = "Valid contact email required.";
+    if (!form.phone.trim()) e.phone = "Phone number is required.";
     if (form.notes.length > 600) e.notes = "Notes must be under 600 characters.";
     return e;
   };
 
-  const submit = (ev: React.FormEvent) => {
+  const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     const e = validate();
     if (Object.keys(e).length) {
@@ -629,8 +639,24 @@ function RegisterSchool() {
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      const rec = addRegistration({
+    try {
+      await submitFn({
+        data: {
+          schoolName: form.schoolName.trim(),
+          schoolCode: form.schoolCode.trim().toUpperCase(),
+          principalName: form.principalName.trim(),
+          region: form.region.trim(),
+          designation: form.designation.trim(),
+          notes: form.notes.trim(),
+          username: form.username.trim().toLowerCase(),
+          password: form.password,
+          email: form.email.trim().toLowerCase(),
+          phone: form.phone.trim(),
+          address: form.address.trim(),
+        },
+      });
+      // Also mirror into local session list for the sidebar preview.
+      addRegistration({
         schoolName: form.schoolName.trim(),
         schoolCode: form.schoolCode.trim().toUpperCase(),
         principalName: form.principalName.trim(),
@@ -639,12 +665,17 @@ function RegisterSchool() {
         notes: form.notes.trim(),
       });
       toast.success("Registration submitted", {
-        description: `${rec.schoolName} · status: Pending Approval`,
+        description: `${form.schoolName.trim()} · status: Pending Approval`,
       });
       setForm(empty);
       setErrors({});
+    } catch (err) {
+      toast.error("Registration failed", {
+        description: err instanceof Error ? err.message : String(err),
+      });
+    } finally {
       setSubmitting(false);
-    }, 650);
+    }
   };
 
   const fmt = (iso: string) => {
@@ -739,7 +770,49 @@ function RegisterSchool() {
                   placeholder="e.g. Vice Principal / Director"
                   error={errors.designation}
                 />
-                <div />
+                <Field
+                  label="Login Username"
+                  icon={UserSquare2}
+                  value={form.username}
+                  onChange={(v) => update("username", v)}
+                  placeholder="e.g. dps-delhi"
+                  error={errors.username}
+                  hint="You will use this to sign in after approval."
+                />
+                <Field
+                  label="Login Password"
+                  icon={ShieldCheck}
+                  value={form.password}
+                  onChange={(v) => update("password", v)}
+                  placeholder="Choose a strong password"
+                  error={errors.password}
+                  type="password"
+                />
+                <Field
+                  label="Contact Email"
+                  icon={Send}
+                  value={form.email}
+                  onChange={(v) => update("email", v)}
+                  placeholder="principal@school.edu"
+                  error={errors.email}
+                />
+                <Field
+                  label="Phone Number"
+                  icon={Briefcase}
+                  value={form.phone}
+                  onChange={(v) => update("phone", v)}
+                  placeholder="+91 98xxxxxxxx"
+                  error={errors.phone}
+                />
+                <div className="sm:col-span-2">
+                  <Field
+                    label="Address"
+                    icon={MapPin}
+                    value={form.address}
+                    onChange={(v) => update("address", v)}
+                    placeholder="Street, city, state, PIN"
+                  />
+                </div>
                 <div className="sm:col-span-2">
                   <label className="block">
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Submission Notes <span className="text-muted-foreground/70 normal-case">(optional)</span></span>
@@ -850,7 +923,7 @@ function RegisterSchool() {
 }
 
 function Field({
-  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength,
+  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
 }: {
   label: string;
   icon: typeof Building2;
@@ -860,6 +933,7 @@ function Field({
   error?: string;
   hint?: string;
   maxLength?: number;
+  type?: string;
 }) {
   return (
     <label className="block">
@@ -874,6 +948,7 @@ function Field({
       >
         <Icon className="h-4 w-4 text-primary/80" />
         <input
+          type={type ?? "text"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}

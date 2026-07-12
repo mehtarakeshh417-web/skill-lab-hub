@@ -130,6 +130,83 @@ export type Database = {
           },
         ]
       }
+      school_registrations: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_school_id: string | null
+          designation: string | null
+          email: string
+          encrypted_password: string
+          id: string
+          notes: string | null
+          phone: string | null
+          principal_name: string | null
+          region: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          school_code: string
+          school_name: string
+          status: string
+          submitted_at: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_school_id?: string | null
+          designation?: string | null
+          email: string
+          encrypted_password: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          principal_name?: string | null
+          region?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_code: string
+          school_name: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_school_id?: string | null
+          designation?: string | null
+          email?: string
+          encrypted_password?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          principal_name?: string | null
+          region?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_code?: string
+          school_name?: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_registrations_created_school_id_fkey"
+            columns: ["created_school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           address: string | null

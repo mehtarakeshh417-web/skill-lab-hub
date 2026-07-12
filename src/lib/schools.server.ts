@@ -21,17 +21,20 @@ export type SchoolDashboardRecord = {
 
 type SchoolRow = Database["public"]["Tables"]["schools"]["Row"];
 
-async function getRoleFlags(supabase: AuthedClient, userId: string) {
-  const [admin, manager, school] = await Promise.all([
-    supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
-    supabase.rpc("has_role", { _user_id: userId, _role: "portal_manager" }),
-    supabase.rpc("has_role", { _user_id: userId, _role: "school" }),
-  ]);
-
+async function getRoleFlags(_supabase: AuthedClient, userId: string) {
+  // Use service-role client to bypass any RLS/grant edge cases so that a
+  // signed-in user's role is always resolvable server-side.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  const roles = new Set((data ?? []).map((r) => r.role as string));
   return {
-    isAdmin: Boolean(admin.data),
-    isManager: Boolean(manager.data),
-    isSchool: Boolean(school.data),
+    isAdmin: roles.has("admin"),
+    isManager: roles.has("portal_manager"),
+    isSchool: roles.has("school"),
   };
 }
 
