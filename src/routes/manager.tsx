@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
+import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { School2, Users, GraduationCap, UserCog, Plus, CheckCircle2, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/manager")({
@@ -10,12 +12,18 @@ export const Route = createFileRoute("/manager")({
 });
 
 function ManagerDashboard() {
+  const { data } = useQuery({
+    queryKey: ["schools", "dashboard"],
+    queryFn: () => getSchoolDashboardData(),
+  });
+  const schools = data?.schools ?? [];
+
   return (
     <AppShell requireRole="portal_manager" title="Operations">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Schools" value={0} icon={School2} />
-        <StatCard label="Teachers" value={0} icon={GraduationCap} />
-        <StatCard label="Students" value={0} icon={Users} />
+        <StatCard label="Schools" value={data?.counts.schools ?? schools.length} icon={School2} />
+        <StatCard label="Teachers" value={data?.counts.teachers ?? 0} icon={GraduationCap} />
+        <StatCard label="Students" value={data?.counts.students ?? 0} icon={Users} />
         <StatCard label="Sales reps" value={0} icon={UserCog} />
       </div>
 
@@ -30,11 +38,32 @@ function ManagerDashboard() {
               <Link to="/manager/onboard-school"><Plus className="h-4 w-4" /> Onboard school</Link>
             </Button>
           </div>
-          <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/30 py-12 text-center">
-            <Clock className="h-8 w-8 text-muted-foreground" />
-            <div className="mt-2 font-medium">No pending registrations</div>
-            <div className="text-sm text-muted-foreground">New school requests appear here.</div>
-          </div>
+          {schools.length === 0 ? (
+            <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/30 py-12 text-center">
+              <Clock className="h-8 w-8 text-muted-foreground" />
+              <div className="mt-2 font-medium">No schools onboarded</div>
+              <div className="text-sm text-muted-foreground">Created schools appear here with masked contact details.</div>
+            </div>
+          ) : (
+            <div className="mt-6 space-y-3">
+              {schools.map((school) => (
+                <div key={school.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm backdrop-blur md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                  <div className="min-w-0">
+                    <div className="truncate font-display text-base font-bold">{school.schoolName}</div>
+                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      <span>{school.schoolCode}</span>
+                      <span>@{school.username}</span>
+                      <span>{school.email}</span>
+                      <span>{school.phone}</span>
+                    </div>
+                  </div>
+                  <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-500">
+                    {school.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-elegant">
           <div className="font-display text-lg font-semibold">Quick actions</div>

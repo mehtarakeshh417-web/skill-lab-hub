@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -22,6 +23,7 @@ import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
+import { getSchoolDashboardData } from "@/lib/schools.functions";
 import {
   getMockAccount,
   listMockAccounts,
@@ -144,19 +146,29 @@ function SchoolDashboard() {
 }
 
 function SchoolWorkspace() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
+  const { data: backendData } = useQuery({
+    queryKey: ["schools", "dashboard", "mine"],
+    queryFn: () => getSchoolDashboardData(),
+    enabled: Boolean(session),
+    retry: false,
+  });
+  const backendSchool = backendData?.schools[0];
   const username = (user?.user_metadata as { username?: string } | undefined)?.username
     ?? user?.email?.split("@")[0]
     ?? "school";
 
   const myAccount = getMockAccount(username);
-  const schoolCode = (myAccount?.schoolCode ?? "SCHOOL").toUpperCase();
-  const schoolName = myAccount?.schoolName ?? myAccount?.fullName ?? "Avartan Test Academy";
+  const schoolCode = (backendSchool?.schoolCode ?? myAccount?.schoolCode ?? "SCHOOL").toUpperCase();
+  const schoolName = backendSchool?.schoolName ?? myAccount?.schoolName ?? myAccount?.fullName ?? "Avartan Test Academy";
 
   const [accounts, setAccounts] = useState<MockAccount[]>(() => listMockAccounts());
   useEffect(() => subscribeMockAccounts(() => setAccounts(listMockAccounts())), []);
 
   const [classes, setClasses] = useState<ClassEntry[]>(() => loadClasses(schoolCode));
+  useEffect(() => {
+    setClasses(loadClasses(schoolCode));
+  }, [schoolCode]);
   useEffect(() => {
     saveClasses(schoolCode, classes);
   }, [classes, schoolCode]);

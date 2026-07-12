@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { registerMockAccount } from "@/lib/mock-auth";
-import { addRegistration } from "@/lib/registrations";
+import { createSchoolAccount } from "@/lib/schools.functions";
+import { schoolOnboardingSchema } from "@/lib/schools.schema";
 import { toast } from "sonner";
 import { ArrowLeft, School2, KeyRound, UserPlus2 } from "lucide-react";
 
@@ -16,6 +18,8 @@ export const Route = createFileRoute("/manager/onboard-school")({
 
 function OnboardSchool() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const createSchool = useServerFn(createSchoolAccount);
   const [form, setForm] = useState({
     schoolName: "",
     schoolCode: "",
@@ -26,46 +30,39 @@ function OnboardSchool() {
     username: "",
     password: "",
     email: "",
+    phone: "",
+    address: "",
   });
-  const [saving, setSaving] = useState(false);
+
+  const mutation = useMutation({
+    mutationFn: createSchool,
+    onSuccess: async (school) => {
+      await queryClient.invalidateQueries({ queryKey: ["schools", "dashboard"] });
+      toast.success(`School "${school.schoolName}" onboarded`, {
+        description: `Login username: ${school.username}`,
+      });
+      navigate({ to: "/manager" });
+    },
+    onError: (error) => {
+      toast.error("Could not create school", {
+        description: error instanceof Error ? error.message : "Please check the details and try again.",
+      });
+    },
+  });
 
   const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.schoolName || !form.schoolCode || !form.username || !form.password) {
-      toast.error("School name, code, username and password are required");
+    const parsed = schoolOnboardingSchema.safeParse(form);
+    if (!parsed.success) {
+      toast.error("Please complete the required fields", {
+        description: parsed.error.issues[0]?.message,
+      });
       return;
     }
-    setSaving(true);
-    const email = form.email || `${form.username.toLowerCase()}@avartan.app`;
-    const res = registerMockAccount({
-      username: form.username.trim(),
-      password: form.password,
-      role: "school",
-      fullName: form.schoolName,
-      email,
-      schoolCode: form.schoolCode.trim().toUpperCase(),
-      schoolName: form.schoolName,
-    });
-    if (!res.ok) {
-      setSaving(false);
-      toast.error(res.reason || "Could not create school account");
-      return;
-    }
-    addRegistration({
-      schoolName: form.schoolName,
-      schoolCode: form.schoolCode.trim().toUpperCase(),
-      principalName: form.principalName || form.schoolName,
-      region: form.region,
-      designation: form.designation,
-      notes: form.notes,
-      generatedPassword: form.password,
-    });
-    toast.success(`School "${form.schoolName}" onboarded. Login: ${form.username}`);
-    setSaving(false);
-    navigate({ to: "/manager" });
+    mutation.mutate({ data: parsed.data });
   };
 
   return (
@@ -108,7 +105,13 @@ function OnboardSchool() {
               <Input value={form.designation} onChange={update("designation")} placeholder="Principal" />
             </Field>
             <Field label="Contact email">
-              <Input type="email" value={form.email} onChange={update("email")} placeholder="school@example.com" />
+              <Input type="email" value={form.email} onChange={update("email")} placeholder="school@example.com" required />
+            </Field>
+            <Field label="Phone number *">
+              <Input value={form.phone} onChange={update("phone")} placeholder="9876543210" required />
+            </Field>
+            <Field label="Address" className="md:col-span-2">
+              <Textarea rows={2} value={form.address} onChange={update("address")} placeholder="Campus address, landmark, pin code…" />
             </Field>
             <Field label="Notes" className="md:col-span-2">
               <Textarea rows={3} value={form.notes} onChange={update("notes")} placeholder="Grades, tracks, licenses…" />
@@ -124,7 +127,7 @@ function OnboardSchool() {
                 <Input value={form.username} onChange={update("username")} placeholder="jaipur-maker" autoComplete="off" />
               </Field>
               <Field label="Password *">
-                <Input value={form.password} onChange={update("password")} placeholder="Set a strong password" autoComplete="new-password" />
+                <Input type="password" value={form.password} onChange={update("password")} placeholder="Set a strong password" autoComplete="new-password" />
               </Field>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
@@ -136,8 +139,8 @@ function OnboardSchool() {
             <Button type="button" variant="outline" onClick={() => navigate({ to: "/manager" })}>
               Cancel
             </Button>
-            <Button type="submit" variant="hero" size="xl" disabled={saving}>
-              <UserPlus2 className="h-5 w-5" /> {saving ? "Creating…" : "Create school & issue login"}
+            <Button type="submit" variant="hero" size="xl" disabled={mutation.isPending}>
+              <UserPlus2 className="h-5 w-5" /> {mutation.isPending ? "Creating…" : "Create school & issue login"}
             </Button>
           </div>
         </form>
