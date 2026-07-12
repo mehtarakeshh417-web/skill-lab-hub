@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listSchoolRegistrations } from "@/lib/registrations.functions";
 import { useAuth } from "@/lib/auth";
-import { School2, Users, GraduationCap, Activity, TrendingUp, BarChart3, ClipboardList } from "lucide-react";
+import { School2, Users, GraduationCap, TrendingUp, BarChart3, ClipboardList } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin · Avartan Skill Lab" }] }),
