@@ -21,10 +21,12 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as ManagerSalesHierarchyRouteImport } from './routes/manager.sales-hierarchy'
+import { Route as ManagerPendingSchoolsRouteImport } from './routes/manager.pending-schools'
 import { Route as ManagerOnboardSchoolRouteImport } from './routes/manager.onboard-school'
 import { Route as ManagerCreateSalesRepRouteImport } from './routes/manager.create-sales-rep'
 import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 import { Route as AdminSalesHierarchyRouteImport } from './routes/admin.sales-hierarchy'
+import { Route as AdminPendingSchoolsRouteImport } from './routes/admin.pending-schools'
 import { Route as AdminCreateSalesRepRouteImport } from './routes/admin.create-sales-rep'
 
 const TeacherRoute = TeacherRouteImport.update({
@@ -87,6 +89,11 @@ const ManagerSalesHierarchyRoute = ManagerSalesHierarchyRouteImport.update({
   path: '/sales-hierarchy',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerPendingSchoolsRoute = ManagerPendingSchoolsRouteImport.update({
+  id: '/pending-schools',
+  path: '/pending-schools',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerOnboardSchoolRoute = ManagerOnboardSchoolRouteImport.update({
   id: '/onboard-school',
   path: '/onboard-school',
@@ -107,6 +114,11 @@ const AdminSalesHierarchyRoute = AdminSalesHierarchyRouteImport.update({
   path: '/sales-hierarchy',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPendingSchoolsRoute = AdminPendingSchoolsRouteImport.update({
+  id: '/pending-schools',
+  path: '/pending-schools',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCreateSalesRepRoute = AdminCreateSalesRepRouteImport.update({
   id: '/create-sales-rep',
   path: '/create-sales-rep',
@@ -125,10 +137,12 @@ export interface FileRoutesByFullPath {
   '/student': typeof StudentRoute
   '/teacher': typeof TeacherRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
+  '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/create-sales-rep': typeof ManagerCreateSalesRepRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
+  '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/manager/': typeof ManagerIndexRoute
 }
@@ -143,10 +157,12 @@ export interface FileRoutesByTo {
   '/student': typeof StudentRoute
   '/teacher': typeof TeacherRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
+  '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/create-sales-rep': typeof ManagerCreateSalesRepRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
+  '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/manager': typeof ManagerIndexRoute
 }
@@ -163,10 +179,12 @@ export interface FileRoutesById {
   '/student': typeof StudentRoute
   '/teacher': typeof TeacherRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
+  '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/create-sales-rep': typeof ManagerCreateSalesRepRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
+  '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/manager/': typeof ManagerIndexRoute
 }
@@ -184,10 +202,12 @@ export interface FileRouteTypes {
     | '/student'
     | '/teacher'
     | '/admin/create-sales-rep'
+    | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
     | '/learn/$slug'
     | '/manager/create-sales-rep'
     | '/manager/onboard-school'
+    | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
     | '/manager/'
   fileRoutesByTo: FileRoutesByTo
@@ -202,10 +222,12 @@ export interface FileRouteTypes {
     | '/student'
     | '/teacher'
     | '/admin/create-sales-rep'
+    | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
     | '/learn/$slug'
     | '/manager/create-sales-rep'
     | '/manager/onboard-school'
+    | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
     | '/manager'
   id:
@@ -221,10 +243,12 @@ export interface FileRouteTypes {
     | '/student'
     | '/teacher'
     | '/admin/create-sales-rep'
+    | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
     | '/learn/$slug'
     | '/manager/create-sales-rep'
     | '/manager/onboard-school'
+    | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
     | '/manager/'
   fileRoutesById: FileRoutesById
@@ -329,6 +353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerSalesHierarchyRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/manager/pending-schools': {
+      id: '/manager/pending-schools'
+      path: '/pending-schools'
+      fullPath: '/manager/pending-schools'
+      preLoaderRoute: typeof ManagerPendingSchoolsRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/manager/onboard-school': {
       id: '/manager/onboard-school'
       path: '/onboard-school'
@@ -357,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSalesHierarchyRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/pending-schools': {
+      id: '/admin/pending-schools'
+      path: '/pending-schools'
+      fullPath: '/admin/pending-schools'
+      preLoaderRoute: typeof AdminPendingSchoolsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/create-sales-rep': {
       id: '/admin/create-sales-rep'
       path: '/create-sales-rep'
@@ -369,11 +407,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminCreateSalesRepRoute: typeof AdminCreateSalesRepRoute
+  AdminPendingSchoolsRoute: typeof AdminPendingSchoolsRoute
   AdminSalesHierarchyRoute: typeof AdminSalesHierarchyRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCreateSalesRepRoute: AdminCreateSalesRepRoute,
+  AdminPendingSchoolsRoute: AdminPendingSchoolsRoute,
   AdminSalesHierarchyRoute: AdminSalesHierarchyRoute,
 }
 
@@ -382,6 +422,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 interface ManagerRouteChildren {
   ManagerCreateSalesRepRoute: typeof ManagerCreateSalesRepRoute
   ManagerOnboardSchoolRoute: typeof ManagerOnboardSchoolRoute
+  ManagerPendingSchoolsRoute: typeof ManagerPendingSchoolsRoute
   ManagerSalesHierarchyRoute: typeof ManagerSalesHierarchyRoute
   ManagerIndexRoute: typeof ManagerIndexRoute
 }
@@ -389,6 +430,7 @@ interface ManagerRouteChildren {
 const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerCreateSalesRepRoute: ManagerCreateSalesRepRoute,
   ManagerOnboardSchoolRoute: ManagerOnboardSchoolRoute,
+  ManagerPendingSchoolsRoute: ManagerPendingSchoolsRoute,
   ManagerSalesHierarchyRoute: ManagerSalesHierarchyRoute,
   ManagerIndexRoute: ManagerIndexRoute,
 }
