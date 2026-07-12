@@ -110,6 +110,60 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_role: string | null
+          actor_user_id: string | null
+          actor_username: string | null
+          created_at: string
+          entity_id: string | null
+          entity_label: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          new_value: Json | null
+          previous_value: Json | null
+          remarks: string | null
+          status: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_role?: string | null
+          actor_user_id?: string | null
+          actor_username?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_label?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          previous_value?: Json | null
+          remarks?: string | null
+          status?: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_role?: string | null
+          actor_user_id?: string | null
+          actor_username?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_label?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          previous_value?: Json | null
+          remarks?: string | null
+          status?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       code_snippets: {
         Row: {
           code: string
@@ -875,6 +929,42 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_security: {
+        Row: {
+          created_at: string
+          is_active: boolean
+          must_setup_security: boolean
+          security_answer_hash: string | null
+          security_pin_hash: string | null
+          security_question: string | null
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          is_active?: boolean
+          must_setup_security?: boolean
+          security_answer_hash?: string | null
+          security_pin_hash?: string | null
+          security_question?: string | null
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          is_active?: boolean
+          must_setup_security?: boolean
+          security_answer_hash?: string | null
+          security_pin_hash?: string | null
+          security_question?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
