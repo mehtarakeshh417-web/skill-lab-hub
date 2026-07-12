@@ -181,7 +181,7 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
     .select("*")
     .eq("id", input.id)
     .maybeSingle();
-  if (regErr) throw new Error(regErr.error?.message ?? regErr.message);
+  if (regErr) throw new Error(regErr.message);
   if (!reg) throw new Error("Registration not found.");
   if (reg.status !== "pending") throw new Error(`Registration is already ${reg.status}.`);
 
