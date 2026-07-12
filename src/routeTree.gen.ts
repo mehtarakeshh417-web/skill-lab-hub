@@ -27,13 +27,16 @@ import { Route as TeacherQuizzesRouteImport } from './routes/teacher.quizzes'
 import { Route as TeacherAssignmentsRouteImport } from './routes/teacher.assignments'
 import { Route as StudentQuizzesRouteImport } from './routes/student.quizzes'
 import { Route as StudentAssignmentsRouteImport } from './routes/student.assignments'
+import { Route as SettingsChangePasswordRouteImport } from './routes/settings.change-password'
 import { Route as SchoolCreateTeacherRouteImport } from './routes/school.create-teacher'
 import { Route as SchoolBulkStudentsRouteImport } from './routes/school.bulk-students'
+import { Route as ManagerUsersRouteImport } from './routes/manager.users'
 import { Route as ManagerSalesHierarchyRouteImport } from './routes/manager.sales-hierarchy'
 import { Route as ManagerPendingSchoolsRouteImport } from './routes/manager.pending-schools'
 import { Route as ManagerOnboardSchoolRouteImport } from './routes/manager.onboard-school'
 import { Route as ManagerCreateSalesRepRouteImport } from './routes/manager.create-sales-rep'
 import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSalesHierarchyRouteImport } from './routes/admin.sales-hierarchy'
 import { Route as AdminPendingSchoolsRouteImport } from './routes/admin.pending-schools'
 import { Route as AdminCreateSalesRepRouteImport } from './routes/admin.create-sales-rep'
@@ -129,6 +132,11 @@ const StudentAssignmentsRoute = StudentAssignmentsRouteImport.update({
   path: '/assignments',
   getParentRoute: () => StudentRoute,
 } as any)
+const SettingsChangePasswordRoute = SettingsChangePasswordRouteImport.update({
+  id: '/settings/change-password',
+  path: '/settings/change-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SchoolCreateTeacherRoute = SchoolCreateTeacherRouteImport.update({
   id: '/create-teacher',
   path: '/create-teacher',
@@ -138,6 +146,11 @@ const SchoolBulkStudentsRoute = SchoolBulkStudentsRouteImport.update({
   id: '/bulk-students',
   path: '/bulk-students',
   getParentRoute: () => SchoolRoute,
+} as any)
+const ManagerUsersRoute = ManagerUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => ManagerRoute,
 } as any)
 const ManagerSalesHierarchyRoute = ManagerSalesHierarchyRouteImport.update({
   id: '/sales-hierarchy',
@@ -163,6 +176,11 @@ const LearnSlugRoute = LearnSlugRouteImport.update({
   id: '/learn/$slug',
   path: '/learn/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminSalesHierarchyRoute = AdminSalesHierarchyRouteImport.update({
   id: '/sales-hierarchy',
@@ -202,13 +220,16 @@ export interface FileRoutesByFullPath {
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
+  '/admin/users': typeof AdminUsersRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/create-sales-rep': typeof ManagerCreateSalesRepRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
+  '/manager/users': typeof ManagerUsersRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
+  '/settings/change-password': typeof SettingsChangePasswordRoute
   '/student/assignments': typeof StudentAssignmentsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
@@ -231,13 +252,16 @@ export interface FileRoutesByTo {
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
+  '/admin/users': typeof AdminUsersRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/create-sales-rep': typeof ManagerCreateSalesRepRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
+  '/manager/users': typeof ManagerUsersRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
+  '/settings/change-password': typeof SettingsChangePasswordRoute
   '/student/assignments': typeof StudentAssignmentsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
@@ -263,13 +287,16 @@ export interface FileRoutesById {
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
+  '/admin/users': typeof AdminUsersRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/create-sales-rep': typeof ManagerCreateSalesRepRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
+  '/manager/users': typeof ManagerUsersRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
+  '/settings/change-password': typeof SettingsChangePasswordRoute
   '/student/assignments': typeof StudentAssignmentsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
@@ -296,13 +323,16 @@ export interface FileRouteTypes {
     | '/admin/create-sales-rep'
     | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
+    | '/admin/users'
     | '/learn/$slug'
     | '/manager/create-sales-rep'
     | '/manager/onboard-school'
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
+    | '/manager/users'
     | '/school/bulk-students'
     | '/school/create-teacher'
+    | '/settings/change-password'
     | '/student/assignments'
     | '/student/quizzes'
     | '/teacher/assignments'
@@ -325,13 +355,16 @@ export interface FileRouteTypes {
     | '/admin/create-sales-rep'
     | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
+    | '/admin/users'
     | '/learn/$slug'
     | '/manager/create-sales-rep'
     | '/manager/onboard-school'
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
+    | '/manager/users'
     | '/school/bulk-students'
     | '/school/create-teacher'
+    | '/settings/change-password'
     | '/student/assignments'
     | '/student/quizzes'
     | '/teacher/assignments'
@@ -356,13 +389,16 @@ export interface FileRouteTypes {
     | '/admin/create-sales-rep'
     | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
+    | '/admin/users'
     | '/learn/$slug'
     | '/manager/create-sales-rep'
     | '/manager/onboard-school'
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
+    | '/manager/users'
     | '/school/bulk-students'
     | '/school/create-teacher'
+    | '/settings/change-password'
     | '/student/assignments'
     | '/student/quizzes'
     | '/teacher/assignments'
@@ -385,6 +421,7 @@ export interface RootRouteChildren {
   StudentRoute: typeof StudentRouteWithChildren
   TeacherRoute: typeof TeacherRouteWithChildren
   LearnSlugRoute: typeof LearnSlugRoute
+  SettingsChangePasswordRoute: typeof SettingsChangePasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -515,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentAssignmentsRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/settings/change-password': {
+      id: '/settings/change-password'
+      path: '/settings/change-password'
+      fullPath: '/settings/change-password'
+      preLoaderRoute: typeof SettingsChangePasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/school/create-teacher': {
       id: '/school/create-teacher'
       path: '/create-teacher'
@@ -528,6 +572,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/school/bulk-students'
       preLoaderRoute: typeof SchoolBulkStudentsRouteImport
       parentRoute: typeof SchoolRoute
+    }
+    '/manager/users': {
+      id: '/manager/users'
+      path: '/users'
+      fullPath: '/manager/users'
+      preLoaderRoute: typeof ManagerUsersRouteImport
+      parentRoute: typeof ManagerRoute
     }
     '/manager/sales-hierarchy': {
       id: '/manager/sales-hierarchy'
@@ -563,6 +614,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/learn/$slug'
       preLoaderRoute: typeof LearnSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/sales-hierarchy': {
       id: '/admin/sales-hierarchy'
@@ -600,6 +658,7 @@ interface AdminRouteChildren {
   AdminCreateSalesRepRoute: typeof AdminCreateSalesRepRoute
   AdminPendingSchoolsRoute: typeof AdminPendingSchoolsRoute
   AdminSalesHierarchyRoute: typeof AdminSalesHierarchyRoute
+  AdminUsersRoute: typeof AdminUsersRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -607,6 +666,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCreateSalesRepRoute: AdminCreateSalesRepRoute,
   AdminPendingSchoolsRoute: AdminPendingSchoolsRoute,
   AdminSalesHierarchyRoute: AdminSalesHierarchyRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -616,6 +676,7 @@ interface ManagerRouteChildren {
   ManagerOnboardSchoolRoute: typeof ManagerOnboardSchoolRoute
   ManagerPendingSchoolsRoute: typeof ManagerPendingSchoolsRoute
   ManagerSalesHierarchyRoute: typeof ManagerSalesHierarchyRoute
+  ManagerUsersRoute: typeof ManagerUsersRoute
   ManagerIndexRoute: typeof ManagerIndexRoute
 }
 
@@ -624,6 +685,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerOnboardSchoolRoute: ManagerOnboardSchoolRoute,
   ManagerPendingSchoolsRoute: ManagerPendingSchoolsRoute,
   ManagerSalesHierarchyRoute: ManagerSalesHierarchyRoute,
+  ManagerUsersRoute: ManagerUsersRoute,
   ManagerIndexRoute: ManagerIndexRoute,
 }
 
@@ -685,6 +747,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudentRoute: StudentRouteWithChildren,
   TeacherRoute: TeacherRouteWithChildren,
   LearnSlugRoute: LearnSlugRoute,
+  SettingsChangePasswordRoute: SettingsChangePasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
