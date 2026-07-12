@@ -382,16 +382,21 @@ function TeacherPanel({
           <div className="min-w-0">
             <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">Faculty</div>
             <h3 className="truncate font-display text-lg font-bold">Teacher roster &amp; allocation</h3>
-            <p className="text-xs text-muted-foreground">Teachers provisioned for this school by the Portal Manager.</p>
+            <p className="text-xs text-muted-foreground">Create teachers for your school and assign them to sections.</p>
           </div>
-        <div className="relative shrink-0">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search teachers"
-            className="h-11 w-44 pl-10 text-sm sm:w-64"
-          />
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search teachers"
+                className="h-11 w-44 pl-10 text-sm sm:w-64"
+              />
+            </div>
+            <Button size="sm" variant="hero" asChild>
+              <Link to="/school/create-teacher"><Plus className="h-3.5 w-3.5" /> Create Teacher</Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -399,7 +404,7 @@ function TeacherPanel({
         <EmptyState
           icon={GraduationCap}
           title="No teachers yet"
-          body="When the Portal Manager onboards teachers for this school, they appear here automatically."
+          body="Click Create Teacher to add the first faculty member for your school."
         />
       ) : (
         <ul className="divide-y divide-border">
