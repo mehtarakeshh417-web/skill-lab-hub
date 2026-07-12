@@ -18,6 +18,7 @@ import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as ManagerOnboardSchoolRouteImport } from './routes/manager.onboard-school'
 import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 
@@ -66,6 +67,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManagerIndexRoute = ManagerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerOnboardSchoolRoute = ManagerOnboardSchoolRouteImport.update({
   id: '/onboard-school',
   path: '/onboard-school',
@@ -89,19 +95,20 @@ export interface FileRoutesByFullPath {
   '/teacher': typeof TeacherRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
+  '/manager/': typeof ManagerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
-  '/manager': typeof ManagerRouteWithChildren
   '/school': typeof SchoolRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRoute
   '/teacher': typeof TeacherRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
+  '/manager': typeof ManagerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +123,7 @@ export interface FileRoutesById {
   '/teacher': typeof TeacherRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
+  '/manager/': typeof ManagerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,19 +139,20 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/learn/$slug'
     | '/manager/onboard-school'
+    | '/manager/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/auth'
     | '/console'
-    | '/manager'
     | '/school'
     | '/sitemap.xml'
     | '/student'
     | '/teacher'
     | '/learn/$slug'
     | '/manager/onboard-school'
+    | '/manager'
   id:
     | '__root__'
     | '/'
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/learn/$slug'
     | '/manager/onboard-school'
+    | '/manager/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -237,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manager/': {
+      id: '/manager/'
+      path: '/'
+      fullPath: '/manager/'
+      preLoaderRoute: typeof ManagerIndexRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/manager/onboard-school': {
       id: '/manager/onboard-school'
       path: '/onboard-school'
@@ -256,10 +273,12 @@ declare module '@tanstack/react-router' {
 
 interface ManagerRouteChildren {
   ManagerOnboardSchoolRoute: typeof ManagerOnboardSchoolRoute
+  ManagerIndexRoute: typeof ManagerIndexRoute
 }
 
 const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerOnboardSchoolRoute: ManagerOnboardSchoolRoute,
+  ManagerIndexRoute: ManagerIndexRoute,
 }
 
 const ManagerRouteWithChildren =
@@ -280,13 +299,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
