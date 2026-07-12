@@ -12,6 +12,7 @@ import {
   rejectSchoolRegistration,
 } from "@/lib/registrations.functions";
 import { listActiveSalesReps } from "@/lib/sales-reps.functions";
+import type { ApproveRegistrationInput } from "@/lib/registrations.schema";
 import { useAuth } from "@/lib/auth";
 import { Check, X, Pencil, Clock, School2, MailWarning } from "lucide-react";
 
@@ -49,7 +50,7 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
   }, [list, tab]);
 
   const approve = useMutation({
-    mutationFn: (payload: Parameters<typeof approveFn>[0]["data"]) => approveFn({ data: payload }),
+    mutationFn: (payload: ApproveRegistrationInput) => approveFn({ data: payload }),
     onSuccess: () => {
       toast.success("Registration approved & school activated");
       qc.invalidateQueries({ queryKey: ["school-registrations"] });
