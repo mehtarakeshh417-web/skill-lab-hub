@@ -18,6 +18,7 @@ import {
   TreePine,
   ClipboardList,
   TrendingUp,
+  Upload,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
@@ -909,13 +910,16 @@ function MonitorPanel({
             <Button size="sm" variant="outline" onClick={exportCsv} className="shrink-0">
               <Download className="h-3.5 w-3.5" /> CSV
             </Button>
+            <Button size="sm" variant="hero" asChild className="shrink-0">
+              <Link to="/school/bulk-students"><Upload className="h-3.5 w-3.5" /> Bulk Upload</Link>
+            </Button>
           </div>
         </div>
         {filtered.length === 0 ? (
           <EmptyState
             icon={Users}
             title="No students match"
-            body="Adjust filters, or wait for the Portal Manager to enroll students into this school."
+            body="Use Bulk Upload to add students from an Excel file, or adjust your filters above."
           />
         ) : (
           <div className="overflow-x-auto">
