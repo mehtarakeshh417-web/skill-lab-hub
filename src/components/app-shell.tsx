@@ -16,6 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationsBell } from "@/components/notifications-bell";
 
 type NavItem = { label: string; to: string; icon: typeof LayoutDashboard };
 
@@ -35,12 +36,19 @@ const NAV: Record<AppRole, NavItem[]> = {
   ],
   school: [{ label: "Dashboard", to: "/school", icon: LayoutDashboard }],
   teacher: [{ label: "Dashboard", to: "/teacher", icon: LayoutDashboard }],
+  // teacher extended below
   student: [
     { label: "My Lab", to: "/student", icon: LayoutDashboard },
-    { label: "Practice", to: "/student", icon: BookOpen },
-    { label: "Assignments", to: "/student", icon: ClipboardList },
+    { label: "Assignments", to: "/student/assignments", icon: ClipboardList },
+    { label: "Quizzes", to: "/student/quizzes", icon: BookOpen },
   ],
 };
+
+NAV.teacher = [
+  { label: "Dashboard", to: "/teacher", icon: LayoutDashboard },
+  { label: "Assignments", to: "/teacher/assignments", icon: ClipboardList },
+  { label: "Quizzes", to: "/teacher/quizzes", icon: BookOpen },
+];
 
 const ROLE_LABEL: Record<AppRole, string> = {
   admin: "Administrator",
@@ -152,6 +160,9 @@ export function AppShell({
             <Button variant="ghost" size="icon" onClick={signOut}>
               <LogOut className="h-4 w-4" />
             </Button>
+          </div>
+          <div className="hidden lg:flex items-center gap-3">
+            <NotificationsBell />
           </div>
         </header>
         <main className="flex-1 p-6 lg:p-10">{children}</main>
