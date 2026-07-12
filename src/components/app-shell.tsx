@@ -86,7 +86,7 @@ export function AppShell({
   requireRole?: AppRole;
   title?: string;
 }) {
-  const { user, role, loading, signOut } = useAuth();
+  const { user, role, loading, signOut, session } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const secStatus = useServerFn(getMySecurityStatus);
@@ -101,7 +101,7 @@ export function AppShell({
       navigate({ to: ROLE_HOME[role], replace: true });
       return;
     }
-    if (user && !secChecked && !pathname.startsWith("/setup-security")) {
+    if (user && session && !secChecked && !pathname.startsWith("/setup-security")) {
       secStatus().then((s) => {
         setSecChecked(true);
         if ((s as { mustSetupSecurity: boolean }).mustSetupSecurity) {
@@ -109,7 +109,7 @@ export function AppShell({
         }
       }).catch(() => setSecChecked(true));
     }
-  }, [user, role, loading, requireRole, navigate, secChecked, pathname, secStatus]);
+  }, [user, session, role, loading, requireRole, navigate, secChecked, pathname, secStatus]);
 
   if (loading || !user || !role || (requireRole && role !== requireRole)) {
     return (
