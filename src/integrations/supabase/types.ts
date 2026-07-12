@@ -305,6 +305,80 @@ export type Database = {
         }
         Relationships: []
       }
+      students: {
+        Row: {
+          address: string | null
+          class_name: string | null
+          created_at: string
+          created_by: string | null
+          date_of_birth: string | null
+          email: string
+          full_name: string
+          gender: string | null
+          guardian_name: string | null
+          guardian_phone: string | null
+          id: string
+          phone: string | null
+          roll_number: string | null
+          school_id: string
+          section: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          address?: string | null
+          class_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          email: string
+          full_name: string
+          gender?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          id?: string
+          phone?: string | null
+          roll_number?: string | null
+          school_id: string
+          section?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          address?: string | null
+          class_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          email?: string
+          full_name?: string
+          gender?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          id?: string
+          phone?: string | null
+          roll_number?: string | null
+          school_id?: string
+          section?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teachers: {
         Row: {
           address: string | null
