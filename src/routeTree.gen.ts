@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SchoolIndexRouteImport } from './routes/school.index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as SchoolCreateTeacherRouteImport } from './routes/school.create-teacher'
+import { Route as SchoolBulkStudentsRouteImport } from './routes/school.bulk-students'
 import { Route as ManagerSalesHierarchyRouteImport } from './routes/manager.sales-hierarchy'
 import { Route as ManagerPendingSchoolsRouteImport } from './routes/manager.pending-schools'
 import { Route as ManagerOnboardSchoolRouteImport } from './routes/manager.onboard-school'
@@ -96,6 +97,11 @@ const SchoolCreateTeacherRoute = SchoolCreateTeacherRouteImport.update({
   path: '/create-teacher',
   getParentRoute: () => SchoolRoute,
 } as any)
+const SchoolBulkStudentsRoute = SchoolBulkStudentsRouteImport.update({
+  id: '/bulk-students',
+  path: '/bulk-students',
+  getParentRoute: () => SchoolRoute,
+} as any)
 const ManagerSalesHierarchyRoute = ManagerSalesHierarchyRouteImport.update({
   id: '/sales-hierarchy',
   path: '/sales-hierarchy',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
+  '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
+  '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/manager': typeof ManagerIndexRoute
   '/school': typeof SchoolIndexRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
+  '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/manager/onboard-school'
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
+    | '/school/bulk-students'
     | '/school/create-teacher'
     | '/manager/'
     | '/school/'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/manager/onboard-school'
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
+    | '/school/bulk-students'
     | '/school/create-teacher'
     | '/manager'
     | '/school'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/manager/onboard-school'
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
+    | '/school/bulk-students'
     | '/school/create-teacher'
     | '/manager/'
     | '/school/'
@@ -382,6 +394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolCreateTeacherRouteImport
       parentRoute: typeof SchoolRoute
     }
+    '/school/bulk-students': {
+      id: '/school/bulk-students'
+      path: '/bulk-students'
+      fullPath: '/school/bulk-students'
+      preLoaderRoute: typeof SchoolBulkStudentsRouteImport
+      parentRoute: typeof SchoolRoute
+    }
     '/manager/sales-hierarchy': {
       id: '/manager/sales-hierarchy'
       path: '/sales-hierarchy'
@@ -475,11 +494,13 @@ const ManagerRouteWithChildren =
   ManagerRoute._addFileChildren(ManagerRouteChildren)
 
 interface SchoolRouteChildren {
+  SchoolBulkStudentsRoute: typeof SchoolBulkStudentsRoute
   SchoolCreateTeacherRoute: typeof SchoolCreateTeacherRoute
   SchoolIndexRoute: typeof SchoolIndexRoute
 }
 
 const SchoolRouteChildren: SchoolRouteChildren = {
+  SchoolBulkStudentsRoute: SchoolBulkStudentsRoute,
   SchoolCreateTeacherRoute: SchoolCreateTeacherRoute,
   SchoolIndexRoute: SchoolIndexRoute,
 }
