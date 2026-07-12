@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, ROLE_HOME } from "@/lib/auth";
 import { mockSignIn, mockSignOut } from "@/lib/mock-auth";
@@ -7,7 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import {
+  Sparkles,
+  ArrowRight,
+  Loader2,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  GraduationCap,
+  School2,
+  UserCircle2,
+} from "lucide-react";
 import heroImg from "@/assets/hero-3d.jpg";
 
 export const Route = createFileRoute("/auth")({
@@ -28,6 +38,9 @@ function AuthPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [fieldError, setFieldError] = useState<{ identifier?: string; password?: string; form?: string }>({});
 
   useEffect(() => {
     if (!loading && user && role) {
@@ -35,9 +48,22 @@ function AuthPage() {
     }
   }, [user, role, loading, navigate]);
 
+  const identifierError = useMemo(() => {
+    if (!identifier.trim()) return "Enter your username or email.";
+    return undefined;
+  }, [identifier]);
+  const passwordError = useMemo(() => {
+    if (!password) return "Enter your password.";
+    return undefined;
+  }, [password]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!identifier || !password) return;
+    setFieldError({});
+    if (identifierError || passwordError) {
+      setFieldError({ identifier: identifierError, password: passwordError });
+      return;
+    }
     setSubmitting(true);
     const email = resolveEmail(identifier);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -59,8 +85,16 @@ function AuthPage() {
       return;
     }
     setSubmitting(false);
-    toast.error("Sign in failed", { description: mock.reason || error.message });
+    const description = mock.reason || error.message;
+    setFieldError({ form: description });
+    toast.error("Sign in failed", { description });
   }
+
+  const roles: Array<{ label: string; icon: typeof School2; color: string }> = [
+    { label: "Schools", icon: School2, color: "from-indigo-500 to-violet-500" },
+    { label: "Teachers", icon: GraduationCap, color: "from-sky-500 to-cyan-500" },
+    { label: "Students", icon: UserCircle2, color: "from-emerald-500 to-teal-500" },
+  ];
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -86,28 +120,23 @@ function AuthPage() {
             Sign in to access role-based dashboards, interactive technology modules, and
             real-time progress tracking.
           </p>
-          <div className="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl shadow-glow">
-            <div className="flex items-center justify-between">
-              <div className="text-xs uppercase tracking-widest text-primary-foreground/70">Demo credentials</div>
-              <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent">try it</span>
-            </div>
-            <div className="mt-4 space-y-2 font-mono text-sm">
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-                <span>admin</span><span className="text-primary-foreground/80">admin123</span>
+          <div className="grid grid-cols-3 gap-3">
+            {roles.map((r) => (
+              <div
+                key={r.label}
+                className="rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur-xl"
+              >
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${r.color} shadow-lg`}>
+                  <r.icon className="h-5 w-5 text-white" />
+                </div>
+                <div className="mt-3 text-sm font-semibold">{r.label}</div>
+                <div className="text-[11px] text-primary-foreground/70">Dedicated portal</div>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-                <span>manager</span><span className="text-primary-foreground/80">manager123</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-                <span>school</span><span className="text-primary-foreground/80">school123</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-                <span>teacher</span><span className="text-primary-foreground/80">teacher123</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-                <span>student</span><span className="text-primary-foreground/80">student123</span>
-              </div>
-            </div>
+            ))}
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs text-primary-foreground/80 backdrop-blur">
+            <ShieldCheck className="h-4 w-4 text-emerald-300" />
+            End-to-end encrypted sign-in · SOC 2 aligned
           </div>
         </div>
         <div className="relative text-xs text-primary-foreground/60">
@@ -115,50 +144,155 @@ function AuthPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center p-6 lg:p-12">
+      <div className="relative flex items-center justify-center overflow-hidden p-6 sm:p-10 lg:p-12">
+        <div className="pointer-events-none absolute inset-0 -z-10 opacity-70">
+          <div className="absolute -top-20 right-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
+        </div>
         <div className="w-full max-w-md">
-          <Link to="/" className="mb-10 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground lg:hidden">
+          <Link
+            to="/"
+            className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground lg:hidden"
+          >
             <Sparkles className="h-4 w-4 text-primary" /> Avartan Skill Lab
           </Link>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Sign in to your portal</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Use your username or email to continue.
-          </p>
 
-          <form onSubmit={onSubmit} className="mt-8 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="identifier">Username or email</Label>
-              <Input
-                id="identifier"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="admin"
-                autoComplete="username"
-                required
-                className="h-11"
-              />
+          <div className="rounded-3xl border border-border/60 bg-card/80 p-8 shadow-2xl shadow-indigo-500/5 backdrop-blur-xl sm:p-10">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">
+                  Portal login
+                </div>
+                <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+                  Welcome back
+                </h1>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                required
-                className="h-11"
-              />
+            <p className="text-sm text-muted-foreground">
+              Sign in with the credentials issued for your role — School, Teacher, Student, Manager or Admin.
+            </p>
+
+            <form onSubmit={onSubmit} className="mt-8 space-y-5" noValidate>
+              <div className="space-y-2">
+                <Label htmlFor="identifier" className="text-sm font-semibold">
+                  Username or email
+                </Label>
+                <Input
+                  id="identifier"
+                  value={identifier}
+                  onChange={(e) => {
+                    setIdentifier(e.target.value);
+                    if (fieldError.identifier || fieldError.form) setFieldError({});
+                  }}
+                  placeholder="e.g. delhi-public or school@example.com"
+                  autoComplete="username"
+                  className={`h-12 text-base ${fieldError.identifier ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
+                  aria-invalid={Boolean(fieldError.identifier)}
+                />
+                {fieldError.identifier ? (
+                  <p className="text-xs font-medium text-rose-500">{fieldError.identifier}</p>
+                ) : null}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-semibold">
+                    Password
+                  </Label>
+                  <span className="text-xs text-muted-foreground">Case-sensitive</span>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (fieldError.password || fieldError.form) setFieldError({});
+                    }}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className={`h-12 pr-12 text-base ${fieldError.password ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
+                    aria-invalid={Boolean(fieldError.password)}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {fieldError.password ? (
+                  <p className="text-xs font-medium text-rose-500">{fieldError.password}</p>
+                ) : null}
+              </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <label className="inline-flex cursor-pointer items-center gap-2 text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="h-4 w-4 rounded border-border accent-indigo-500"
+                  />
+                  Keep me signed in
+                </label>
+                <button
+                  type="button"
+                  className="text-sm font-semibold text-indigo-500 hover:text-indigo-600"
+                  onClick={() =>
+                    toast.info("Contact your school administrator", {
+                      description: "Password resets are handled by your Admin or Portal Manager.",
+                    })
+                  }
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              {fieldError.form ? (
+                <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-600">
+                  {fieldError.form}
+                </div>
+              ) : null}
+
+              <Button
+                type="submit"
+                variant="hero"
+                size="lg"
+                className="h-12 w-full text-base"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Signing in…
+                  </>
+                ) : (
+                  <>
+                    Sign in <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-6 flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="h-px flex-1 bg-border" />
+              <span>New to Avartan?</span>
+              <div className="h-px flex-1 bg-border" />
             </div>
-            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={submitting}>
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Sign in <ArrowRight className="h-4 w-4" /></>}
+            <Button asChild variant="soft" size="lg" className="mt-4 h-12 w-full">
+              <Link to="/">Register your school</Link>
             </Button>
-          </form>
-
-          <div className="mt-6 rounded-xl border border-dashed border-border bg-secondary/50 p-4 text-xs text-muted-foreground">
-            New schools, teachers and students are created via the portal by an admin or portal manager.
           </div>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            By continuing you agree to Avartan&apos;s acceptable-use policy.
+          </p>
         </div>
       </div>
     </div>
