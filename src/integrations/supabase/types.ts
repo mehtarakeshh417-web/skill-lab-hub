@@ -305,6 +305,77 @@ export type Database = {
         }
         Relationships: []
       }
+      teachers: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_by: string | null
+          date_of_birth: string | null
+          department: string | null
+          email: string
+          employee_id: string | null
+          full_name: string
+          gender: string | null
+          id: string
+          phone: string | null
+          qualification: string | null
+          school_id: string
+          status: string
+          subject: string | null
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          department?: string | null
+          email: string
+          employee_id?: string | null
+          full_name: string
+          gender?: string | null
+          id?: string
+          phone?: string | null
+          qualification?: string | null
+          school_id: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          department?: string | null
+          email?: string
+          employee_id?: string | null
+          full_name?: string
+          gender?: string | null
+          id?: string
+          phone?: string | null
+          qualification?: string | null
+          school_id?: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teachers_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       technologies: {
         Row: {
           category: string | null

@@ -23,14 +23,11 @@ const NAV: Record<AppRole, NavItem[]> = {
   admin: [
     { label: "Overview", to: "/admin", icon: LayoutDashboard },
     { label: "Schools", to: "/admin", icon: School2 },
-    { label: "Users", to: "/admin", icon: Users },
     { label: "Analytics", to: "/admin", icon: BarChart3 },
   ],
   portal_manager: [
     { label: "Operations", to: "/manager", icon: LayoutDashboard },
     { label: "Schools", to: "/manager", icon: School2 },
-    { label: "Teachers", to: "/manager", icon: GraduationCap },
-    { label: "Students", to: "/manager", icon: Users },
   ],
   sales_rep: [
     { label: "Dashboard", to: "/sales-rep", icon: LayoutDashboard },
