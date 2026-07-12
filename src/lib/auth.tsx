@@ -38,12 +38,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     seedDefaultMockAccounts();
     const initialMock = getMockSession();
     if (initialMock) {
-      setMock(initialMock);
-      setRole(initialMock.role);
-      setLoading(false);
+      if (["admin", "portal_manager", "school"].includes(initialMock.role)) {
+        mockSignOut();
+      } else {
+        setMock(initialMock);
+        setRole(initialMock.role);
+        setLoading(false);
+      }
     }
     const unsubMock = subscribeMockSession(() => {
       const next = getMockSession();
+      if (next && ["admin", "portal_manager", "school"].includes(next.role)) {
+        mockSignOut();
+        return;
+      }
       setMock(next);
       if (next) {
         setRole(next.role);
@@ -56,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s?.user) {
+        mockSignOut();
+        setMock(null);
         // defer role fetch
         setTimeout(() => {
           supabase

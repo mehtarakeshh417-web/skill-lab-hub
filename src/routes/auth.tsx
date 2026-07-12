@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, ROLE_HOME } from "@/lib/auth";
-import { mockSignIn } from "@/lib/mock-auth";
+import { mockSignIn, mockSignOut } from "@/lib/mock-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,7 +39,16 @@ function AuthPage() {
     e.preventDefault();
     if (!identifier || !password) return;
     setSubmitting(true);
-    // 1) Mock-auth seed matrix takes priority (admin/manager/school/teacher/student)
+    const email = resolveEmail(identifier);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) {
+      mockSignOut();
+      setSubmitting(false);
+      toast.success("Welcome back!");
+      return;
+    }
+
+    // Demo-only fallback for seeded teacher/student flows that do not yet exist in backend auth.
     const mock = mockSignIn(identifier, password);
     if (mock.ok && mock.session) {
       setSubmitting(false);
@@ -49,14 +58,8 @@ function AuthPage() {
       navigate({ to: ROLE_HOME[mock.session.role], replace: true });
       return;
     }
-    const email = resolveEmail(identifier);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
-    if (error) {
-      toast.error("Sign in failed", { description: error.message });
-      return;
-    }
-    toast.success("Welcome back!");
+    toast.error("Sign in failed", { description: mock.reason || error.message });
   }
 
   return (
