@@ -23,6 +23,7 @@ import { Route as SchoolIndexRouteImport } from './routes/school.index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as TeacherQuizzesRouteImport } from './routes/teacher.quizzes'
 import { Route as TeacherAssignmentsRouteImport } from './routes/teacher.assignments'
+import { Route as StudentQuizzesRouteImport } from './routes/student.quizzes'
 import { Route as StudentAssignmentsRouteImport } from './routes/student.assignments'
 import { Route as SchoolCreateTeacherRouteImport } from './routes/school.create-teacher'
 import { Route as SchoolBulkStudentsRouteImport } from './routes/school.bulk-students'
@@ -105,6 +106,11 @@ const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
   path: '/assignments',
   getParentRoute: () => TeacherRoute,
 } as any)
+const StudentQuizzesRoute = StudentQuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => StudentRoute,
+} as any)
 const StudentAssignmentsRoute = StudentAssignmentsRouteImport.update({
   id: '/assignments',
   path: '/assignments',
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/student/assignments': typeof StudentAssignmentsRoute
+  '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager/': typeof ManagerIndexRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/student/assignments': typeof StudentAssignmentsRoute
+  '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager': typeof ManagerIndexRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/student/assignments': typeof StudentAssignmentsRoute
+  '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager/': typeof ManagerIndexRoute
@@ -265,6 +274,7 @@ export interface FileRouteTypes {
     | '/school/bulk-students'
     | '/school/create-teacher'
     | '/student/assignments'
+    | '/student/quizzes'
     | '/teacher/assignments'
     | '/teacher/quizzes'
     | '/manager/'
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/school/bulk-students'
     | '/school/create-teacher'
     | '/student/assignments'
+    | '/student/quizzes'
     | '/teacher/assignments'
     | '/teacher/quizzes'
     | '/manager'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/school/bulk-students'
     | '/school/create-teacher'
     | '/student/assignments'
+    | '/student/quizzes'
     | '/teacher/assignments'
     | '/teacher/quizzes'
     | '/manager/'
@@ -436,6 +448,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/teacher/assignments'
       preLoaderRoute: typeof TeacherAssignmentsRouteImport
       parentRoute: typeof TeacherRoute
+    }
+    '/student/quizzes': {
+      id: '/student/quizzes'
+      path: '/quizzes'
+      fullPath: '/student/quizzes'
+      preLoaderRoute: typeof StudentQuizzesRouteImport
+      parentRoute: typeof StudentRoute
     }
     '/student/assignments': {
       id: '/student/assignments'
@@ -567,10 +586,12 @@ const SchoolRouteWithChildren =
 
 interface StudentRouteChildren {
   StudentAssignmentsRoute: typeof StudentAssignmentsRoute
+  StudentQuizzesRoute: typeof StudentQuizzesRoute
 }
 
 const StudentRouteChildren: StudentRouteChildren = {
   StudentAssignmentsRoute: StudentAssignmentsRoute,
+  StudentQuizzesRoute: StudentQuizzesRoute,
 }
 
 const StudentRouteWithChildren =
