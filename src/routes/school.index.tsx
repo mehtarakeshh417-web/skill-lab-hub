@@ -51,7 +51,7 @@ const IMG = {
     "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80",
 };
 
-export const Route = createFileRoute("/school")({
+export const Route = createFileRoute("/school/")({
   head: () => ({ meta: [{ title: "School · Avartan Skill Lab" }] }),
   component: SchoolDashboard,
 });
