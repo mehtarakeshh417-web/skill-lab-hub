@@ -923,7 +923,7 @@ function RegisterSchool() {
 }
 
 function Field({
-  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength,
+  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
 }: {
   label: string;
   icon: typeof Building2;
@@ -933,6 +933,7 @@ function Field({
   error?: string;
   hint?: string;
   maxLength?: number;
+  type?: string;
 }) {
   return (
     <label className="block">
@@ -947,6 +948,7 @@ function Field({
       >
         <Icon className="h-4 w-4 text-primary/80" />
         <input
+          type={type ?? "text"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
