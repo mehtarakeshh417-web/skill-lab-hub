@@ -13,6 +13,7 @@ import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as StudentRouteImport } from './routes/student'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SchoolRouteImport } from './routes/school'
+import { Route as SalesRepRouteImport } from './routes/sales-rep'
 import { Route as ManagerRouteImport } from './routes/manager'
 import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -40,6 +41,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SchoolRoute = SchoolRouteImport.update({
   id: '/school',
   path: '/school',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalesRepRoute = SalesRepRouteImport.update({
+  id: '/sales-rep',
+  path: '/sales-rep',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManagerRoute = ManagerRouteImport.update({
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
   '/manager': typeof ManagerRouteWithChildren
+  '/sales-rep': typeof SalesRepRoute
   '/school': typeof SchoolRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
+  '/sales-rep': typeof SalesRepRoute
   '/school': typeof SchoolRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
   '/manager': typeof ManagerRouteWithChildren
+  '/sales-rep': typeof SalesRepRoute
   '/school': typeof SchoolRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/console'
     | '/manager'
+    | '/sales-rep'
     | '/school'
     | '/sitemap.xml'
     | '/student'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/console'
+    | '/sales-rep'
     | '/school'
     | '/sitemap.xml'
     | '/student'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/console'
     | '/manager'
+    | '/sales-rep'
     | '/school'
     | '/sitemap.xml'
     | '/student'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ConsoleRoute: typeof ConsoleRoute
   ManagerRoute: typeof ManagerRouteWithChildren
+  SalesRepRoute: typeof SalesRepRoute
   SchoolRoute: typeof SchoolRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StudentRoute: typeof StudentRoute
@@ -210,6 +223,13 @@ declare module '@tanstack/react-router' {
       path: '/school'
       fullPath: '/school'
       preLoaderRoute: typeof SchoolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sales-rep': {
+      id: '/sales-rep'
+      path: '/sales-rep'
+      fullPath: '/sales-rep'
+      preLoaderRoute: typeof SalesRepRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manager': {
@@ -290,6 +310,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ConsoleRoute: ConsoleRoute,
   ManagerRoute: ManagerRouteWithChildren,
+  SalesRepRoute: SalesRepRoute,
   SchoolRoute: SchoolRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StudentRoute: StudentRoute,
