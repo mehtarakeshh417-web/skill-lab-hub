@@ -133,6 +133,7 @@ export async function createSchoolForActor(input: SchoolOnboardingInput, actorSu
         designation: input.designation?.trim() || "Principal",
         notes: input.notes?.trim() || null,
         status: "active",
+        sales_rep_id: input.salesRepId,
       })
       .select("*")
       .single();

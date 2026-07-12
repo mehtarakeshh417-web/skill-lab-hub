@@ -71,6 +71,65 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_reps: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department: string
+          designation: string | null
+          email: string
+          employee_id: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          reporting_manager_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          designation?: string | null
+          email: string
+          employee_id?: string | null
+          full_name: string
+          id?: string
+          phone?: string | null
+          reporting_manager_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          designation?: string | null
+          email?: string
+          employee_id?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          reporting_manager_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_reps_reporting_manager_id_fkey"
+            columns: ["reporting_manager_id"]
+            isOneToOne: false
+            referencedRelation: "sales_reps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           address: string | null
@@ -84,6 +143,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           principal_name: string | null
+          sales_rep_id: string | null
           school_code: string
           state: string | null
           status: string
@@ -103,6 +163,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           principal_name?: string | null
+          sales_rep_id?: string | null
           school_code: string
           state?: string | null
           status?: string
@@ -122,6 +183,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           principal_name?: string | null
+          sales_rep_id?: string | null
           school_code?: string
           state?: string | null
           status?: string
@@ -129,7 +191,15 @@ export type Database = {
           user_id?: string | null
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "schools_sales_rep_id_fkey"
+            columns: ["sales_rep_id"]
+            isOneToOne: false
+            referencedRelation: "sales_reps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_progress: {
         Row: {
@@ -217,7 +287,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "portal_manager" | "school" | "teacher" | "student"
+      app_role:
+        | "admin"
+        | "portal_manager"
+        | "school"
+        | "teacher"
+        | "student"
+        | "sales_rep"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -345,7 +421,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "portal_manager", "school", "teacher", "student"],
+      app_role: [
+        "admin",
+        "portal_manager",
+        "school",
+        "teacher",
+        "student",
+        "sales_rep",
+      ],
     },
   },
 } as const

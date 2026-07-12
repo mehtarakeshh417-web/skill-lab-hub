@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createSchoolAccount } from "@/lib/schools.functions";
 import { schoolOnboardingSchema } from "@/lib/schools.schema";
+import { listActiveSalesReps } from "@/lib/sales-reps.functions";
+import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { ArrowLeft, School2, KeyRound, UserPlus2 } from "lucide-react";
 
@@ -19,7 +21,15 @@ export const Route = createFileRoute("/manager/onboard-school")({
 function OnboardSchool() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { session } = useAuth();
   const createSchool = useServerFn(createSchoolAccount);
+  const fetchReps = useServerFn(listActiveSalesReps);
+  const { data: reps } = useQuery({
+    queryKey: ["sales-reps", "brief"],
+    queryFn: () => fetchReps(),
+    enabled: Boolean(session),
+    retry: false,
+  });
   const [form, setForm] = useState({
     schoolName: "",
     schoolCode: "",
@@ -32,6 +42,7 @@ function OnboardSchool() {
     email: "",
     phone: "",
     address: "",
+    salesRepId: "",
   });
 
   const mutation = useMutation({
@@ -50,7 +61,7 @@ function OnboardSchool() {
     },
   });
 
-  const update = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const update = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const onSubmit = (e: FormEvent) => {
@@ -115,6 +126,26 @@ function OnboardSchool() {
             </Field>
             <Field label="Notes" className="md:col-span-2">
               <Textarea rows={3} value={form.notes} onChange={update("notes")} placeholder="Grades, tracks, licenses…" />
+            </Field>
+            <Field label="Sales representative *" className="md:col-span-2">
+              <select
+                value={form.salesRepId}
+                onChange={update("salesRepId")}
+                required
+                className="h-11 rounded-xl border border-input bg-background px-3 text-sm"
+              >
+                <option value="">Select an active sales rep…</option>
+                {(reps ?? []).filter((r) => r.status === "active").map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.fullName} — {r.designation || "Sales"}
+                  </option>
+                ))}
+              </select>
+              {(reps ?? []).length === 0 && (
+                <span className="text-xs text-muted-foreground">
+                  No sales reps yet. Create one from Sales Hierarchy first.
+                </span>
+              )}
             </Field>
           </div>
 

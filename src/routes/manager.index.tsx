@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
+import { listSalesReps } from "@/lib/sales-reps.functions";
 import { useAuth } from "@/lib/auth";
 import { School2, Users, GraduationCap, UserCog, Plus, CheckCircle2, Clock } from "lucide-react";
 
@@ -16,9 +17,16 @@ export const Route = createFileRoute("/manager/")({
 function ManagerDashboard() {
   const { session } = useAuth();
   const getSchools = useServerFn(getSchoolDashboardData);
+  const getReps = useServerFn(listSalesReps);
   const { data } = useQuery({
     queryKey: ["schools", "dashboard"],
     queryFn: () => getSchools(),
+    enabled: Boolean(session),
+    retry: false,
+  });
+  const { data: repsData } = useQuery({
+    queryKey: ["sales-reps", "list"],
+    queryFn: () => getReps(),
     enabled: Boolean(session),
     retry: false,
   });
@@ -30,7 +38,7 @@ function ManagerDashboard() {
         <StatCard label="Schools" value={data?.counts.schools ?? schools.length} icon={School2} />
         <StatCard label="Teachers" value={data?.counts.teachers ?? 0} icon={GraduationCap} />
         <StatCard label="Students" value={data?.counts.students ?? 0} icon={Users} />
-        <StatCard label="Sales reps" value={0} icon={UserCog} />
+        <StatCard label="Sales reps" value={repsData?.counts.total ?? 0} icon={UserCog} />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
@@ -79,7 +87,12 @@ function ManagerDashboard() {
             </Button>
             <Button variant="soft" className="w-full justify-start"><GraduationCap className="h-4 w-4" /> Add teacher</Button>
             <Button variant="soft" className="w-full justify-start"><Users className="h-4 w-4" /> Bulk upload students</Button>
-            <Button variant="soft" className="w-full justify-start"><UserCog className="h-4 w-4" /> Add sales rep</Button>
+            <Button variant="soft" className="w-full justify-start" asChild>
+              <Link to="/manager/create-sales-rep"><UserCog className="h-4 w-4" /> Add sales rep</Link>
+            </Button>
+            <Button variant="soft" className="w-full justify-start" asChild>
+              <Link to="/manager/sales-hierarchy"><Users className="h-4 w-4" /> View sales hierarchy</Link>
+            </Button>
           </div>
         </div>
       </div>

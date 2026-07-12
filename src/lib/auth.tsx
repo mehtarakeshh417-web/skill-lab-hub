@@ -9,7 +9,7 @@ import {
   type MockSession,
 } from "./mock-auth";
 
-export type AppRole = "admin" | "portal_manager" | "school" | "teacher" | "student";
+export type AppRole = "admin" | "portal_manager" | "sales_rep" | "school" | "teacher" | "student";
 
 type AuthState = {
   user: User | null;
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     seedDefaultMockAccounts();
     const initialMock = getMockSession();
     if (initialMock) {
-      if (["admin", "portal_manager", "school"].includes(initialMock.role)) {
+      if (["admin", "portal_manager", "school", "sales_rep"].includes(initialMock.role)) {
         mockSignOut();
       } else {
         setMock(initialMock);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const unsubMock = subscribeMockSession(() => {
       const next = getMockSession();
-      if (next && ["admin", "portal_manager", "school"].includes(next.role)) {
+      if (next && ["admin", "portal_manager", "school", "sales_rep"].includes(next.role)) {
         mockSignOut();
         return;
       }
@@ -131,6 +131,7 @@ export function useAuth() {
 export const ROLE_HOME: Record<AppRole, string> = {
   admin: "/admin",
   portal_manager: "/manager",
+  sales_rep: "/sales-rep",
   school: "/school",
   teacher: "/teacher",
   student: "/student",
