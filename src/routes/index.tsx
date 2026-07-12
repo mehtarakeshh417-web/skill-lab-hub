@@ -708,7 +708,7 @@ function RegisterSchool() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        <div className="mt-10 grid gap-6">
           {/* Form Card */}
           <form
             onSubmit={submit}
