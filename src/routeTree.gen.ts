@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SchoolIndexRouteImport } from './routes/school.index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as TeacherAssignmentsRouteImport } from './routes/teacher.assignments'
+import { Route as StudentAssignmentsRouteImport } from './routes/student.assignments'
 import { Route as SchoolCreateTeacherRouteImport } from './routes/school.create-teacher'
 import { Route as SchoolBulkStudentsRouteImport } from './routes/school.bulk-students'
 import { Route as ManagerSalesHierarchyRouteImport } from './routes/manager.sales-hierarchy'
@@ -98,6 +99,11 @@ const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
   path: '/assignments',
   getParentRoute: () => TeacherRoute,
 } as any)
+const StudentAssignmentsRoute = StudentAssignmentsRouteImport.update({
+  id: '/assignments',
+  path: '/assignments',
+  getParentRoute: () => StudentRoute,
+} as any)
 const SchoolCreateTeacherRoute = SchoolCreateTeacherRouteImport.update({
   id: '/create-teacher',
   path: '/create-teacher',
@@ -158,7 +164,7 @@ export interface FileRoutesByFullPath {
   '/sales-rep': typeof SalesRepRoute
   '/school': typeof SchoolRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/student': typeof StudentRoute
+  '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
+  '/student/assignments': typeof StudentAssignmentsRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
@@ -181,7 +188,7 @@ export interface FileRoutesByTo {
   '/console': typeof ConsoleRoute
   '/sales-rep': typeof SalesRepRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/student': typeof StudentRoute
+  '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
+  '/student/assignments': typeof StudentAssignmentsRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/manager': typeof ManagerIndexRoute
   '/school': typeof SchoolIndexRoute
@@ -207,7 +215,7 @@ export interface FileRoutesById {
   '/sales-rep': typeof SalesRepRoute
   '/school': typeof SchoolRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/student': typeof StudentRoute
+  '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
+  '/student/assignments': typeof StudentAssignmentsRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/manager/sales-hierarchy'
     | '/school/bulk-students'
     | '/school/create-teacher'
+    | '/student/assignments'
     | '/teacher/assignments'
     | '/manager/'
     | '/school/'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/manager/sales-hierarchy'
     | '/school/bulk-students'
     | '/school/create-teacher'
+    | '/student/assignments'
     | '/teacher/assignments'
     | '/manager'
     | '/school'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/manager/sales-hierarchy'
     | '/school/bulk-students'
     | '/school/create-teacher'
+    | '/student/assignments'
     | '/teacher/assignments'
     | '/manager/'
     | '/school/'
@@ -308,7 +320,7 @@ export interface RootRouteChildren {
   SalesRepRoute: typeof SalesRepRoute
   SchoolRoute: typeof SchoolRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  StudentRoute: typeof StudentRoute
+  StudentRoute: typeof StudentRouteWithChildren
   TeacherRoute: typeof TeacherRouteWithChildren
   LearnSlugRoute: typeof LearnSlugRoute
 }
@@ -405,6 +417,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/teacher/assignments'
       preLoaderRoute: typeof TeacherAssignmentsRouteImport
       parentRoute: typeof TeacherRoute
+    }
+    '/student/assignments': {
+      id: '/student/assignments'
+      path: '/assignments'
+      fullPath: '/student/assignments'
+      preLoaderRoute: typeof StudentAssignmentsRouteImport
+      parentRoute: typeof StudentRoute
     }
     '/school/create-teacher': {
       id: '/school/create-teacher'
@@ -527,6 +546,17 @@ const SchoolRouteChildren: SchoolRouteChildren = {
 const SchoolRouteWithChildren =
   SchoolRoute._addFileChildren(SchoolRouteChildren)
 
+interface StudentRouteChildren {
+  StudentAssignmentsRoute: typeof StudentAssignmentsRoute
+}
+
+const StudentRouteChildren: StudentRouteChildren = {
+  StudentAssignmentsRoute: StudentAssignmentsRoute,
+}
+
+const StudentRouteWithChildren =
+  StudentRoute._addFileChildren(StudentRouteChildren)
+
 interface TeacherRouteChildren {
   TeacherAssignmentsRoute: typeof TeacherAssignmentsRoute
 }
@@ -547,7 +577,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalesRepRoute: SalesRepRoute,
   SchoolRoute: SchoolRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  StudentRoute: StudentRoute,
+  StudentRoute: StudentRouteWithChildren,
   TeacherRoute: TeacherRouteWithChildren,
   LearnSlugRoute: LearnSlugRoute,
 }
