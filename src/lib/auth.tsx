@@ -131,6 +131,7 @@ export function useAuth() {
 export const ROLE_HOME: Record<AppRole, string> = {
   admin: "/admin",
   portal_manager: "/manager",
+  sales_rep: "/sales-rep",
   school: "/school",
   teacher: "/teacher",
   student: "/student",
