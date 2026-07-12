@@ -37,6 +37,7 @@ import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 import { Route as AdminSalesHierarchyRouteImport } from './routes/admin.sales-hierarchy'
 import { Route as AdminPendingSchoolsRouteImport } from './routes/admin.pending-schools'
 import { Route as AdminCreateSalesRepRouteImport } from './routes/admin.create-sales-rep'
+import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 
 const TeacherRoute = TeacherRouteImport.update({
   id: '/teacher',
@@ -178,6 +179,11 @@ const AdminCreateSalesRepRoute = AdminCreateSalesRepRouteImport.update({
   path: '/create-sales-rep',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
   '/admin/sales-hierarchy': typeof AdminSalesHierarchyRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/student'
     | '/teacher'
+    | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/student'
     | '/teacher'
+    | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/student'
     | '/teacher'
+    | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/pending-schools'
     | '/admin/sales-hierarchy'
@@ -573,16 +585,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCreateSalesRepRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/audit-logs': {
+      id: '/admin/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/admin/audit-logs'
+      preLoaderRoute: typeof AdminAuditLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminCreateSalesRepRoute: typeof AdminCreateSalesRepRoute
   AdminPendingSchoolsRoute: typeof AdminPendingSchoolsRoute
   AdminSalesHierarchyRoute: typeof AdminSalesHierarchyRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminCreateSalesRepRoute: AdminCreateSalesRepRoute,
   AdminPendingSchoolsRoute: AdminPendingSchoolsRoute,
   AdminSalesHierarchyRoute: AdminSalesHierarchyRoute,
