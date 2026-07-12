@@ -23,6 +23,7 @@ export const schoolOnboardingSchema = z.object({
   region: z.string().trim().max(120).optional().default(""),
   designation: z.string().trim().max(100).optional().default("Principal"),
   notes: z.string().trim().max(1000).optional().default(""),
+  salesRepId: z.string().uuid("Assign a sales representative"),
 });
 
 export type SchoolOnboardingInput = z.infer<typeof schoolOnboardingSchema>;
