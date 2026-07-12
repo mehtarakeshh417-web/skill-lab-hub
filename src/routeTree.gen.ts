@@ -18,6 +18,7 @@ import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ManagerOnboardSchoolRouteImport } from './routes/manager.onboard-school'
 import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 
 const TeacherRoute = TeacherRouteImport.update({
@@ -65,6 +66,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManagerOnboardSchoolRoute = ManagerOnboardSchoolRouteImport.update({
+  id: '/onboard-school',
+  path: '/onboard-school',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const LearnSlugRoute = LearnSlugRouteImport.update({
   id: '/learn/$slug',
   path: '/learn/$slug',
@@ -76,24 +82,26 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
-  '/manager': typeof ManagerRoute
+  '/manager': typeof ManagerRouteWithChildren
   '/school': typeof SchoolRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRoute
   '/teacher': typeof TeacherRoute
   '/learn/$slug': typeof LearnSlugRoute
+  '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
-  '/manager': typeof ManagerRoute
+  '/manager': typeof ManagerRouteWithChildren
   '/school': typeof SchoolRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRoute
   '/teacher': typeof TeacherRoute
   '/learn/$slug': typeof LearnSlugRoute
+  '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -101,12 +109,13 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
-  '/manager': typeof ManagerRoute
+  '/manager': typeof ManagerRouteWithChildren
   '/school': typeof SchoolRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRoute
   '/teacher': typeof TeacherRoute
   '/learn/$slug': typeof LearnSlugRoute
+  '/manager/onboard-school': typeof ManagerOnboardSchoolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/student'
     | '/teacher'
     | '/learn/$slug'
+    | '/manager/onboard-school'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/student'
     | '/teacher'
     | '/learn/$slug'
+    | '/manager/onboard-school'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/student'
     | '/teacher'
     | '/learn/$slug'
+    | '/manager/onboard-school'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -152,7 +164,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   ConsoleRoute: typeof ConsoleRoute
-  ManagerRoute: typeof ManagerRoute
+  ManagerRoute: typeof ManagerRouteWithChildren
   SchoolRoute: typeof SchoolRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StudentRoute: typeof StudentRoute
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manager/onboard-school': {
+      id: '/manager/onboard-school'
+      path: '/onboard-school'
+      fullPath: '/manager/onboard-school'
+      preLoaderRoute: typeof ManagerOnboardSchoolRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/learn/$slug': {
       id: '/learn/$slug'
       path: '/learn/$slug'
@@ -235,12 +254,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ManagerRouteChildren {
+  ManagerOnboardSchoolRoute: typeof ManagerOnboardSchoolRoute
+}
+
+const ManagerRouteChildren: ManagerRouteChildren = {
+  ManagerOnboardSchoolRoute: ManagerOnboardSchoolRoute,
+}
+
+const ManagerRouteWithChildren =
+  ManagerRoute._addFileChildren(ManagerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ConsoleRoute: ConsoleRoute,
-  ManagerRoute: ManagerRoute,
+  ManagerRoute: ManagerRouteWithChildren,
   SchoolRoute: SchoolRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StudentRoute: StudentRoute,

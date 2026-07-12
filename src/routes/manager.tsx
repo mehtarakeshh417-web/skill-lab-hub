@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,9 @@ function ManagerDashboard() {
               <div className="font-display text-lg font-semibold">Pending school registrations</div>
               <div className="text-sm text-muted-foreground">Review self-registered schools</div>
             </div>
-            <Button variant="hero" size="sm"><Plus className="h-4 w-4" /> Onboard school</Button>
+            <Button variant="hero" size="sm" asChild>
+              <Link to="/manager/onboard-school"><Plus className="h-4 w-4" /> Onboard school</Link>
+            </Button>
           </div>
           <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/30 py-12 text-center">
             <Clock className="h-8 w-8 text-muted-foreground" />
@@ -37,7 +39,9 @@ function ManagerDashboard() {
         <div className="rounded-2xl border border-border bg-card p-6 shadow-elegant">
           <div className="font-display text-lg font-semibold">Quick actions</div>
           <div className="mt-4 space-y-2">
-            <Button variant="soft" className="w-full justify-start"><School2 className="h-4 w-4" /> Create school</Button>
+            <Button variant="soft" className="w-full justify-start" asChild>
+              <Link to="/manager/onboard-school"><School2 className="h-4 w-4" /> Create school</Link>
+            </Button>
             <Button variant="soft" className="w-full justify-start"><GraduationCap className="h-4 w-4" /> Add teacher</Button>
             <Button variant="soft" className="w-full justify-start"><Users className="h-4 w-4" /> Bulk upload students</Button>
             <Button variant="soft" className="w-full justify-start"><UserCog className="h-4 w-4" /> Add sales rep</Button>
