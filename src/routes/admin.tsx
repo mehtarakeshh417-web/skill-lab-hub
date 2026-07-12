@@ -1,11 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
+import { Button } from "@/components/ui/button";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
+import { listSchoolRegistrations } from "@/lib/registrations.functions";
 import { useAuth } from "@/lib/auth";
-import { School2, Users, GraduationCap, Activity, TrendingUp, BarChart3 } from "lucide-react";
+import { School2, Users, GraduationCap, Activity, TrendingUp, BarChart3, ClipboardList } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin · Avartan Skill Lab" }] }),
@@ -15,9 +17,16 @@ export const Route = createFileRoute("/admin")({
 function AdminDashboard() {
   const { session } = useAuth();
   const getSchools = useServerFn(getSchoolDashboardData);
+  const getRegs = useServerFn(listSchoolRegistrations);
   const { data } = useQuery({
     queryKey: ["schools", "dashboard"],
     queryFn: () => getSchools(),
+    enabled: Boolean(session),
+    retry: false,
+  });
+  const { data: regsData } = useQuery({
+    queryKey: ["school-registrations"],
+    queryFn: () => getRegs(),
     enabled: Boolean(session),
     retry: false,
   });
@@ -27,9 +36,15 @@ function AdminDashboard() {
     <AppShell requireRole="admin" title="Platform Overview">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Schools onboarded" value={data?.counts.schools ?? schools.length} icon={School2} trend="Live backend count" />
-        <StatCard label="Teachers" value={data?.counts.teachers ?? 0} icon={GraduationCap} />
+        <StatCard label="Pending approvals" value={regsData?.counts.pending ?? 0} icon={ClipboardList} trend={`${regsData?.counts.rejected ?? 0} rejected`} />
         <StatCard label="Students" value={data?.counts.students ?? 0} icon={Users} />
-        <StatCard label="Active today" value={0} icon={Activity} />
+        <StatCard label="Teachers" value={data?.counts.teachers ?? 0} icon={GraduationCap} />
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button variant="hero" size="sm" asChild>
+          <Link to="/admin/pending-schools"><ClipboardList className="h-4 w-4" /> Review pending schools ({regsData?.counts.pending ?? 0})</Link>
+        </Button>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
