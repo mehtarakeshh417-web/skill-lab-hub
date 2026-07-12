@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/lib/theme";
 import {
   addRegistration,
-  useRegistrations,
 } from "@/lib/registrations";
 import {
   Code2,
