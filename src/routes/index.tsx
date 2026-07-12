@@ -856,66 +856,6 @@ function RegisterSchool() {
             </div>
           </form>
 
-          {/* Recent submissions */}
-          <aside className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40 p-6 shadow-[0_30px_80px_-30px_hsl(var(--primary)/0.35)] backdrop-blur-2xl">
-            <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
-            <div className="flex items-center justify-between">
-              <h4 className="font-display text-sm font-bold tracking-tight">Live Approval Queue</h4>
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_2px_rgba(16,185,129,0.7)]" />
-                Live
-              </span>
-            </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">{regs.filter((r) => r.status === "Pending Approval").length} application(s) currently awaiting portal manager review.</p>
-
-            <div className="mt-4 space-y-2.5">
-              {recent.length === 0 && (
-                <div className="rounded-xl border border-dashed border-border/60 px-4 py-6 text-center text-[11px] text-muted-foreground">
-                  No applications yet — yours could be the first.
-                </div>
-              )}
-              {recent.map((r) => (
-                <div
-                  key={r.id}
-                  className="group rounded-xl border border-border/60 bg-background/40 p-3 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_10px_30px_-12px_hsl(var(--primary)/0.5)]"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="truncate text-[12px] font-bold">{r.schoolName}</div>
-                      <div className="mt-0.5 inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
-                        <Layers className="h-3 w-3" /> {r.schoolCode}
-                      </div>
-                    </div>
-                    <span
-                      className={
-                        r.status === "Approved"
-                          ? "inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-300"
-                          : r.status === "Rejected"
-                          ? "inline-flex items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-rose-300"
-                          : "inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-300"
-                      }
-                    >
-                      {r.status}
-                    </span>
-                  </div>
-                  <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {r.region}</span>
-                    <span>{fmt(r.submittedAt)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-[11px] text-muted-foreground">
-              <div className="font-semibold text-foreground">What happens next?</div>
-              <ol className="mt-1.5 list-decimal space-y-1 pl-4">
-                <li>Portal Manager reviews your application.</li>
-                <li>On approval, a secure password is auto-generated.</li>
-                <li>Your school is added to the operational directory.</li>
-                <li>You receive onboarding credentials within 24 hours.</li>
-              </ol>
-            </div>
-          </aside>
         </div>
       </div>
     </section>
