@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { submitSchoolRegistration } from "@/lib/registrations.functions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/lib/theme";
 import {
   addRegistration,
-  isSchoolCodeTaken,
   useRegistrations,
 } from "@/lib/registrations";
 import {
