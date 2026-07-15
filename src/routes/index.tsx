@@ -59,8 +59,8 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "Avartan Skill Lab — Learn. Code. Create." },
       { name: "description", content: "Modern coding & digital-skills platform for schools, teachers, and students. Practice 10+ technologies in your browser." },
-      { property: "og:title", content: "Avartan Skill Lab" },
-      { property: "og:description", content: "Interactive learning portal for schools, teachers, and students." },
+      { property: "og:title", content: "Avartan Skill Lab — Learn. Code. Create." },
+      { property: "og:description", content: "Modern coding & digital-skills platform for schools, teachers, and students. Practice 10+ technologies in your browser." },
     ],
   }),
   component: Landing,
