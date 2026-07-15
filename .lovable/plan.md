@@ -1,59 +1,45 @@
-## Plan: Functional School Onboarding + Role-Based Dashboards
+# Realistic Office-Look-Alike Editors for the Coding Lab
 
-### Goal
-Replace the current local/mock-only onboarding behavior with a real persistent backend flow where a Manager can create a school account, that school can immediately sign in, and Admin/Manager dashboards reflect the new school count with proper sensitive-data visibility.
+## Reality check (confirmed)
 
-### What I will build
-1. **Backend-backed school creation**
-   - Add a secure server function for Manager/Admin school onboarding.
-   - Validate required fields: school name, username, password, phone, email, and address/region details.
-   - Prevent duplicate usernames/emails/school codes.
-   - Create the school auth user using the backend auth admin API so passwords are handled securely by the auth system, not stored in app tables.
-   - Assign the new user the `school` role in `user_roles`.
-   - Create/update the persistent school record in the `schools` table.
+Real Microsoft Office editors **cannot** be embedded in this app:
 
-2. **Database schema support**
-   - Extend `schools` with missing fields required by the form: username, email, phone, address, principal/designation/notes where needed.
-   - Add uniqueness constraints for school code and username/email where appropriate.
-   - Add/adjust Row Level Security policies so:
-     - Admin and Manager can manage/read school records.
-     - School users can read and manage only their own school record.
-   - Include all required table grants in the migration.
+- **Office for the Web** (Word/Excel/PowerPoint online) requires the WOPI protocol + a Microsoft 365 tenant + per-user Microsoft sign-in. Microsoft sends `X-Frame-Options: SAMEORIGIN` and CSP `frame-ancestors 'self'`, so any `<iframe src="office.com/...">` is refused by the browser.
+- **Microsoft Paint** has no web version — Win32 desktop only.
+- Google Docs/Sheets/Slides editors are also iframe-blocked; only read-only "published" views embed.
 
-3. **Create School page functionality**
-   - Update `/manager/onboard-school` to call the secure backend server function instead of local mock storage.
-   - Show loading, success, and actionable error messages.
-   - Keep the premium 3D UI styling, but make the form functional.
-   - Redirect back to the Manager dashboard after successful creation.
+So the goal is the closest-looking free alternative for each slot.
 
-4. **Real login for created schools**
-   - Ensure the auth page can sign in created school users with username or email.
-   - For username login, resolve the username to the backend user email through a safe public/auth-aware lookup without exposing sensitive data.
-   - Redirect the authenticated school user to `/school` based on their stored role.
+## What changes
 
-5. **Dynamic Admin and Manager dashboards**
-   - Replace hardcoded `0` school counts with live backend counts.
-   - Show a school roster/summary section where applicable.
-   - Admin sees full email and phone.
-   - Manager sees masked email and phone, e.g. `sc******@domain.com`, `98******10`.
-   - Counts refresh automatically after onboarding using query invalidation.
+Only `src/components/coding-lab/editors.tsx` (and a tiny helper file for Univer). No business logic, no route or state changes.
 
-6. **School dashboard ownership**
-   - Update the School dashboard to resolve the signed-in school from the backend record, not only from mock local storage.
-   - Ensure each school only sees its own institution details.
-   - Preserve existing class/section UI state and interactions unless backend persistence is explicitly required later.
+| Slot | Action |
+|---|---|
+| **Paint** | Keep JS Paint (`https://jspaint.app/`) — already a pixel-perfect MS Paint clone. |
+| **Word** | Keep Zoho Writer iframe — the only real Word-like editor that permits embedding without per-user auth. |
+| **Excel** | Replace current slot with **Univer Sheets** — self-hosted npm package, Excel-grade ribbon, formulas, multi-sheet tabs, no iframe. |
+| **PowerPoint** | Replace with **OnlyOffice Presentation demo** iframe (`https://onlinedocs.onlyoffice.com/`) — closest visual match to real PowerPoint ribbon. Show a small note that it's powered by OnlyOffice demo. |
 
-### Technical approach
-- Use TanStack `createServerFn` for app-internal backend operations.
-- Use authenticated middleware for Manager/Admin reads and school self reads.
-- Use backend admin auth only inside authorized server handlers.
-- Use Zod validation for form/server inputs.
-- Use the existing `user_roles` role system instead of storing roles on profiles or schools.
-- Keep seed/mock demo accounts working for existing demo login, but real created schools will use backend auth.
+## Implementation details (technical)
 
-### Validation
-- Verify Manager can open Create School, submit valid details, and see success.
-- Verify duplicate username/email/school code errors are shown.
-- Verify Admin and Manager school counts increment.
-- Verify Manager sees masked contact data while Admin sees complete data.
-- Verify the newly created school can log in and lands on the School Dashboard.
+1. **Install Univer**:
+   - `bun add @univerjs/presets @univerjs/preset-sheets-core`
+   - Import the preset's CSS in the editor component only (dynamic import to avoid SSR issues — Univer is browser-only, wrap in `useEffect` + a `client-only` guard).
+   - Mount into a `<div ref>` sized to fill the editor container. Pre-seed one workbook with a "Students" sheet and sample rows so it feels usable immediately.
+   - Add a "Reset workbook" button that disposes the Univer instance and re-creates it.
+
+2. **OnlyOffice PowerPoint slot**:
+   - Simple `<iframe src="https://onlinedocs.onlyoffice.com/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" />` at 100% width/height inside the same premium 3D card frame the other editors use.
+   - Add a small caption: "Powered by OnlyOffice — public demo. Files are not saved to your account."
+   - Include a graceful fallback message if the iframe fails to load (detect via `onerror` / a timeout ping).
+
+3. **Preserve existing shell**: All four editors keep the same wrapping card, header, and toolbar affordances already in `editors.tsx`. Only the inner editor bodies change.
+
+4. **SSR safety**: Univer touches `window` at import time — load it via `React.lazy` + a client-only wrapper so TanStack Start's SSR/prerender doesn't crash.
+
+## Out of scope
+
+- No changes to Word, Paint, SQL, or HTML editors.
+- No auth, no file persistence to backend (both Univer edits and OnlyOffice sessions stay ephemeral, same as current editors).
+- No UI redesign beyond fitting the new editors into the existing 3D card frame.
