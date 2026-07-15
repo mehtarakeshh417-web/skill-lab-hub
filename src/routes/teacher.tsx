@@ -16,7 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { listMockAccounts, registerMockAccount, subscribeMockAccounts, type MockAccount } from "@/lib/mock-auth";
 import { toast } from "sonner";
 import {
-  Eye, EyeOff, KeyRound, CheckCircle2, AlertTriangle, Plus, Upload, Download, GraduationCap,
+  KeyRound, CheckCircle2, AlertTriangle, Plus, Upload, Download, GraduationCap,
   ClipboardList, Inbox, Settings2, Users, Trash2, Send, BookOpen,
 } from "lucide-react";
 
@@ -60,7 +60,6 @@ type TeacherProfile = {
 
 const K_TASKS = "avartan.teacher.tasks.v1";
 const K_SUBS = "avartan.teacher.submissions.v1";
-const K_GEMINI = "avartan.teacher.gemini.v1";
 const K_PROFILE = "avartan.teacher.profile.v1";
 
 const readLS = <T,>(k: string, fallback: T): T => {
@@ -755,44 +754,20 @@ function TeacherProfilePanel({ defaults }: {
 // Gemini API key config
 // ─────────────────────────────────────────────────────────────────────────────
 function GeminiKeyPanel() {
-  const [key, setKey] = useState<string>(() => readLS<string>(K_GEMINI, ""));
-  const [show, setShow] = useState(false);
-  const valid = /^AIzaSy[A-Za-z0-9_-]{10,}/.test(key.trim());
-
-  const save = () => {
-    writeLS(K_GEMINI, key.trim());
-    if (valid) toast.success("Gemini key saved · LLM services connected");
-    else toast.warning("Saved, but key prefix looks invalid (expected AIzaSy…)");
-  };
-  const clear = () => { setKey(""); writeLS(K_GEMINI, ""); toast.message("Gemini key cleared"); };
-
   return (
     <Card className="backdrop-blur bg-card/60 border-border/60">
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <KeyRound className="h-4 w-4" />LLM Services Configuration
-          {valid
-            ? <Badge className="ml-2 bg-emerald-500/20 text-emerald-200 border-emerald-400/40"><CheckCircle2 className="h-3 w-3 mr-1" />Connected</Badge>
-            : <Badge className="ml-2 bg-amber-500/20 text-amber-200 border-amber-400/40"><AlertTriangle className="h-3 w-3 mr-1" />Missing Key</Badge>}
+          <Badge className="ml-2 bg-emerald-500/20 text-emerald-200 border-emerald-400/40"><CheckCircle2 className="h-3 w-3 mr-1" />Connected</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Paste your Gemini API key to enable automated assessment helpers and AI code feedback in the teacher module. The key is encrypted into local browser storage and never transmitted from this device.
+          AI quiz and assignment helpers are connected securely through the backend. Teachers no longer need to paste or manage API keys in browser settings.
         </p>
-        <div className="space-y-1.5">
-          <Label>Gemini API Key</Label>
-          <div className="relative">
-            <Input type={show ? "text" : "password"} value={key} onChange={(e) => setKey(e.target.value)} placeholder="AIzaSy…" className="pr-10" />
-            <button type="button" onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-        <div className="flex gap-2 justify-end">
-          <Button variant="ghost" onClick={clear}>Clear</Button>
-          <Button onClick={save}>Save Key</Button>
+        <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-200">
+          The AI generator is ready to use from the Quiz Builder.
         </div>
       </CardContent>
     </Card>
