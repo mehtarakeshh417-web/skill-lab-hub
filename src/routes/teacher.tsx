@@ -16,7 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { listMockAccounts, registerMockAccount, subscribeMockAccounts, type MockAccount } from "@/lib/mock-auth";
 import { toast } from "sonner";
 import {
-  KeyRound, CheckCircle2, Plus, Upload, Download, GraduationCap,
+  KeyRound, CheckCircle2, AlertTriangle, Plus, Upload, Download, GraduationCap,
   ClipboardList, Inbox, Settings2, Users, Trash2, Send, BookOpen,
 } from "lucide-react";
 
