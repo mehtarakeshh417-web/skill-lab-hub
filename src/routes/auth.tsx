@@ -104,9 +104,7 @@ function AuthPage() {
         <div className="absolute -top-40 -left-20 h-[460px] w-[460px] rounded-full bg-accent/40 blur-3xl animate-blob" />
         <div className="absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-primary-glow/50 blur-3xl animate-blob" style={{ animationDelay: "-8s" }} />
         <Link to="/" className="relative flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 backdrop-blur">
-            <Sparkles className="h-5 w-5" />
-          </div>
+          <img src={avartanLogo.url} alt="Avartan" className="h-10 w-10 rounded-lg object-contain bg-white p-0.5" />
           <div className="font-display text-lg font-bold">Avartan Skill Lab</div>
         </Link>
         <div className="relative space-y-6">
@@ -154,14 +152,12 @@ function AuthPage() {
             to="/"
             className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground lg:hidden"
           >
-            <Sparkles className="h-4 w-4 text-primary" /> Avartan Skill Lab
+            <img src={avartanLogo.url} alt="Avartan" className="h-6 w-6 rounded object-contain" /> Avartan Skill Lab
           </Link>
 
           <div className="rounded-3xl border border-border/60 bg-card/80 p-8 shadow-2xl shadow-indigo-500/5 backdrop-blur-xl sm:p-10">
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
+              <img src={avartanLogo.url} alt="Avartan" className="h-11 w-11 rounded-2xl object-contain bg-white p-1 shadow-lg shadow-indigo-500/30" />
               <div>
                 <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">
                   Portal login
