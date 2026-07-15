@@ -431,37 +431,60 @@ export const generateQuizWithAI = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => aiGenSchema.parse(d))
   .handler(async ({ data }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("AI is not configured.");
+    const lovableKey = process.env.LOVABLE_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!lovableKey && !geminiKey) throw new Error("AI is not configured. Missing API key.");
 
     const typesList = data.types.join(", ");
     const prompt = `Generate exactly ${data.count} quiz questions on the topic "${data.topic}"${data.subject ? ` for the subject ${data.subject}` : ""}${data.gradeLevel ? ` at ${data.gradeLevel} level` : ""}. Mix question types across: ${typesList}. Return STRICT JSON matching this TypeScript type — no markdown, no explanations:
 {"questions":[{"question_text":string,"question_type":"mcq"|"true_false"|"fill_blank","options":string[]|null,"correct_answer":string,"marks":number}]}
 Rules: mcq → 4 options, correct_answer must be one of the options verbatim. true_false → options ["True","False"], correct_answer "True" or "False". fill_blank → options null, correct_answer is the single expected word/phrase. All questions must have marks:1.`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "Authorization": `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: "You are a curriculum designer that outputs only valid JSON." },
-          { role: "user", content: prompt },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (!resp.ok) {
-      const body = await resp.text();
-      if (resp.status === 429) throw new Error("AI is rate limited. Please try again shortly.");
-      if (resp.status === 402) throw new Error("AI credits exhausted. Add credits in workspace settings.");
-      throw new Error(`AI request failed [${resp.status}]: ${body}`);
+    let raw = "{}";
+    if (lovableKey) {
+      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${lovableKey}` },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: "You are a curriculum designer that outputs only valid JSON." },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        }),
+      });
+      if (!resp.ok) {
+        const body = await resp.text();
+        if (!geminiKey) {
+          if (resp.status === 429) throw new Error("AI is rate limited. Please try again shortly.");
+          if (resp.status === 402) throw new Error("AI credits exhausted. Add credits in workspace settings.");
+          throw new Error(`AI request failed [${resp.status}]: ${body}`);
+        }
+      } else {
+        const json = (await resp.json()) as { choices: Array<{ message: { content: string } }> };
+        raw = json.choices?.[0]?.message?.content ?? "{}";
+      }
     }
-    const json = (await resp.json()) as { choices: Array<{ message: { content: string } }> };
-    const raw = json.choices?.[0]?.message?.content ?? "{}";
+    if (raw === "{}" && geminiKey) {
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json", temperature: 0.7 },
+          }),
+        },
+      );
+      if (!resp.ok) {
+        const body = await resp.text();
+        throw new Error(`AI request failed [${resp.status}]: ${body}`);
+      }
+      const json = (await resp.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+      raw = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+    }
     let parsed: { questions?: Array<{ question_text: string; question_type: string; options?: string[] | null; correct_answer: string; marks?: number }> };
     try {
       parsed = JSON.parse(raw);
