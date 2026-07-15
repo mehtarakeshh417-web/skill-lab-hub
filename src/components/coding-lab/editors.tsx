@@ -271,6 +271,89 @@ const SLIDES_SRC_DOC = `<!doctype html><html><head><meta charset="utf-8"><title>
  render();
 </script></body></html>`;
 
+const SQL_SRC_DOC = `<!doctype html><html><head><meta charset="utf-8"><title>SQL Editor</title>
+<style>
+ :root{color-scheme:light}
+ *{box-sizing:border-box}
+ html,body{margin:0;height:100%;font-family:Inter,system-ui,sans-serif;background:#f8fafc;color:#0f172a;overflow:hidden}
+ .app{display:grid;grid-template-rows:auto 1fr auto;height:100vh}
+ header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:#fff;border-bottom:1px solid #e2e8f0}
+ header h1{margin:0;font-size:13px;font-weight:700;color:#4338ca;display:flex;align-items:center;gap:8px}
+ header h1 span{display:inline-block;width:8px;height:8px;border-radius:99px;background:#4f46e5}
+ header .grow{flex:1}
+ header button,header select{font:inherit;font-size:12px;font-weight:600;padding:7px 12px;border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:8px;cursor:pointer}
+ header button:hover,header select:hover{background:#eef2ff;border-color:#6366f1;color:#4338ca}
+ header button.primary{background:linear-gradient(135deg,#4f46e5,#7c3aed);border:0;color:#fff}
+ .work{display:grid;grid-template-rows:1fr 1fr;min-height:0}
+ textarea{border:0;outline:0;resize:none;width:100%;height:100%;padding:14px 16px;font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.6;background:#0b1020;color:#e2e8f0;tab-size:2;caret-color:#a5b4fc}
+ .results{overflow:auto;background:#fff;border-top:1px solid #e2e8f0;padding:12px 14px}
+ .results table{border-collapse:collapse;width:100%;font-size:13px}
+ .results th,.results td{border:1px solid #e2e8f0;padding:6px 10px;text-align:left}
+ .results th{background:#eef2ff;color:#4338ca;font-weight:700;position:sticky;top:0}
+ .results tr:nth-child(even) td{background:#f8fafc}
+ .msg{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;color:#475569;white-space:pre-wrap}
+ .msg.err{color:#dc2626}
+ .msg.ok{color:#059669}
+ footer{padding:8px 14px;background:#f1f5f9;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b}
+</style></head><body>
+<div class="app">
+ <header>
+  <h1><span></span> SQL Practice Editor</h1>
+  <div class="grow"></div>
+  <select id="samples">
+   <option value="">Sample queries…</option>
+   <option value="select">SELECT * FROM students</option>
+   <option value="join">JOIN students + grades</option>
+   <option value="agg">GROUP BY / AVG</option>
+   <option value="create">CREATE TABLE + INSERT</option>
+  </select>
+  <button id="run" class="primary">▶ Run (Ctrl+Enter)</button>
+  <button id="reset">↺ Reset DB</button>
+  <button id="clear">✕ Clear</button>
+ </header>
+ <div class="work">
+  <textarea id="src" spellcheck="false"></textarea>
+  <div class="results" id="out"><div class="msg">Loading SQL engine…</div></div>
+ </div>
+ <footer>SQLite (via sql.js) running fully in your browser. Data resets on reload.</footer>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+const KEY='avartan.sqlEditor.v1';
+const SEED=\`-- Welcome to the SQL Practice Editor
+-- Try: SELECT * FROM students;
+
+SELECT s.name, s.grade, g.subject, g.score
+FROM students s
+JOIN grades g ON g.student_id = s.id
+ORDER BY s.name;\`;
+const SAMPLES={
+ select:'SELECT * FROM students;',
+ join:'SELECT s.name, g.subject, g.score\\nFROM students s JOIN grades g ON g.student_id=s.id;',
+ agg:'SELECT subject, AVG(score) AS avg_score, COUNT(*) AS n\\nFROM grades GROUP BY subject;',
+ create:'CREATE TABLE books(id INTEGER PRIMARY KEY, title TEXT, author TEXT);\\nINSERT INTO books VALUES (1,"1984","Orwell"),(2,"Dune","Herbert");\\nSELECT * FROM books;'
+};
+const src=document.getElementById('src'),out=document.getElementById('out');
+src.value=localStorage.getItem(KEY)||SEED;
+src.addEventListener('input',()=>localStorage.setItem(KEY,src.value));
+src.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();run()}if(e.key==='Tab'){e.preventDefault();const s=src.selectionStart,en=src.selectionEnd;src.value=src.value.slice(0,s)+'  '+src.value.slice(en);src.selectionStart=src.selectionEnd=s+2}});
+let db,SQL;
+function seed(){db.run(\`
+  CREATE TABLE students(id INTEGER PRIMARY KEY, name TEXT, grade INTEGER);
+  INSERT INTO students VALUES (1,'Aarav',8),(2,'Diya',9),(3,'Kabir',8),(4,'Mira',10),(5,'Rohan',9);
+  CREATE TABLE grades(id INTEGER PRIMARY KEY, student_id INTEGER, subject TEXT, score INTEGER);
+  INSERT INTO grades VALUES (1,1,'Math',88),(2,1,'Science',92),(3,2,'Math',75),(4,2,'English',81),(5,3,'Math',95),(6,3,'Science',89),(7,4,'Math',70),(8,4,'English',85),(9,5,'Science',77),(10,5,'English',90);
+\`)}
+function renderRes(res){out.innerHTML='';if(!res||!res.length){out.innerHTML='<div class="msg ok">✓ Query executed. No rows returned.</div>';return}res.forEach(r=>{const t=document.createElement('table');const th=document.createElement('tr');r.columns.forEach(c=>{const x=document.createElement('th');x.textContent=c;th.appendChild(x)});t.appendChild(th);r.values.forEach(row=>{const tr=document.createElement('tr');row.forEach(v=>{const td=document.createElement('td');td.textContent=v===null?'NULL':v;tr.appendChild(td)});t.appendChild(tr)});out.appendChild(t);const c=document.createElement('div');c.className='msg ok';c.textContent='✓ '+r.values.length+' row(s)';out.appendChild(c)})}
+function run(){if(!db){out.innerHTML='<div class="msg">Engine not ready…</div>';return}try{const res=db.exec(src.value);renderRes(res)}catch(err){out.innerHTML='<div class="msg err">✗ '+err.message+'</div>'}}
+document.getElementById('run').onclick=run;
+document.getElementById('clear').onclick=()=>{out.innerHTML='<div class="msg">Cleared.</div>'};
+document.getElementById('reset').onclick=()=>{if(!confirm('Reset database to seed data?'))return;db=new SQL.Database();seed();out.innerHTML='<div class="msg ok">✓ Database reset.</div>'};
+document.getElementById('samples').onchange=e=>{const v=e.target.value;if(v&&SAMPLES[v]){src.value=SAMPLES[v];localStorage.setItem(KEY,src.value);run()}e.target.value=''};
+initSqlJs({locateFile:f=>'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/'+f}).then(S=>{SQL=S;db=new SQL.Database();seed();out.innerHTML='<div class="msg ok">✓ SQL engine ready. Press ▶ Run or Ctrl+Enter.</div>'}).catch(err=>{out.innerHTML='<div class="msg err">Failed to load SQL engine: '+err.message+'</div>'});
+</script>
+</body></html>`;
+
 // =============================================================================
 // Editor registry — slug → live editor configuration. Every entry is wrapped
 // inside <EditorWrapper> with the strict allow/sandbox policy.
@@ -331,12 +414,12 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
       "Powered by OneCompiler — OpenJDK compiler with live console output.",
   },
   mysql: {
-    title: "MySQL",
-    subtitle: "Run SQL queries against a live database sandbox",
+    title: "SQL Editor",
+    subtitle: "Practice SQL against a live in-browser database",
     badge: "SQL",
-    src: "https://onecompiler.com/embed/mysql",
+    srcDoc: SQL_SRC_DOC,
     caption:
-      "Powered by OneCompiler — interactive MySQL playground with sample schema.",
+      "Self-contained SQLite engine (sql.js) — seeded with students + grades tables. Press ▶ Run or Ctrl+Enter.",
   },
   html: {
     title: "HTML · CSS · JS",
