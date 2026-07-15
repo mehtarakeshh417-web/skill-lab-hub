@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { submitSchoolRegistration } from "@/lib/registrations.functions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/lib/theme";
+import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
   addRegistration,
 } from "@/lib/registrations";
@@ -101,9 +102,7 @@ function Header() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-brand shadow-glow">
-            <Sparkles className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img src={avartanLogo.url} alt="Avartan" className="h-10 w-10 rounded-lg object-contain bg-white p-0.5 shadow-glow" />
           <div className="font-display text-lg font-bold tracking-tight">
             Avartan<span className="text-primary"> Skill Lab</span>
           </div>
@@ -545,9 +544,7 @@ function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-brand shadow-glow">
-                <Sparkles className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <img src={avartanLogo.url} alt="Avartan" className="h-10 w-10 rounded-lg object-contain bg-white p-0.5 shadow-glow" />
               <div className="font-display text-lg font-bold tracking-tight">
                 Avartan<span className="text-primary"> Skill Lab</span>
               </div>

@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth, ROLE_HOME, type AppRole } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
   Sparkles,
   LogOut,
@@ -127,9 +128,7 @@ export function AppShell({
       {/* Sidebar */}
       <aside className="hidden w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
         <div className="flex h-16 items-center gap-2.5 border-b border-sidebar-border/60 px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-brand">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <img src={avartanLogo.url} alt="Avartan" className="h-9 w-9 rounded-lg object-contain bg-white/95 p-0.5" />
           <div className="font-display text-base font-bold">Avartan Lab</div>
         </div>
         <nav className="flex-1 space-y-1 p-4">
