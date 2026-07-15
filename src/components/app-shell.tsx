@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth, ROLE_HOME, type AppRole } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
   Sparkles,
   LogOut,
