@@ -508,6 +508,10 @@ function StudentRoster({
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
+    processFile(file);
+  };
+
+  const processFile = (file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result || "");
@@ -526,6 +530,25 @@ function StudentRoster({
     reader.readAsText(file);
   };
 
+  const downloadTemplate = () => {
+    const csv = [
+      "name,class,section,roll,loginId",
+      "Aarav Sharma,Class 6,A,R001,aarav.sharma",
+      "Isha Patel,Class 6,A,R002,isha.patel",
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "students-bulk-upload-template.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -533,10 +556,29 @@ function StudentRoster({
           <div className="font-display text-lg font-semibold">Student Roster</div>
           <div className="text-xs text-muted-foreground">{students.length} student(s) mapped to you</div>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1.5" />Manual Entry</Button></DialogTrigger>
-          <ManualStudentDialog onSubmit={(s) => { if (addStudent(s)) setOpen(false); }} />
-        </Dialog>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="soft" onClick={downloadTemplate}>
+            <Download className="h-4 w-4 mr-1.5" />Download Template
+          </Button>
+          <Button variant="soft" onClick={() => uploadInputRef.current?.click()}>
+            <Upload className="h-4 w-4 mr-1.5" />Upload CSV
+          </Button>
+          <input
+            ref={uploadInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) processFile(f);
+              if (uploadInputRef.current) uploadInputRef.current.value = "";
+            }}
+          />
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1.5" />Manual Entry</Button></DialogTrigger>
+            <ManualStudentDialog onSubmit={(s) => { if (addStudent(s)) setOpen(false); }} />
+          </Dialog>
+        </div>
       </div>
 
       <div
