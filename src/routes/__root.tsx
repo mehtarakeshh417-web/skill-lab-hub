@@ -13,8 +13,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
-import { UnderConstructionOverlay } from "@/components/under-construction-overlay";
-
 
 function NotFoundComponent() {
   return (
@@ -134,7 +132,6 @@ function RootComponent() {
       <AuthProvider>
         <Outlet />
         <Toaster richColors position="top-right" />
-        <UnderConstructionOverlay />
       </AuthProvider>
     </QueryClientProvider>
   );
