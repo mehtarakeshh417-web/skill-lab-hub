@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { HTML_EDITOR_SRC_DOC } from "./html-editor-srcdoc";
 import { SHEET_LUCKYSHEET_SRC_DOC } from "./sheet-luckysheet-srcdoc";
 import { SLIDES_EDITOR_SRC_DOC } from "./slides-editor-srcdoc";
+import { WORD_RIBBON_SRC_DOC } from "./word-ribbon-srcdoc";
 
 const UniverSheet = lazy(() =>
   import("./univer-sheet").then((m) => ({ default: m.UniverSheet })),
@@ -442,19 +443,19 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
   },
   editor: {
     title: "Word Document",
-    subtitle: "Full Word-style ribbon, styles, tables, images & export",
+    subtitle: "Full Word-style ribbon: Home / Insert / Layout / Review",
     badge: "Doc",
-    src: "https://cryptpad.fr/doc/",
+    srcDoc: WORD_RIBBON_SRC_DOC,
     caption:
-      "Powered by CryptPad (OnlyOffice engine) — real Word-grade ribbon with Home, Insert, Layout, References, Review menus. No login needed.",
+      "Self-contained Word-style editor — ribbon tabs, font styles, tables, pictures, margins, word count, print & .doc export. Runs 100% in your browser.",
   },
   spreadsheet: {
     title: "Excel Workbook",
-    subtitle: "Full Excel-style ribbon, formulas, charts, sheet tabs & export",
+    subtitle: "Luckysheet — Excel-style ribbon, formulas, sheet tabs & formatting",
     badge: "Sheets",
-    src: "https://cryptpad.fr/sheet/",
+    srcDoc: SHEET_LUCKYSHEET_SRC_DOC,
     caption:
-      "Powered by CryptPad (OnlyOffice engine) — real Excel-grade ribbon with Home, Insert, Formulas, Data, Review menus. No login needed.",
+      "Powered by Luckysheet — Excel-compatible ribbon, formula bar, cell formatting, multiple sheets, all in-browser.",
   },
   presentation: {
     title: "PowerPoint Editor",
