@@ -7,6 +7,9 @@ import { HTML_EDITOR_SRC_DOC } from "./html-editor-srcdoc";
 const UniverSheet = lazy(() =>
   import("./univer-sheet").then((m) => ({ default: m.UniverSheet })),
 );
+const UniverDoc = lazy(() =>
+  import("./univer-doc").then((m) => ({ default: m.UniverDoc })),
+);
 
 // =============================================================================
 // EditorWrapper — premium glassmorphic chrome around every live editor iframe.
@@ -383,7 +386,7 @@ type EditorConfig = {
   caption: string;
   src?: string;
   srcDoc?: string;
-  custom?: "univer";
+  custom?: "univer-sheet" | "univer-doc";
 };
 
 export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
@@ -436,18 +439,18 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
       "Self-contained HTML / CSS / JS editor — live preview, console capture, auto-run, autosave and download.",
   },
   editor: {
-    title: "Word Editor",
-    subtitle: "Zoho Writer — full online word processor",
+    title: "Word Document",
+    subtitle: "Univer Docs — Word-grade ribbon, styles, tables & images",
     badge: "Doc",
-    src: "https://writer.zoho.com/writer/",
+    custom: "univer-doc",
     caption:
-      "Powered by Zoho Writer — a full-featured online word processor. Use the pop-out button if the embed is blocked by the provider.",
+      "Powered by Univer Docs — a self-hosted, Word-compatible document editor running fully in your browser.",
   },
   spreadsheet: {
     title: "Excel Workbook",
     subtitle: "Univer Sheets — Excel-grade ribbon, formulas, formatting",
     badge: "Sheets",
-    custom: "univer",
+    custom: "univer-sheet",
     caption:
       "Powered by Univer Sheets — a self-hosted, Excel-compatible spreadsheet engine running fully in your browser.",
   },
@@ -485,22 +488,22 @@ export function LiveEditor({ slug }: { slug: string }) {
       caption={config.caption}
       url={config.src}
     >
-      {config.custom === "univer" ? (
+      {config.custom === "univer-sheet" || config.custom === "univer-doc" ? (
         <ClientOnly
           fallback={
             <div className="flex h-full w-full items-center justify-center bg-white text-sm text-slate-500">
-              Loading spreadsheet engine…
+              Loading editor engine…
             </div>
           }
         >
           <Suspense
             fallback={
               <div className="flex h-full w-full items-center justify-center bg-white text-sm text-slate-500">
-                Loading spreadsheet engine…
+                Loading editor engine…
               </div>
             }
           >
-            <UniverSheet />
+            {config.custom === "univer-sheet" ? <UniverSheet /> : <UniverDoc />}
           </Suspense>
         </ClientOnly>
       ) : (
