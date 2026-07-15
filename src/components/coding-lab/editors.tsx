@@ -3,6 +3,8 @@ import { ClientOnly } from "@tanstack/react-router";
 import { Maximize2, Minimize2, RotateCw, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HTML_EDITOR_SRC_DOC } from "./html-editor-srcdoc";
+import { SHEET_LUCKYSHEET_SRC_DOC } from "./sheet-luckysheet-srcdoc";
+import { SLIDES_EDITOR_SRC_DOC } from "./slides-editor-srcdoc";
 
 const UniverSheet = lazy(() =>
   import("./univer-sheet").then((m) => ({ default: m.UniverSheet })),
@@ -448,19 +450,19 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
   },
   spreadsheet: {
     title: "Excel Workbook",
-    subtitle: "Univer Sheets — Excel-grade ribbon, formulas, formatting",
+    subtitle: "Luckysheet — Excel-style ribbon, formulas, sheet tabs & formatting",
     badge: "Sheets",
-    custom: "univer-sheet",
+    srcDoc: SHEET_LUCKYSHEET_SRC_DOC,
     caption:
-      "Powered by Univer Sheets — a self-hosted, Excel-compatible spreadsheet engine running fully in your browser.",
+      "Powered by Luckysheet — Excel-compatible ribbon, formula bar, cell formatting, multiple sheets, all in-browser.",
   },
   presentation: {
     title: "PowerPoint Editor",
-    subtitle: "OnlyOffice Presentation — closest to real PowerPoint",
+    subtitle: "PowerPoint-style ribbon, slide thumbnails, present mode",
     badge: "Slides",
-    src: "https://onlinedocs.onlyoffice.com/",
+    srcDoc: SLIDES_EDITOR_SRC_DOC,
     caption:
-      "Powered by OnlyOffice — public demo. Files aren't saved to your account. Use the pop-out button if the embed is blocked.",
+      "Real ribbon toolbar (Home / Insert / Design / Slide Show), editable text boxes, image & shape insert, full-screen present mode with keyboard nav.",
   },
   paint: {
     title: "Paint",
