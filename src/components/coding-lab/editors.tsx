@@ -348,11 +348,11 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
   },
   editor: {
     title: "Word Editor",
-    subtitle: "Rich-text document playground",
+    subtitle: "Zoho Writer — full online word processor",
     badge: "Doc",
-    srcDoc: WORD_SRC_DOC,
+    src: "https://writer.zoho.com/writer/",
     caption:
-      "Self-contained rich-text editor — formatting, headings, lists and links, all client-side.",
+      "Powered by Zoho Writer — a full-featured online word processor. Use the pop-out button if the embed is blocked by the provider.",
   },
   spreadsheet: {
     title: "Spreadsheet",
