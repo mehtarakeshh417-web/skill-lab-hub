@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, useCallback, type DragEvent } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef, type DragEvent } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { listMockAccounts, registerMockAccount, subscribeMockAccounts, type MockAccount } from "@/lib/mock-auth";
 import { toast } from "sonner";
 import {
-  Eye, EyeOff, KeyRound, CheckCircle2, AlertTriangle, Plus, Upload, GraduationCap,
+  Eye, EyeOff, KeyRound, CheckCircle2, AlertTriangle, Plus, Upload, Download, GraduationCap,
   ClipboardList, Inbox, Settings2, Users, Trash2, Send, BookOpen,
 } from "lucide-react";
 
