@@ -9,6 +9,7 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import { listMyNotifications, markNotificationsRead } from "@/lib/learning.functions";
 import { Link } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 
 type Notif = {
   id: string;
@@ -28,6 +29,8 @@ export function NotificationsBell() {
 
   async function refresh() {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setItems([]); return; }
       const rows = (await load()) as Notif[];
       setItems(rows);
     } catch {
@@ -48,6 +51,8 @@ export function NotificationsBell() {
     setOpen(v);
     if (v && unread > 0) {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
         await markRead({ data: {} });
         setItems((prev) => prev.map((n) => ({ ...n, read: true })));
       } catch {
