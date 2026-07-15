@@ -442,19 +442,19 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
   },
   editor: {
     title: "Word Document",
-    subtitle: "Univer Docs — Word-grade ribbon, styles, tables & images",
+    subtitle: "Full Word-style ribbon, styles, tables, images & export",
     badge: "Doc",
-    custom: "univer-doc",
+    src: "https://cryptpad.fr/doc/",
     caption:
-      "Powered by Univer Docs — a self-hosted, Word-compatible document editor running fully in your browser.",
+      "Powered by CryptPad (OnlyOffice engine) — real Word-grade ribbon with Home, Insert, Layout, References, Review menus. No login needed.",
   },
   spreadsheet: {
     title: "Excel Workbook",
-    subtitle: "Luckysheet — Excel-style ribbon, formulas, sheet tabs & formatting",
+    subtitle: "Full Excel-style ribbon, formulas, charts, sheet tabs & export",
     badge: "Sheets",
-    srcDoc: SHEET_LUCKYSHEET_SRC_DOC,
+    src: "https://cryptpad.fr/sheet/",
     caption:
-      "Powered by Luckysheet — Excel-compatible ribbon, formula bar, cell formatting, multiple sheets, all in-browser.",
+      "Powered by CryptPad (OnlyOffice engine) — real Excel-grade ribbon with Home, Insert, Formulas, Data, Review menus. No login needed.",
   },
   presentation: {
     title: "PowerPoint Editor",
