@@ -18,13 +18,12 @@ export function UniverSheet() {
 
     async function boot() {
       try {
-        const [{ createUniver, LocaleType, merge }, { UniverSheetsCorePreset }, enUS, sheetsCss, presetCss] =
+        const [{ createUniver, LocaleType, merge }, { UniverSheetsCorePreset }, enUS, presetCss] =
           await Promise.all([
             import("@univerjs/presets"),
             import("@univerjs/preset-sheets-core"),
             import("@univerjs/preset-sheets-core/locales/en-US"),
-            import("@univerjs/presets/lib/styles/preset.css?inline"),
-            import("@univerjs/preset-sheets-core/lib/index.css?inline"),
+            import("@univerjs/presets/lib/styles/preset-sheets-core.css?inline"),
           ]);
 
         if (disposed || !hostRef.current) return;
@@ -34,7 +33,7 @@ export function UniverSheet() {
         if (!document.getElementById(styleId)) {
           const s = document.createElement("style");
           s.id = styleId;
-          s.textContent = `${sheetsCss.default}\n${presetCss.default}`;
+          s.textContent = presetCss.default;
           document.head.appendChild(s);
         }
 
