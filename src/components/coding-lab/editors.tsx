@@ -1,7 +1,12 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { ClientOnly } from "@tanstack/react-router";
 import { Maximize2, Minimize2, RotateCw, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HTML_EDITOR_SRC_DOC } from "./html-editor-srcdoc";
+
+const UniverSheet = lazy(() =>
+  import("./univer-sheet").then((m) => ({ default: m.UniverSheet })),
+);
 
 // =============================================================================
 // EditorWrapper — premium glassmorphic chrome around every live editor iframe.
@@ -378,6 +383,7 @@ type EditorConfig = {
   caption: string;
   src?: string;
   srcDoc?: string;
+  custom?: "univer";
 };
 
 export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
@@ -438,20 +444,20 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
       "Powered by Zoho Writer — a full-featured online word processor. Use the pop-out button if the embed is blocked by the provider.",
   },
   spreadsheet: {
-    title: "Spreadsheet",
-    subtitle: "Live grid with formula engine",
-    badge: "Grid",
-    srcDoc: SHEET_SRC_DOC,
+    title: "Excel Workbook",
+    subtitle: "Univer Sheets — Excel-grade ribbon, formulas, formatting",
+    badge: "Sheets",
+    custom: "univer",
     caption:
-      "Self-contained spreadsheet — supports = expressions, SUM() and AVG() ranges.",
+      "Powered by Univer Sheets — a self-hosted, Excel-compatible spreadsheet engine running fully in your browser.",
   },
   presentation: {
-    title: "Presentation",
-    subtitle: "Build, edit, and present slide decks",
+    title: "PowerPoint Editor",
+    subtitle: "OnlyOffice Presentation — closest to real PowerPoint",
     badge: "Slides",
-    srcDoc: SLIDES_SRC_DOC,
+    src: "https://onlinedocs.onlyoffice.com/",
     caption:
-      "Self-contained slide builder — editable slides, keyboard nav, full-screen present mode.",
+      "Powered by OnlyOffice — public demo. Files aren't saved to your account. Use the pop-out button if the embed is blocked.",
   },
   paint: {
     title: "Paint",
@@ -479,7 +485,27 @@ export function LiveEditor({ slug }: { slug: string }) {
       caption={config.caption}
       url={config.src}
     >
-      <LiveFrame src={config.src} srcDoc={config.srcDoc} title={config.title} />
+      {config.custom === "univer" ? (
+        <ClientOnly
+          fallback={
+            <div className="flex h-full w-full items-center justify-center bg-white text-sm text-slate-500">
+              Loading spreadsheet engine…
+            </div>
+          }
+        >
+          <Suspense
+            fallback={
+              <div className="flex h-full w-full items-center justify-center bg-white text-sm text-slate-500">
+                Loading spreadsheet engine…
+              </div>
+            }
+          >
+            <UniverSheet />
+          </Suspense>
+        </ClientOnly>
+      ) : (
+        <LiveFrame src={config.src} srcDoc={config.srcDoc} title={config.title} />
+      )}
     </EditorWrapper>
   );
 }
