@@ -44,7 +44,7 @@ export function UnderConstructionOverlay() {
           }}
           aria-hidden
         >
-          🚧
+          ⚠️
         </div>
         <h1
           style={{
@@ -54,7 +54,7 @@ export function UnderConstructionOverlay() {
             letterSpacing: "-0.02em",
           }}
         >
-          Under Construction
+          Some unknown error occurred
         </h1>
         <p
           style={{
@@ -64,8 +64,7 @@ export function UnderConstructionOverlay() {
             margin: 0,
           }}
         >
-          This website is currently in developer preview mode and preparing for
-          launch. Please check back soon!
+          We are unable to load this page right now. Please try again later or contact the administrator for assistance.
         </p>
       </div>
 
