@@ -422,6 +422,27 @@ function RegisterSchool() {
                   onFocus={() => setFocused((f) => ({ ...f, area: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, area: false }))}
                 />
+                <SelectField
+                  name="salesRepId"
+                  label="Sales Representative"
+                  icon={UserCheck}
+                  value={form.salesRepId}
+                  onChange={(v) => update("salesRepId", v)}
+                  placeholder={repsLoading ? "Loading representatives…" : reps.length ? "Select your sales representative" : "No representatives available yet"}
+                  options={reps.map((r) => ({
+                    value: r.id,
+                    label: r.designation ? `${r.fullName} — ${r.designation}` : r.fullName,
+                  }))}
+                  disabled={repsLoading || reps.length === 0}
+                  error={errors.salesRepId}
+                  hint={
+                    repsLoading
+                      ? "Fetching the latest representative list."
+                      : reps.length === 0
+                      ? "No active sales representatives yet — please contact the portal team."
+                      : "Choose the representative who introduced Avartan to your school."
+                  }
+                />
               </div>
 
               <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
