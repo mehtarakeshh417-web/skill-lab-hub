@@ -8,6 +8,10 @@ import { getDirectory } from "@/lib/directory.functions";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/admin/directory")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab: typeof search.tab === "string" ? search.tab : "schools",
+    status: typeof search.status === "string" ? search.status : "all",
+  }),
   head: () => ({
     meta: [
       { title: "Directory — Avartan Admin Console" },
@@ -23,9 +27,13 @@ export const Route = createFileRoute("/admin/directory")({
 
 function DirectoryPage() {
   const { session } = useAuth();
+  const { tab, status } = Route.useSearch();
   const load = useServerFn(getDirectory);
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useState({ search: "", state: "all", city: "all", region: "all", schoolId: "all", status: "all" });
+  const validTabs = ["schools", "teachers", "students", "salesReps"] as const;
+  const initialTab = (validTabs as readonly string[]).includes(tab) ? (tab as (typeof validTabs)[number]) : "schools";
+  const initialStatus = ["all", "active", "inactive"].includes(status) ? status : "all";
+  const [filters, setFilters] = useState({ search: "", state: "all", city: "all", region: "all", schoolId: "all", status: initialStatus });
 
   const query = useQuery({
     queryKey: ["directory", filters],
@@ -40,6 +48,8 @@ function DirectoryPage() {
     <AppShell requireRole="admin" title="Portal Directory">
       <DirectoryWorkspace
         data={data}
+        key={`${initialTab}-${initialStatus}`}
+        defaultTab={initialTab}
         loading={query.isLoading}
         filters={filters}
         onFilters={setFilters}
