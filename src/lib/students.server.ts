@@ -139,7 +139,21 @@ export async function createStudentForSchool(
   const school = await getSchoolForActor(actorUserId);
   const username = input.username.trim().toLowerCase();
   if (await usernameTaken(username)) throw new Error("Username already exists.");
-  return provisionStudent(input, school.id, actorUserId);
+  const rec = await provisionStudent(input, school.id, actorUserId);
+  const { writeAudit } = await import("./security.server");
+  await writeAudit({
+    actorUserId,
+    action: "student.create",
+    module: "Students",
+    entityType: "student",
+    entityId: rec.userId,
+    entityLabel: rec.fullName,
+    targetUserId: rec.userId,
+    targetRole: "student",
+    newValue: { username, fullName: rec.fullName, schoolId: school.id },
+    remarks: "Student account created",
+  });
+  return rec;
 }
 
 export type BulkResult = {
@@ -182,7 +196,21 @@ export async function bulkCreateStudentsForSchool(
     }
   });
 
-  if (errors.length) return { createdCount: 0, created: [], errors };
+  const { writeAudit } = await import("./security.server");
+
+  if (errors.length) {
+    await writeAudit({
+      actorUserId,
+      action: "student.bulk_upload",
+      module: "Students",
+      entityType: "student_batch",
+      entityLabel: `${inputs.length} rows`,
+      status: "failure",
+      newValue: { attempted: inputs.length, errors: errors.slice(0, 20) },
+      remarks: "Bulk student upload rejected during validation",
+    });
+    return { createdCount: 0, created: [], errors };
+  }
 
   const created: StudentRecord[] = [];
   for (let i = 0; i < inputs.length; i++) {
@@ -207,6 +235,15 @@ export async function bulkCreateStudentsForSchool(
       };
     }
   }
+  await writeAudit({
+    actorUserId,
+    action: "student.bulk_upload",
+    module: "Students",
+    entityType: "student_batch",
+    entityLabel: `${created.length} students`,
+    newValue: { createdCount: created.length, usernames: created.map((c) => c.username).slice(0, 100), schoolId: school.id },
+    remarks: `Bulk upload created ${created.length} student account${created.length === 1 ? "" : "s"}`,
+  });
   return { createdCount: created.length, created, errors: [] };
 }
 
