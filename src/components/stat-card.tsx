@@ -75,5 +75,3 @@ export function StatCard({
 
   return <div className={base}>{body}</div>;
 }
-  );
-}
