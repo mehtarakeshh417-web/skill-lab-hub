@@ -30,7 +30,6 @@ type NavItem = { label: string; to: string; icon: typeof LayoutDashboard };
 const NAV: Record<AppRole, NavItem[]> = {
   admin: [
     { label: "Overview", to: "/admin", icon: LayoutDashboard },
-    { label: "Directory", to: "/admin/directory", icon: School2 },
     { label: "Approvals", to: "/admin/pending-schools", icon: ClipboardList },
     { label: "Sales hierarchy", to: "/admin/sales-hierarchy", icon: BarChart3 },
     { label: "Users", to: "/admin/users", icon: UserCog },
