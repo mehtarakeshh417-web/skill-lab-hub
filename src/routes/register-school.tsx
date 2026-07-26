@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { submitSchoolRegistration } from "@/lib/registrations.functions";
-import { addRegistration } from "@/lib/registrations";
+import { parseFieldError } from "@/lib/registrations";
 import { INDIA_STATES, citiesForState } from "@/lib/india-locations";
 import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
@@ -115,13 +115,38 @@ function RegisterSchool() {
     address: "Address",
   };
 
+  const validateValue = (k: keyof typeof empty, raw: string): string => {
+    const v = String(raw ?? "").trim();
+    if (!v) return `${LABELS[k]} is missing — this field is required.`;
+    if (k === "email" && !/^\S+@\S+\.\S+$/.test(v)) return "Enter a valid email address.";
+    return "";
+  };
+
   const validate = (): Record<string, string> => {
     const e: Record<string, string> = {};
     (Object.keys(empty) as (keyof typeof empty)[]).forEach((k) => {
-      if (!String(form[k] ?? "").trim()) e[k] = `${LABELS[k]} is missing — this field is required.`;
+      const msg = validateValue(k, form[k]);
+      if (msg) e[k] = msg;
     });
-    if (!e.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = "Enter a valid email address.";
     return e;
+  };
+
+  const focusField = (key: string) => {
+    if (typeof document === "undefined") return;
+    const el = document.querySelector<HTMLElement>(
+      `[data-field="${key}"] input, [data-field="${key}"] select, [data-field="${key}"] textarea`,
+    );
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.focus({ preventScroll: true });
+  };
+
+  // Re-validate a single field when the user leaves it (focusout bubbles to the form).
+  const handleBlur = (ev: React.FocusEvent<HTMLFormElement>) => {
+    const name = (ev.target as HTMLElement & { name?: string }).name as keyof typeof empty | undefined;
+    if (!name || !(name in empty)) return;
+    const msg = validateValue(name, form[name]);
+    setErrors((e) => ({ ...e, [name]: msg }));
   };
 
   const submit = async (ev: React.FormEvent) => {
@@ -134,6 +159,7 @@ function RegisterSchool() {
         missing.length === 1 ? `${missing[0]} is missing` : `${missing.length} required fields are missing`,
         { description: missing.join(", ") },
       );
+      focusField(Object.keys(e)[0]);
       return;
     }
     setSubmitting(true);
@@ -156,15 +182,6 @@ function RegisterSchool() {
           address: form.address.trim(),
         },
       });
-      // Also mirror into local session list for the sidebar preview.
-      addRegistration({
-        schoolName: form.schoolName.trim(),
-        schoolCode: form.schoolCode.trim().toUpperCase(),
-        principalName: form.principalName.trim(),
-        region: [form.area.trim(), form.city.trim(), form.state.trim()].filter(Boolean).join(", "),
-        designation: form.designation.trim(),
-        notes: form.notes.trim(),
-      });
       toast.success("Registration submitted", {
         description: `${form.schoolName.trim()} · status: Pending Approval`,
       });
@@ -173,9 +190,15 @@ function RegisterSchool() {
       setErrors({});
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      toast.error("Registration failed", {
-        description: err instanceof Error ? err.message : String(err),
-      });
+      const raw = err instanceof Error ? err.message : String(err);
+      const { field, message } = parseFieldError(raw);
+      if (field && field in empty) {
+        setErrors((e) => ({ ...e, [field]: message }));
+        focusField(field);
+        toast.error(`${LABELS[field as keyof typeof empty]} needs attention`, { description: message });
+      } else {
+        toast.error("Registration failed", { description: message });
+      }
     } finally {
       setSubmitting(false);
     }
