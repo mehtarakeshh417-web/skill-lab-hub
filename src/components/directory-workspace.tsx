@@ -531,21 +531,87 @@ export function DirectoryWorkspace({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive"><ShieldAlert className="h-5 w-5" /> Delete school permanently</DialogTitle>
             <DialogDescription>
-              Deleting <strong>{deleteSchool?.name}</strong> also removes {deleteSchool?.teacherCount ?? 0} teacher account(s) and {deleteSchool?.studentCount ?? 0} student account(s) — records and logins. This cannot be undone.
+              Deleting <strong>{deleteSchool?.name}</strong> also removes {countLabel(deleteSchool?.teacherCount ?? 0, "teacher account")} and {countLabel(deleteSchool?.studentCount ?? 0, "student account")}, including their logins and records. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <Label>Type <span className="font-mono">{deleteSchool?.schoolCode}</span> to confirm</Label>
+            <Label>To confirm, type the school code <span className="font-mono">{deleteSchool?.schoolCode}</span> below</Label>
             <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} className="rounded-xl" />
           </div>
           <DialogFooter>
-            <Button variant="outline" className="rounded-xl" onClick={() => setDeleteSchool(null)}>Cancel</Button>
+            <Button variant="outline" className="rounded-xl" disabled={busy} onClick={() => setDeleteSchool(null)}>Cancel</Button>
             <Button variant="destructive" className="rounded-xl" disabled={busy || confirmText.trim().toUpperCase() !== (deleteSchool?.schoolCode ?? "")} onClick={submitSchoolDelete}>
-              {busy && <Loader2 className="h-4 w-4 animate-spin" />} Delete everything
+              {busy && <Loader2 className="h-4 w-4 animate-spin" />} Delete school and accounts
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(activeTarget) && activeTarget?.nextActive === false}
+        onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
+        tone="warning"
+        icon={Power}
+        busy={busy}
+        title="Deactivate this account?"
+        description={<>You're about to deactivate <strong>{activeTarget?.label}</strong>. The account stays in the portal, but it can't be used until you turn it back on.</>}
+        impact={[
+          "They will be signed out and can no longer log in.",
+          "All records, classes and history are kept safely — nothing is deleted.",
+          "You can reactivate this account at any time from this directory.",
+        ]}
+        confirmLabel="Deactivate account"
+        cancelLabel="Cancel"
+        onConfirm={confirmToggleActive}
+      />
+
+      <ConfirmDialog
+        open={Boolean(activeTarget) && activeTarget?.nextActive === true}
+        onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
+        tone="neutral"
+        icon={Power}
+        busy={busy}
+        title="Reactivate this account?"
+        description={<><strong>{activeTarget?.label}</strong> will be able to sign in again immediately with their existing username and password.</>}
+        confirmLabel="Reactivate account"
+        cancelLabel="Cancel"
+        onConfirm={confirmToggleActive}
+      />
+
+      <ConfirmDialog
+        open={Boolean(bulkTarget)}
+        onOpenChange={(o) => { if (!o) setBulkTarget(null); }}
+        tone="warning"
+        icon={Power}
+        busy={busy}
+        title={`Deactivate ${countLabel(bulkTarget?.length ?? 0, "account")}?`}
+        description="These accounts will be paused together. Nothing is deleted, and you can reactivate any of them later."
+        impact={[
+          "Everyone selected will be signed out and unable to log in.",
+          "Their records and history stay exactly as they are.",
+        ]}
+        confirmLabel="Deactivate selected"
+        cancelLabel="Cancel"
+        onConfirm={confirmBulkDeactivate}
+      />
+
+      <ConfirmDialog
+        open={Boolean(personTarget)}
+        onOpenChange={(o) => { if (!o) setPersonTarget(null); }}
+        tone="danger"
+        icon={Trash2}
+        busy={busy}
+        title="Delete this account permanently?"
+        description={<>This permanently removes <strong>{personTarget?.row.fullName}</strong> from the portal. This action cannot be undone.</>}
+        impact={[
+          "Their login is deleted and they lose access immediately.",
+          "Their profile disappears from directories, rosters and reports.",
+          "If you only want to pause access, deactivate the account instead.",
+        ]}
+        confirmLabel="Delete permanently"
+        cancelLabel="Keep account"
+        onConfirm={confirmDeletePerson}
+      />
     </div>
   );
 }
