@@ -28,7 +28,7 @@ export function StatCard({
   /** Short line telling the user what opens when they click the card. */
   hint?: string;
 }) {
-  const interactive = Boolean(to || onClick);
+  const interactive = Boolean(to || onClick || hash);
 
   const body = (
     <>
@@ -62,6 +62,14 @@ export function StatCard({
       <Link to={to} search={search} hash={hash} className={base} aria-label={`${label}: ${value}. ${hint ?? "View details"}`}>
         {body}
       </Link>
+    );
+  }
+
+  if (!to && hash) {
+    return (
+      <a href={`#${hash}`} className={base} aria-label={`${label}: ${value}. ${hint ?? "View details"}`}>
+        {body}
+      </a>
     );
   }
 
