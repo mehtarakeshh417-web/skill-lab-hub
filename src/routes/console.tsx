@@ -1661,7 +1661,7 @@ function TeacherManagementPanel({ maskPII }: { maskPII: boolean }) {
     if (t) toast.success("Account Status Updated", { description: `${t.name} → ${t.status === "Active" ? "Inactive" : "Active"}` });
   };
   const remove = (id: string) => {
-    if (!confirm("Remove this teacher from the roster?")) return;
+    if (!confirm("Remove this teacher from the roster? They will no longer be able to sign in.")) return;
     setTeachers((arr) => arr.filter((t) => t.id !== id));
     if (editingId === id) cancelEdit();
     toast.success("Teacher removed from roster");
@@ -2074,7 +2074,7 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
       return next;
     });
   const remove = (id: string) => {
-    if (!confirm("Remove this student from the roster?")) return;
+    if (!confirm("Remove this student from the roster? Their account and progress will be removed.")) return;
     setStudents((arr) => arr.filter((s) => s.id !== id));
     toast.success("Student removed from roster");
   };
@@ -6079,7 +6079,7 @@ function PortalManagerDashboard({
   const deleteSchool = (id: string) => {
     const sc = schools.find((s) => s.id === id);
     if (!sc) return;
-    if (!window.confirm(`Delete ${sc.code}? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete school ${sc.code}? Its teachers and students will be removed too. This cannot be undone.`)) return;
     setSchools((arr) => arr.filter((s) => s.id !== id));
     log("DELETED_SCHOOL", `school:${sc.code}`);
     toast.success("School deleted", { description: sc.code });
@@ -6092,7 +6092,7 @@ function PortalManagerDashboard({
   };
   const deleteTeacher = (id: string) => {
     const t = teachers.find((x) => x.id === id);
-    if (!t || !window.confirm(`Remove teacher ${t.code}?`)) return;
+    if (!t || !window.confirm(`Remove teacher ${t.code}? They will no longer be able to sign in.`)) return;
     setTeachers((arr) => arr.filter((x) => x.id !== id));
     log("DELETED_TEACHER", t.code);
     toast.success("Teacher removed", { description: t.code });
@@ -6132,7 +6132,7 @@ function PortalManagerDashboard({
   };
   const deleteStudent = (id: string) => {
     const s = students.find((x) => x.id === id);
-    if (!s || !window.confirm(`Remove student ${s.admission}?`)) return;
+    if (!s || !window.confirm(`Remove student ${s.admission}? Their account and progress will be removed.`)) return;
     setStudents((arr) => arr.filter((x) => x.id !== id));
     log("DELETED_STUDENT", s.admission);
     toast.success("Student removed", { description: s.admission });
@@ -6189,7 +6189,7 @@ function PortalManagerDashboard({
   };
   const deleteRep = (id: string) => {
     const r = reps.find((x) => x.id === id);
-    if (!r || !window.confirm(`Remove sales rep ${r.code}?`)) return;
+    if (!r || !window.confirm(`Remove sales representative ${r.code}? Their assigned schools will need a new owner.`)) return;
     setReps((arr) => arr.filter((x) => x.id !== id));
     log("DELETED_REP", r.code);
     toast.success("Sales rep removed", { description: r.code });
