@@ -101,7 +101,7 @@ export function UniverSheet() {
       <button
         type="button"
         onClick={() => setResetKey((k) => k + 1)}
-        className="absolute right-3 top-3 z-20 rounded-lg border border-indigo-400/40 bg-white/90 px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-lg backdrop-blur transition-all hover:scale-105 hover:bg-indigo-50"
+        className="absolute right-3 top-3 z-20 rounded-lg border border-emerald-400/40 bg-white/90 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-lg backdrop-blur transition-all hover:scale-105 hover:bg-emerald-50"
         title="Reset workbook"
       >
         ↺ Reset workbook

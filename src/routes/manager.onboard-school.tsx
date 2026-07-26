@@ -117,7 +117,7 @@ function OnboardSchool() {
           className="rounded-3xl border border-white/20 bg-card/75 p-8 shadow-2xl backdrop-blur-xl"
         >
           <div className="flex items-start gap-4 border-b border-border/60 pb-6">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30">
               <School2 className="h-7 w-7 text-white" />
             </div>
             <div>
@@ -184,8 +184,8 @@ function OnboardSchool() {
             </Field>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 via-violet-500/5 to-transparent p-6">
-            <div className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-indigo-500">
+          <div className="mt-8 rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 via-teal-500/5 to-transparent p-6">
+            <div className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-emerald-500">
               <KeyRound className="h-4 w-4" /> School login credentials
             </div>
             <div className="grid gap-6 md:grid-cols-2">

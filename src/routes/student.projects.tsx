@@ -183,7 +183,7 @@ function StudentProjectsPage() {
 
 function MiniStat({ icon: Icon, label, value, tone }: { icon: typeof FolderKanban; label: string; value: number; tone: string }) {
   const tones: Record<string, string> = {
-    indigo: "text-indigo-600 dark:text-indigo-300 bg-indigo-500/10",
+    indigo: "text-emerald-600 dark:text-emerald-300 bg-emerald-500/10",
     amber: "text-amber-600 dark:text-amber-300 bg-amber-500/10",
     sky: "text-sky-600 dark:text-sky-300 bg-sky-500/10",
     emerald: "text-emerald-600 dark:text-emerald-300 bg-emerald-500/10",

@@ -151,7 +151,7 @@ function TeacherAssignmentsPage() {
       </div>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile icon={ClipboardList} label="Assigned" value={totals.assigned} tone="bg-indigo-500/10 text-indigo-600 dark:text-indigo-300" />
+        <StatTile icon={ClipboardList} label="Assigned" value={totals.assigned} tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" />
         <StatTile icon={Clock3} label="Pending" value={totals.pending} tone="bg-amber-500/10 text-amber-600 dark:text-amber-300" />
         <StatTile icon={CheckCircle2} label="Completed" value={totals.completed} tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" />
         <StatTile icon={CalendarClock} label="Overdue" value={totals.overdue} tone="bg-rose-500/10 text-rose-600 dark:text-rose-300" />
@@ -354,7 +354,7 @@ function AssignmentCard({
                       <span className="shrink-0 font-semibold">{q.accuracy}%</span>
                     </div>
                     <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500" style={{ width: `${q.accuracy}%` }} />
+                      <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: `${q.accuracy}%` }} />
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">{q.correct} of {q.answered} correct</div>
                   </div>

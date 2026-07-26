@@ -169,7 +169,7 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
               {r.status === "pending" && (
                 <>
                   {isEditing && (
-                    <div className="mt-4 grid gap-3 rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4 md:grid-cols-2">
+                    <div className="mt-4 grid gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 md:grid-cols-2">
                       <LabeledInput label="School name" value={val("schoolName", r.schoolName)} onChange={(v) => setDraft("schoolName", v)} />
                       <LabeledInput label="School code" value={val("schoolCode", r.schoolCode)} onChange={(v) => setDraft("schoolCode", v)} />
                       <LabeledInput label="Principal" value={val("principalName", r.principalName)} onChange={(v) => setDraft("principalName", v)} />

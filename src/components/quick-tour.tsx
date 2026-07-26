@@ -14,7 +14,7 @@ const STEPS: Step[] = [
     title: "Switch Role Views",
     body: "Use the Dev Role Selector in the left sidebar to instantly jump between Admin, Portal Manager, School, Teacher and Student perspectives — every panel reacts to your role.",
     icon: Layers,
-    accent: "from-indigo-500/40 to-violet-500/30",
+    accent: "from-emerald-500/40 to-teal-500/30",
   },
   {
     title: "Explore 10 Technology Labs",
@@ -26,13 +26,13 @@ const STEPS: Step[] = [
     title: "Generate Quizzes with Gemini AI",
     body: "Inside the Teacher console, the Assignment Creator can structure MCQ, True/False, Fill, or Hybrid quizzes and call Gemini AI to auto-generate questions. Edit, approve, and publish in one flow.",
     icon: BrainCircuit,
-    accent: "from-fuchsia-500/40 to-rose-500/30",
+    accent: "from-amber-500/40 to-rose-500/30",
   },
   {
     title: "Admin Analytics Control Center",
     body: "Back in the Admin role, the Super-Admin Control Center surfaces platform-wide analytics, system health, the global user directory, the audit stream and one-click data exports.",
     icon: BarChart3,
-    accent: "from-sky-500/40 to-indigo-500/30",
+    accent: "from-sky-500/40 to-emerald-500/30",
   },
 ];
 
@@ -85,7 +85,7 @@ export function QuickTourTrigger() {
             )}
           >
             <div className={cn("pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br blur-3xl opacity-50 transition-all duration-700", s.accent)} />
-            <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/20 to-amber-500/10 blur-3xl" />
 
             <button
               onClick={close}
@@ -96,7 +96,7 @@ export function QuickTourTrigger() {
             </button>
 
             <div className="relative">
-              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-indigo-400/40 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200">
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
                 <Sparkles className="h-3 w-3" /> Quick Tour · {step + 1} / {STEPS.length}
               </div>
               <div className="mb-4 flex items-start gap-3">
@@ -118,7 +118,7 @@ export function QuickTourTrigger() {
                     aria-label={`Go to step ${i + 1}`}
                     className={cn(
                       "h-1.5 flex-1 rounded-full transition-all duration-500",
-                      i === step ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 shadow-[0_0_10px_-1px_rgba(99,102,241,0.8)]" : "bg-border/60 hover:bg-border",
+                      i === step ? "bg-gradient-to-r from-emerald-500 to-amber-500 shadow-[0_0_10px_-1px_rgba(99,102,241,0.8)]" : "bg-border/60 hover:bg-border",
                     )}
                   />
                 ))}
@@ -135,7 +135,7 @@ export function QuickTourTrigger() {
                 {step < STEPS.length - 1 ? (
                   <button
                     onClick={() => setStep((p) => Math.min(STEPS.length - 1, p + 1))}
-                    className="group inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(99,102,241,0.7)] transition-transform hover:scale-[1.03]"
+                    className="group inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-emerald-500 to-amber-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(99,102,241,0.7)] transition-transform hover:scale-[1.03]"
                   >
                     Next <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                   </button>

@@ -44,7 +44,7 @@ export const STATUS_META: Record<
   },
   in_progress: {
     label: "In Progress",
-    className: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
+    className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
   },
   submitted: {
     label: "Submitted",
@@ -52,7 +52,7 @@ export const STATUS_META: Record<
   },
   under_review: {
     label: "Under Review",
-    className: "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30",
+    className: "bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30",
   },
   evaluated: {
     label: "Evaluated",

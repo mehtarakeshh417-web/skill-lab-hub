@@ -198,7 +198,7 @@ function HeaderStats({ tasks, subs, studentCount, onOpen }: { tasks: Task[]; sub
   const evaluated = subs.filter((s) => s.status === "evaluated").length;
   const overdue = tasks.filter((t) => new Date(t.due).getTime() < now).length;
   const stats = [
-    { label: "Active Tasks", value: tasks.length, icon: ClipboardList, tone: "from-indigo-500/20 to-indigo-500/5 text-indigo-300", tab: "tasks", hint: "Open tasks" },
+    { label: "Active Tasks", value: tasks.length, icon: ClipboardList, tone: "from-emerald-500/20 to-emerald-500/5 text-emerald-300", tab: "tasks", hint: "Open tasks" },
     { label: "Pending Review", value: pending, icon: Inbox, tone: "from-amber-500/20 to-amber-500/5 text-amber-300", tab: "inbox", hint: "Open evaluation inbox" },
     { label: "Evaluated", value: evaluated, icon: CheckCircle2, tone: "from-emerald-500/20 to-emerald-500/5 text-emerald-300", tab: "inbox", hint: "Open evaluation inbox" },
     { label: "Overdue", value: overdue, icon: AlertTriangle, tone: "from-rose-500/20 to-rose-500/5 text-rose-300", tab: "tasks", hint: "Open tasks" },
@@ -284,7 +284,7 @@ function TaskAuthoring({
             {(["Assignment", "Project"] as TaskType[]).map((t) => (
               <button key={t} type="button"
                 onClick={() => setType(t)}
-                className={`rounded-lg border px-3 py-2 text-sm transition-all ${type === t ? "border-indigo-400 bg-indigo-500/15 text-indigo-200" : "border-border/60 bg-background/40 hover:border-border"}`}>
+                className={`rounded-lg border px-3 py-2 text-sm transition-all ${type === t ? "border-emerald-400 bg-emerald-500/15 text-emerald-200" : "border-border/60 bg-background/40 hover:border-border"}`}>
                 {t}
               </button>
             ))}
@@ -325,7 +325,7 @@ function TaskAuthoring({
             <div className="flex flex-wrap gap-2">
               {(["class", "sections", "students"] as const).map((m) => (
                 <button key={m} type="button" onClick={() => setMode(m)}
-                  className={`text-xs rounded-full px-3 py-1 border ${mode === m ? "border-indigo-400 bg-indigo-500/15 text-indigo-200" : "border-border/60"}`}>
+                  className={`text-xs rounded-full px-3 py-1 border ${mode === m ? "border-emerald-400 bg-emerald-500/15 text-emerald-200" : "border-border/60"}`}>
                   {m === "class" ? "Entire Class" : m === "sections" ? "Specific Sections" : "Individual Students"}
                 </button>
               ))}
@@ -380,7 +380,7 @@ function TaskAuthoring({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="border-indigo-400/50 text-indigo-200">{t.type}</Badge>
+                          <Badge variant="outline" className="border-emerald-400/50 text-emerald-200">{t.type}</Badge>
                           <Badge variant="outline">{t.tech}</Badge>
                           {overdue && <Badge className="bg-rose-500/20 text-rose-200 border-rose-400/40">Overdue</Badge>}
                         </div>
@@ -725,7 +725,7 @@ function TeacherProfilePanel({ defaults }: {
               const on = stored.expertise.includes(t);
               return (
                 <button key={t} type="button" onClick={() => toggleExp(t)}
-                  className={`text-xs rounded-full px-3 py-1 border transition-all ${on ? "border-indigo-400 bg-indigo-500/15 text-indigo-200" : "border-border/60 hover:border-border"}`}>
+                  className={`text-xs rounded-full px-3 py-1 border transition-all ${on ? "border-emerald-400 bg-emerald-500/15 text-emerald-200" : "border-border/60 hover:border-border"}`}>
                   {t}
                 </button>
               );

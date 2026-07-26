@@ -117,7 +117,7 @@ function AuthPage() {
   }
 
   const roles: Array<{ label: string; icon: typeof School2; color: string }> = [
-    { label: "Schools", icon: School2, color: "from-indigo-500 to-violet-500" },
+    { label: "Schools", icon: School2, color: "from-emerald-500 to-teal-500" },
     { label: "Teachers", icon: GraduationCap, color: "from-sky-500 to-cyan-500" },
     { label: "Students", icon: UserCircle2, color: "from-emerald-500 to-teal-500" },
   ];
@@ -181,11 +181,11 @@ function AuthPage() {
             <img src={avartanLogo.url} alt="Avartan" className="h-6 w-6 rounded object-contain" /> Avartan Skill Lab
           </Link>
 
-          <div className="rounded-3xl border border-border/60 bg-card/80 p-8 shadow-2xl shadow-indigo-500/5 backdrop-blur-xl sm:p-10">
+          <div className="rounded-3xl border border-border/60 bg-card/80 p-8 shadow-2xl shadow-emerald-500/5 backdrop-blur-xl sm:p-10">
             <div className="mb-6 flex items-center gap-3">
-              <img src={avartanLogo.url} alt="Avartan" className="h-11 w-11 rounded-2xl object-contain bg-white p-1 shadow-lg shadow-indigo-500/30" />
+              <img src={avartanLogo.url} alt="Avartan" className="h-11 w-11 rounded-2xl object-contain bg-white p-1 shadow-lg shadow-emerald-500/30" />
               <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-500">
                   Portal login
                 </div>
                 <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
@@ -260,13 +260,13 @@ function AuthPage() {
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 rounded border-border accent-indigo-500"
+                    className="h-4 w-4 rounded border-border accent-emerald-500"
                   />
                   Keep me signed in
                 </label>
                 <Link
                   to="/forgot-password"
-                  className="text-sm font-semibold text-indigo-500 hover:text-indigo-600"
+                  className="text-sm font-semibold text-emerald-500 hover:text-emerald-600"
                 >
                   Forgot password?
                 </Link>

@@ -381,8 +381,8 @@ function UnifiedAdminPanel({
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
-            { label: "Schools", value: stats.schools, icon: School2, color: "from-indigo-500/20 to-indigo-500/0" },
-            { label: "Teachers", value: stats.teachers, icon: GraduationCap, color: "from-violet-500/20 to-violet-500/0" },
+            { label: "Schools", value: stats.schools, icon: School2, color: "from-emerald-500/20 to-emerald-500/0" },
+            { label: "Teachers", value: stats.teachers, icon: GraduationCap, color: "from-teal-500/20 to-teal-500/0" },
             { label: "Students", value: stats.students, icon: Users, color: "from-sky-500/20 to-sky-500/0" },
             { label: "Sales Reps", value: stats.salesReps, icon: Briefcase, color: "from-emerald-500/20 to-emerald-500/0" },
           ].map((c) => (
@@ -638,15 +638,15 @@ const SUPER_ADMIN_USERS: GlobalUserRow[] = [
 
 const LAB_USAGE = [
   { name: "Scratch",     volume: 4820, color: "from-amber-400 to-orange-500",   accent: "text-amber-300" },
-  { name: "Scratch Jr",  volume: 3915, color: "from-pink-400 to-fuchsia-500",   accent: "text-fuchsia-300" },
+  { name: "Scratch Jr",  volume: 3915, color: "from-pink-400 to-amber-500",   accent: "text-amber-300" },
   { name: "HTML & CSS",  volume: 3672, color: "from-rose-400 to-rose-600",     accent: "text-rose-300" },
   { name: "Python",      volume: 3120, color: "from-sky-400 to-blue-500",      accent: "text-sky-300" },
   { name: "Spreadsheet", volume: 2580, color: "from-emerald-400 to-teal-500",  accent: "text-emerald-300" },
-  { name: "Word",        volume: 2240, color: "from-indigo-400 to-blue-500",   accent: "text-indigo-300" },
+  { name: "Word",        volume: 2240, color: "from-emerald-400 to-blue-500",   accent: "text-emerald-300" },
   { name: "SQL",         volume: 1980, color: "from-cyan-400 to-sky-500",      accent: "text-cyan-300" },
   { name: "Java",        volume: 1410, color: "from-orange-400 to-amber-500",  accent: "text-orange-300" },
   { name: "Presentation",volume: 1295, color: "from-rose-400 to-pink-500",     accent: "text-pink-300" },
-  { name: "Paint",       volume: 1060, color: "from-fuchsia-400 to-violet-500",accent: "text-violet-300" },
+  { name: "Paint",       volume: 1060, color: "from-amber-400 to-teal-500",accent: "text-teal-300" },
 ];
 
 function sparkPath(values: number[], w = 120, h = 32): string {
@@ -817,8 +817,8 @@ function SuperAdminControlCenter({
   const maxLab = Math.max(...LAB_USAGE.map((l) => l.volume));
   const ROLE_COLOR: Record<GlobalUserRow["role"], string> = {
     "Super Admin":   "border-amber-400/40 bg-amber-500/10 text-amber-200",
-    "Portal Manager":"border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200",
-    "School Admin":  "border-indigo-400/40 bg-indigo-500/10 text-indigo-200",
+    "Portal Manager":"border-amber-400/40 bg-amber-500/10 text-amber-200",
+    "School Admin":  "border-emerald-400/40 bg-emerald-500/10 text-emerald-200",
     "Teacher":       "border-sky-400/40 bg-sky-500/10 text-sky-200",
     "Student":       "border-emerald-400/40 bg-emerald-500/10 text-emerald-200",
   };
@@ -826,10 +826,10 @@ function SuperAdminControlCenter({
   return (
     <div className="space-y-4">
       {/* Hero / Header with Export */}
-      <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-950/60 via-slate-950/70 to-fuchsia-950/30 p-5 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
-        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-fuchsia-500/15 blur-3xl" />
-        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-300/60 to-transparent" />
+      <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-950/60 via-slate-950/70 to-amber-950/30 p-5 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-amber-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-300/60 to-transparent" />
 
         <div className="relative flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -839,8 +839,8 @@ function SuperAdminControlCenter({
             <h2 className="mt-1 font-display text-xl font-bold tracking-tight">Global platform analytics &amp; system health</h2>
             <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1"><Activity className="h-3 w-3 text-emerald-300" /> All regions nominal</span>
-              <span className="inline-flex items-center gap-1"><Server className="h-3 w-3 text-indigo-300" /> Edge p95 142ms</span>
-              <span className="inline-flex items-center gap-1"><Cpu className="h-3 w-3 text-fuchsia-300" /> DB load 38%</span>
+              <span className="inline-flex items-center gap-1"><Server className="h-3 w-3 text-emerald-300" /> Edge p95 142ms</span>
+              <span className="inline-flex items-center gap-1"><Cpu className="h-3 w-3 text-amber-300" /> DB load 38%</span>
             </div>
           </div>
 
@@ -848,7 +848,7 @@ function SuperAdminControlCenter({
             <button
               onClick={() => setExportOpen((o) => !o)}
               disabled={!!exporting}
-              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3.5 py-2 text-[12px] font-semibold text-white shadow-[0_12px_28px_-12px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97] disabled:opacity-70"
+              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-emerald-500 to-amber-500 px-3.5 py-2 text-[12px] font-semibold text-white shadow-[0_12px_28px_-12px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97] disabled:opacity-70"
             >
               <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               {exporting ? <Loader2 className="relative h-4 w-4 animate-spin" /> : <Download className="relative h-4 w-4" />}
@@ -868,7 +868,7 @@ function SuperAdminControlCenter({
                     className="group/opt flex w-full items-center justify-between gap-2 border-b border-white/5 px-3 py-2 text-left text-[12px] last:border-b-0 hover:bg-white/[0.05]"
                   >
                     <span className="inline-flex items-center gap-2">
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-indigo-200 group-hover/opt:border-indigo-400/50">
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-emerald-200 group-hover/opt:border-emerald-400/50">
                         <opt.Icon className="h-3.5 w-3.5" />
                       </span>
                       <span className="font-medium">{opt.label}</span>
@@ -889,7 +889,7 @@ function SuperAdminControlCenter({
             { label: "Registered Teachers", value: totals.teachers, delta: "+12% MoM", color: "#f472b6", series: sparkSeries.teachers, Icon: GraduationCap },
             { label: "Active Students",     value: totals.students, delta: "+18% MoM", color: "#7dd3fc", series: sparkSeries.students, Icon: Users },
           ].map((c) => (
-            <div key={c.label} className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-indigo-400/40 hover:bg-white/[0.05]">
+            <div key={c.label} className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-white/[0.05]">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -914,7 +914,7 @@ function SuperAdminControlCenter({
         <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-indigo-300" />
+              <BarChart3 className="h-4 w-4 text-emerald-300" />
               <h3 className="font-display text-sm font-semibold">Platform adoption by lab technology</h3>
             </div>
             <span className="text-[10px] text-muted-foreground">last 30 days · sessions</span>
@@ -941,7 +941,7 @@ function SuperAdminControlCenter({
         <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 shadow-[0_24px_60px_-30px_rgba(217,70,239,0.35)] backdrop-blur-xl">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <LineChart className="h-4 w-4 text-fuchsia-300" />
+              <LineChart className="h-4 w-4 text-amber-300" />
               <h3 className="font-display text-sm font-semibold">System health</h3>
             </div>
             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-300">
@@ -951,9 +951,9 @@ function SuperAdminControlCenter({
           <div className="space-y-3">
             {[
               { label: "API gateway",      pct: 99.98, color: "from-emerald-400 to-teal-500", Icon: Globe2 },
-              { label: "Database cluster", pct: 99.92, color: "from-sky-400 to-indigo-500",   Icon: Server },
+              { label: "Database cluster", pct: 99.92, color: "from-sky-400 to-emerald-500",   Icon: Server },
               { label: "Lab compile farm", pct: 98.40, color: "from-amber-400 to-orange-500", Icon: Zap },
-              { label: "Auth & sessions",  pct: 99.99, color: "from-fuchsia-400 to-pink-500", Icon: ShieldCheck },
+              { label: "Auth & sessions",  pct: 99.99, color: "from-amber-400 to-pink-500", Icon: ShieldCheck },
             ].map((h) => (
               <div key={h.label}>
                 <div className="flex items-center justify-between text-[11px]">
@@ -973,7 +973,7 @@ function SuperAdminControlCenter({
       <section className="rounded-2xl border border-white/10 bg-slate-950/60 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
           <div className="flex items-center gap-2">
-            <Users2 className="h-4 w-4 text-indigo-300" />
+            <Users2 className="h-4 w-4 text-emerald-300" />
             <div>
               <h3 className="font-display text-sm font-semibold">Global User Directory · Master Block List</h3>
               <p className="text-[10px] text-muted-foreground">{filteredUsers.length} of {users.length} accounts · {totals.blocked} blocked</p>
@@ -986,14 +986,14 @@ function SuperAdminControlCenter({
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search name, email, school…"
-                className="h-8 w-56 rounded-lg border border-white/10 bg-slate-950/70 pl-7 pr-2 text-[11px] outline-none focus:border-indigo-400/60"
+                className="h-8 w-56 rounded-lg border border-white/10 bg-slate-950/70 pl-7 pr-2 text-[11px] outline-none focus:border-emerald-400/60"
               />
             </div>
-            <select value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/70 px-2 text-[11px] outline-none focus:border-indigo-400/60">
+            <select value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/70 px-2 text-[11px] outline-none focus:border-emerald-400/60">
               <option value="all">All schools</option>
               {uniqueSchoolCodes.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
             </select>
-            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/70 px-2 text-[11px] outline-none focus:border-indigo-400/60">
+            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/70 px-2 text-[11px] outline-none focus:border-emerald-400/60">
               <option value="all">All roles</option>
               {uniqueRoles.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
@@ -1007,7 +1007,7 @@ function SuperAdminControlCenter({
                     stateFilter === s
                       ? s === "blocked"
                         ? "bg-rose-500/20 text-rose-200 shadow-[0_4px_16px_-8px_rgba(244,63,94,0.7)]"
-                        : "bg-gradient-to-r from-indigo-500/80 to-fuchsia-500/80 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                        : "bg-gradient-to-r from-emerald-500/80 to-amber-500/80 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >{s}</button>
@@ -1035,7 +1035,7 @@ function SuperAdminControlCenter({
                       <div className="relative">
                         <div className={cn(
                           "flex h-8 w-8 items-center justify-center rounded-full border text-[10px] font-bold",
-                          u.blocked ? "border-rose-400/40 bg-rose-500/10 text-rose-200" : "border-white/10 bg-slate-900/80 text-indigo-200"
+                          u.blocked ? "border-rose-400/40 bg-rose-500/10 text-rose-200" : "border-white/10 bg-slate-900/80 text-emerald-200"
                         )}>
                           {u.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
                         </div>
@@ -1073,7 +1073,7 @@ function SuperAdminControlCenter({
                         aria-checked={!u.blocked}
                         aria-label={`Account access: ${u.blocked ? "Blocked" : "Active"}`}
                         className={cn(
-                          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/50",
+                          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-400/50",
                           u.blocked
                             ? "border-rose-400/40 bg-gradient-to-r from-rose-500/40 to-rose-600/40 shadow-[inset_0_0_10px_rgba(244,63,94,0.4)]"
                             : "border-emerald-400/40 bg-gradient-to-r from-emerald-500/50 to-teal-500/50 shadow-[0_0_14px_-2px_rgba(16,185,129,0.55)]"
@@ -1100,7 +1100,7 @@ function SuperAdminControlCenter({
       <section className="rounded-2xl border border-white/10 bg-slate-950/60 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
         <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
           <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-indigo-300" />
+            <History className="h-4 w-4 text-emerald-300" />
             <div>
               <h3 className="font-display text-sm font-semibold">Audit Trail · Streaming Activity Log</h3>
               <p className="text-[10px] text-muted-foreground">Cross-platform administrative timeline</p>
@@ -1136,7 +1136,7 @@ function SuperAdminControlCenter({
                     <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{a.ts}</td>
                     <td className="px-3 py-1.5">
                       <span className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/[0.03] px-1.5 py-0.5 font-mono text-[10px]">
-                        <UserCircle2 className="h-3 w-3 text-indigo-300" /> {a.actor}
+                        <UserCircle2 className="h-3 w-3 text-emerald-300" /> {a.actor}
                       </span>
                     </td>
                     <td className="px-3 py-1.5">
@@ -1158,7 +1158,7 @@ function SuperAdminControlCenter({
             "pointer-events-auto flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-[12px] font-semibold shadow-[0_20px_50px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl",
             toast.kind === "ok"   && "border-emerald-400/40 bg-emerald-500/15 text-emerald-100",
             toast.kind === "warn" && "border-amber-400/40 bg-amber-500/15 text-amber-100",
-            toast.kind === "info" && "border-indigo-400/40 bg-indigo-500/15 text-indigo-100",
+            toast.kind === "info" && "border-emerald-400/40 bg-emerald-500/15 text-emerald-100",
           )}>
             {toast.kind === "ok"   && <CheckCircle2 className="h-4 w-4" />}
             {toast.kind === "warn" && <ShieldAlert  className="h-4 w-4" />}
@@ -1311,9 +1311,9 @@ function SchoolAdminPanel() {
         <h2 className="mb-2 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">School Dashboard</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
-            { label: "Teachers", value: teachers.length, icon: GraduationCap, color: "from-violet-500/20 to-violet-500/0" },
+            { label: "Teachers", value: teachers.length, icon: GraduationCap, color: "from-teal-500/20 to-teal-500/0" },
             { label: "Students", value: totalStudents, icon: Users, color: "from-sky-500/20 to-sky-500/0" },
-            { label: "Classes", value: classes.length, icon: BookOpen, color: "from-indigo-500/20 to-indigo-500/0" },
+            { label: "Classes", value: classes.length, icon: BookOpen, color: "from-emerald-500/20 to-emerald-500/0" },
             { label: "Sections", value: totalSections, icon: Layers, color: "from-emerald-500/20 to-emerald-500/0" },
           ].map((c) => (
             <div key={c.label} className="relative overflow-hidden rounded-lg border border-border/60 bg-card/40 p-3 backdrop-blur">
@@ -2135,11 +2135,11 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
         style={{ boxShadow: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 18px 50px -22px rgba(99,102,241,0.35)" }}
       >
         <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-16 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-16 h-64 w-64 rounded-full bg-teal-500/20 blur-3xl" />
 
         <div className="relative flex items-center justify-between border-b border-border/60 px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-violet-500 shadow-lg shadow-primary/30">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-teal-500 shadow-lg shadow-primary/30">
               <UserCircle2 className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
@@ -2256,7 +2256,7 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
                   disabled={submitting}
                   className={cn(
                     "group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg px-4 py-2 text-xs font-semibold text-primary-foreground transition",
-                    "bg-gradient-to-r from-primary via-violet-500 to-primary",
+                    "bg-gradient-to-r from-primary via-teal-500 to-primary",
                     "shadow-[0_8px_24px_-8px_rgba(99,102,241,0.7)] hover:shadow-[0_10px_30px_-6px_rgba(99,102,241,0.9)]",
                     "disabled:opacity-60"
                   )}
@@ -2293,13 +2293,13 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
                   : "border-border/60 bg-background/30 hover:border-primary/40"
               )}
             >
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-violet-500/10 opacity-0 transition group-hover:opacity-100" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-teal-500/10 opacity-0 transition group-hover:opacity-100" />
               {uploading ? (
                 <>
                   <Loader2 className="mb-2 h-6 w-6 animate-spin text-primary" />
                   <div className="text-xs font-semibold">Processing rows…</div>
                   <div className="mt-2 h-1 w-48 overflow-hidden rounded-full bg-border/60">
-                    <div className="h-full w-1/2 animate-pulse rounded-full bg-gradient-to-r from-primary to-violet-500" />
+                    <div className="h-full w-1/2 animate-pulse rounded-full bg-gradient-to-r from-primary to-teal-500" />
                   </div>
                 </>
               ) : uploadResult ? (
@@ -2313,7 +2313,7 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
                 </>
               ) : (
                 <>
-                  <div className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-violet-500/20 ring-1 ring-primary/30">
+                  <div className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-teal-500/20 ring-1 ring-primary/30">
                     <Upload className="h-5 w-5 text-primary" />
                   </div>
                   <div className="font-display text-sm font-semibold">Drag &amp; drop Excel / CSV</div>
@@ -2395,7 +2395,7 @@ function StudentManagementPanel({ canEdit }: { canEdit: boolean }) {
                         "flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold uppercase",
                         s.gender === "Female" ? "bg-pink-500/15 text-pink-300" :
                         s.gender === "Male" ? "bg-sky-500/15 text-sky-300" :
-                        "bg-violet-500/15 text-violet-300"
+                        "bg-teal-500/15 text-teal-300"
                       )}>{s.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}</div>
                       <span className="font-medium">{s.name}</span>
                     </div>
@@ -2723,14 +2723,14 @@ const LAB_ICON: Record<LabKind, typeof Code2> = {
 };
 const LAB_TINT: Record<LabKind, string> = {
   html: "from-orange-500/30 to-rose-500/20",
-  sql: "from-sky-500/30 to-indigo-500/20",
+  sql: "from-sky-500/30 to-emerald-500/20",
   java: "from-amber-500/30 to-orange-500/20",
   scratch: "from-amber-400/30 to-yellow-500/20",
-  scratchjr: "from-pink-500/30 to-fuchsia-500/20",
-  word: "from-blue-500/30 to-indigo-500/20",
+  scratchjr: "from-pink-500/30 to-amber-500/20",
+  word: "from-blue-500/30 to-emerald-500/20",
   excel: "from-emerald-500/30 to-teal-500/20",
   ppt: "from-rose-500/30 to-orange-500/20",
-  paint: "from-fuchsia-500/30 to-violet-500/20",
+  paint: "from-amber-500/30 to-teal-500/20",
 };
 
 function TaskManagementPanel() {
@@ -2921,14 +2921,14 @@ function TaskManagementPanel() {
           <p className="text-[11px] text-muted-foreground">Create, target and track learning tasks across your classroom.</p>
         </div>
         <div className="hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5"><Sparkles className="h-3 w-3 text-indigo-300" /> Live sync · students</span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5"><Sparkles className="h-3 w-3 text-emerald-300" /> Live sync · students</span>
         </div>
       </div>
 
       {/* Creation Panel */}
-      <section className="relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 via-slate-900/40 to-indigo-950/30 p-4 shadow-[0_10px_40px_-20px_rgba(99,102,241,0.45)] backdrop-blur-xl">
-        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-3xl" />
+      <section className="relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 via-slate-900/40 to-emerald-950/30 p-4 shadow-[0_10px_40px_-20px_rgba(99,102,241,0.45)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
 
         <div className="relative grid gap-4 lg:grid-cols-[1.15fr_1fr]">
           {/* Left: form */}
@@ -2947,7 +2947,7 @@ function TaskManagementPanel() {
                     className={cn(
                       "relative inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-300",
                       active
-                        ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-[0_6px_20px_-6px_rgba(99,102,241,0.7)]"
+                        ? "bg-gradient-to-r from-emerald-500 to-amber-500 text-white shadow-[0_6px_20px_-6px_rgba(99,102,241,0.7)]"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -2963,7 +2963,7 @@ function TaskManagementPanel() {
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder={form.type === "project" ? "e.g. Scratch — Interactive Story Capstone" : "e.g. HTML Form Validation Worksheet"}
-                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none transition-all focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none transition-all focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
               />
             </div>
 
@@ -2974,7 +2974,7 @@ function TaskManagementPanel() {
                 onChange={(e) => setForm((f) => ({ ...f, instructions: e.target.value }))}
                 rows={4}
                 placeholder="Describe deliverables, rubric and submission format…"
-                className="w-full resize-none rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none transition-all focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                className="w-full resize-none rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none transition-all focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
               />
             </div>
 
@@ -2982,24 +2982,24 @@ function TaskManagementPanel() {
               <div className="grid gap-2">
                 <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Max Marks</label>
                 <div className="relative">
-                  <Award className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-indigo-300" />
+                  <Award className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-emerald-300" />
                   <input
                     type="number" min={1} max={100}
                     value={form.maxMarks}
                     onChange={(e) => setForm((f) => ({ ...f, maxMarks: Math.max(1, Number(e.target.value) || 0) }))}
-                    className="w-full rounded-lg border border-border/60 bg-background/70 pl-8 pr-3 py-2 text-sm outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                    className="w-full rounded-lg border border-border/60 bg-background/70 pl-8 pr-3 py-2 text-sm outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
                   />
                 </div>
               </div>
               <div className="grid gap-2">
                 <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Deadline</label>
                 <div className="relative">
-                  <CalendarIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-indigo-300" />
+                  <CalendarIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-emerald-300" />
                   <input
                     type="date"
                     value={form.deadline}
                     onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
-                    className="w-full rounded-lg border border-border/60 bg-background/70 pl-8 pr-3 py-2 text-sm outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                    className="w-full rounded-lg border border-border/60 bg-background/70 pl-8 pr-3 py-2 text-sm outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
                   />
                 </div>
               </div>
@@ -3010,9 +3010,9 @@ function TaskManagementPanel() {
           <div className="space-y-3 rounded-xl border border-border/60 bg-background/40 p-3 backdrop-blur">
             <div className="flex items-center justify-between">
               <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold">
-                <Target className="h-3.5 w-3.5 text-indigo-300" /> Targeted Distribution
+                <Target className="h-3.5 w-3.5 text-emerald-300" /> Targeted Distribution
               </div>
-              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-200">
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
                 <Users2 className="h-3 w-3" /> {recipientsCount} recipient{recipientsCount === 1 ? "" : "s"}
               </span>
             </div>
@@ -3030,8 +3030,8 @@ function TaskManagementPanel() {
                       className={cn(
                         "rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-all",
                         active
-                          ? "border-indigo-400/60 bg-indigo-500/20 text-indigo-100 shadow-[0_0_12px_-2px_rgba(99,102,241,0.6)]"
-                          : "border-border/60 bg-background/60 text-muted-foreground hover:border-indigo-400/40 hover:text-foreground"
+                          ? "border-emerald-400/60 bg-emerald-500/20 text-emerald-100 shadow-[0_0_12px_-2px_rgba(99,102,241,0.6)]"
+                          : "border-border/60 bg-background/60 text-muted-foreground hover:border-emerald-400/40 hover:text-foreground"
                       )}
                     >
                       Gr {c.grade}
@@ -3055,8 +3055,8 @@ function TaskManagementPanel() {
                         className={cn(
                           "rounded-md border px-2 py-0.5 text-[10px] font-medium transition-all",
                           active
-                            ? "border-fuchsia-400/60 bg-fuchsia-500/15 text-fuchsia-100"
-                            : "border-border/60 bg-background/60 text-muted-foreground hover:border-fuchsia-400/40 hover:text-foreground"
+                            ? "border-amber-400/60 bg-amber-500/15 text-amber-100"
+                            : "border-border/60 bg-background/60 text-muted-foreground hover:border-amber-400/40 hover:text-foreground"
                         )}
                       >
                         {c.grade}-{s.label}
@@ -3115,7 +3115,7 @@ function TaskManagementPanel() {
                       onClick={() => setForm((f) => ({ ...f, targets: { ...f.targets, studentIds: toggleIn(f.targets.studentIds, s.id) } }))}
                       className={cn(
                         "flex w-full items-center justify-between rounded px-2 py-1 text-[11px] transition-colors",
-                        active ? "bg-indigo-500/15 text-indigo-100" : "hover:bg-muted/40"
+                        active ? "bg-emerald-500/15 text-emerald-100" : "hover:bg-muted/40"
                       )}
                     >
                       <span className="inline-flex items-center gap-1.5">
@@ -3123,7 +3123,7 @@ function TaskManagementPanel() {
                         <span className="font-medium">{s.name}</span>
                         <span className="text-muted-foreground">· {sectionLabel(s.sectionId)}</span>
                       </span>
-                      {active && <Check className="h-3 w-3 text-indigo-300" />}
+                      {active && <Check className="h-3 w-3 text-emerald-300" />}
                     </button>
                   );
                 })}
@@ -3133,11 +3133,11 @@ function TaskManagementPanel() {
         </div>
 
         {/* ===== Quiz Builder + AI Generation ===== */}
-        <div className="relative mt-4 rounded-xl border border-border/60 bg-gradient-to-br from-slate-950/60 via-slate-900/40 to-indigo-950/40 p-3 backdrop-blur-xl">
+        <div className="relative mt-4 rounded-xl border border-border/60 bg-gradient-to-br from-slate-950/60 via-slate-900/40 to-emerald-950/40 p-3 backdrop-blur-xl">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold">
-              <BrainCircuit className="h-3.5 w-3.5 text-indigo-300" /> Quiz Structure & Generation
-              <span className="ml-1 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-indigo-200">Beta</span>
+              <BrainCircuit className="h-3.5 w-3.5 text-emerald-300" /> Quiz Structure & Generation
+              <span className="ml-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-emerald-200">Beta</span>
             </div>
             {quiz.length > 0 && (
               <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
@@ -3162,11 +3162,11 @@ function TaskManagementPanel() {
                   className={cn(
                     "group inline-flex items-center justify-center gap-1.5 rounded-lg border px-2.5 py-2 text-[11px] font-semibold transition-all duration-300",
                     active
-                      ? "border-indigo-400/60 bg-gradient-to-br from-indigo-500/30 to-fuchsia-500/20 text-white shadow-[0_8px_24px_-10px_rgba(99,102,241,0.7)]"
-                      : "border-border/60 bg-background/50 text-muted-foreground hover:border-indigo-400/40 hover:text-foreground"
+                      ? "border-emerald-400/60 bg-gradient-to-br from-emerald-500/30 to-amber-500/20 text-white shadow-[0_8px_24px_-10px_rgba(99,102,241,0.7)]"
+                      : "border-border/60 bg-background/50 text-muted-foreground hover:border-emerald-400/40 hover:text-foreground"
                   )}
                 >
-                  <Icon className={cn("h-3.5 w-3.5", active && "text-indigo-200")} /> {label}
+                  <Icon className={cn("h-3.5 w-3.5", active && "text-emerald-200")} /> {label}
                 </button>
               );
             })}
@@ -3178,14 +3178,14 @@ function TaskManagementPanel() {
               <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Total Questions</label>
               <input type="number" min={1} max={30} value={numQuestions}
                 onChange={(e) => setNumQuestions(Math.max(1, Math.min(30, Number(e.target.value) || 1)))}
-                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
               />
             </div>
             <div className="grid gap-1">
               <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Marks / Question</label>
               <input type="number" min={1} max={20} value={marksPerQ}
                 onChange={(e) => setMarksPerQ(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
-                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                className="w-full rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
               />
             </div>
             <div className="grid gap-1">
@@ -3201,7 +3201,7 @@ function TaskManagementPanel() {
                       className={cn(
                         "flex-1 inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium transition-all",
                         active
-                          ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                          ? "bg-gradient-to-r from-emerald-500 to-amber-500 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
                           : "text-muted-foreground hover:text-foreground"
                       )}>
                       <Icon className="h-3.5 w-3.5" /> {label}
@@ -3214,21 +3214,21 @@ function TaskManagementPanel() {
 
           {/* AI sub-form */}
           {method === "gemini" && (
-            <div className="relative mt-3 rounded-xl border border-indigo-400/30 bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/5 to-transparent p-3">
+            <div className="relative mt-3 rounded-xl border border-emerald-400/30 bg-gradient-to-br from-emerald-500/10 via-amber-500/5 to-transparent p-3">
               <div className="grid gap-3 md:grid-cols-[1.4fr_1fr_auto]">
                 <div className="grid gap-1">
-                  <label className="text-[10px] font-medium uppercase tracking-wider text-indigo-200/80">Topic / Concept</label>
+                  <label className="text-[10px] font-medium uppercase tracking-wider text-emerald-200/80">Topic / Concept</label>
                   <input value={aiTopic} onChange={(e) => setAiTopic(e.target.value)}
                     placeholder="e.g. Photosynthesis · CSS Flexbox · World War II"
-                    className="w-full rounded-lg border border-indigo-400/30 bg-background/70 px-3 py-2 text-sm outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-400/30"
+                    className="w-full rounded-lg border border-emerald-400/30 bg-background/70 px-3 py-2 text-sm outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-400/30"
                   />
                 </div>
                 <div className="grid gap-1">
-                  <label className="text-[10px] font-medium uppercase tracking-wider text-indigo-200/80">Difficulty</label>
-                  <div className="inline-flex items-center gap-1 rounded-lg border border-indigo-400/30 bg-background/60 p-1">
+                  <label className="text-[10px] font-medium uppercase tracking-wider text-emerald-200/80">Difficulty</label>
+                  <div className="inline-flex items-center gap-1 rounded-lg border border-emerald-400/30 bg-background/60 p-1">
                     {(["easy", "medium", "hard"] as const).map((d) => {
                       const active = aiDifficulty === d;
-                      const tones = d === "easy" ? "from-emerald-500 to-teal-500" : d === "medium" ? "from-amber-500 to-orange-500" : "from-rose-500 to-fuchsia-500";
+                      const tones = d === "easy" ? "from-emerald-500 to-teal-500" : d === "medium" ? "from-amber-500 to-orange-500" : "from-rose-500 to-amber-500";
                       return (
                         <button key={d} onClick={() => setAiDifficulty(d)}
                           className={cn(
@@ -3243,7 +3243,7 @@ function TaskManagementPanel() {
                 </div>
                 <div className="flex items-end">
                   <button onClick={generateWithGemini} disabled={aiLoading}
-                    className="group inline-flex h-[38px] w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 px-3 text-[11px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(139,92,246,0.8)] transition-transform hover:scale-[1.02] disabled:opacity-60 md:w-auto">
+                    className="group inline-flex h-[38px] w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-500 px-3 text-[11px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(139,92,246,0.8)] transition-transform hover:scale-[1.02] disabled:opacity-60 md:w-auto">
                     <Wand2 className={cn("h-3.5 w-3.5", aiLoading && "animate-pulse")} /> {aiLoading ? "Generating…" : "Generate"}
                   </button>
                 </div>
@@ -3260,7 +3260,7 @@ function TaskManagementPanel() {
             <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-border/60 bg-background/40 px-3 py-3">
               <div className="text-[11px] text-muted-foreground">Start building a {numQuestions}-question {quizStructure.toUpperCase()} set manually.</div>
               <button onClick={seedManualQuiz}
-                className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-[0_6px_20px_-8px_rgba(99,102,241,0.7)]">
+                className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-emerald-500 to-amber-500 px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-[0_6px_20px_-8px_rgba(99,102,241,0.7)]">
                 <Plus className="h-3 w-3" /> Seed Blank Questions
               </button>
             </div>
@@ -3271,12 +3271,12 @@ function TaskManagementPanel() {
             <div className="mt-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold">
-                  <Pencil className="h-3.5 w-3.5 text-indigo-300" /> Editable Review Canvas
+                  <Pencil className="h-3.5 w-3.5 text-emerald-300" /> Editable Review Canvas
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => addQuestion("mcq")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-indigo-400/50">+ MCQ</button>
-                  <button onClick={() => addQuestion("tf")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-indigo-400/50">+ T/F</button>
-                  <button onClick={() => addQuestion("fill")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-indigo-400/50">+ Fill</button>
+                  <button onClick={() => addQuestion("mcq")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-emerald-400/50">+ MCQ</button>
+                  <button onClick={() => addQuestion("tf")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-emerald-400/50">+ T/F</button>
+                  <button onClick={() => addQuestion("fill")} className="rounded-md border border-border/60 bg-background/60 px-2 py-1 text-[10px] font-medium hover:border-emerald-400/50">+ Fill</button>
                   <button onClick={() => setQuiz([])} className="ml-1 inline-flex items-center gap-1 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[10px] font-medium text-rose-200 hover:bg-rose-500/20">
                     <Trash2 className="h-3 w-3" /> Clear
                   </button>
@@ -3285,10 +3285,10 @@ function TaskManagementPanel() {
 
               <div className="grid gap-2">
                 {quiz.map((q, qi) => (
-                  <div key={q.id} className="group relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 to-slate-900/30 p-3 backdrop-blur transition-all hover:border-indigo-400/40 hover:shadow-[0_10px_30px_-15px_rgba(99,102,241,0.5)]">
+                  <div key={q.id} className="group relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 to-slate-900/30 p-3 backdrop-blur transition-all hover:border-emerald-400/40 hover:shadow-[0_10px_30px_-15px_rgba(99,102,241,0.5)]">
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-500/20 px-1.5 text-[10px] font-bold text-indigo-200">{qi + 1}</span>
+                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500/20 px-1.5 text-[10px] font-bold text-emerald-200">{qi + 1}</span>
                         <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/60 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                           {q.kind === "mcq" ? <ListChecks className="h-3 w-3" /> : q.kind === "tf" ? <ToggleRight className="h-3 w-3" /> : <TypeIcon className="h-3 w-3" />}
                           {q.kind}
@@ -3305,7 +3305,7 @@ function TaskManagementPanel() {
                       onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
                       rows={2}
                       placeholder="Question stem…"
-                      className="w-full resize-none rounded-md border border-border/60 bg-background/70 px-2.5 py-1.5 text-[12px] outline-none focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/20"
+                      className="w-full resize-none rounded-md border border-border/60 bg-background/70 px-2.5 py-1.5 text-[12px] outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
                     />
 
                     {q.kind === "mcq" && q.options && (
@@ -3333,7 +3333,7 @@ function TaskManagementPanel() {
                         })}
                         {q.options.length < 6 && (
                           <button onClick={() => updateQuestion(q.id, { options: [...q.options!, ""] })}
-                            className="self-start rounded-md border border-dashed border-border/60 px-2 py-1 text-[10px] text-muted-foreground hover:border-indigo-400/40 hover:text-foreground">
+                            className="self-start rounded-md border border-dashed border-border/60 px-2 py-1 text-[10px] text-muted-foreground hover:border-emerald-400/40 hover:text-foreground">
                             + Add option
                           </button>
                         )}
@@ -3349,7 +3349,7 @@ function TaskManagementPanel() {
                               className={cn("rounded-md px-3 py-1 text-[11px] font-semibold transition-all",
                                 active
                                   ? b ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_4px_14px_-4px_rgba(16,185,129,0.7)]"
-                                      : "bg-gradient-to-r from-rose-500 to-fuchsia-500 text-white shadow-[0_4px_14px_-4px_rgba(244,63,94,0.7)]"
+                                      : "bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-[0_4px_14px_-4px_rgba(244,63,94,0.7)]"
                                   : "text-muted-foreground hover:text-foreground"
                               )}>
                               {b ? "True" : "False"}
@@ -3379,15 +3379,15 @@ function TaskManagementPanel() {
           {/* AI Loading Overlay */}
           {aiLoading && (
             <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl bg-slate-950/70 backdrop-blur-md">
-              <div className="flex flex-col items-center gap-3 rounded-xl border border-indigo-400/40 bg-gradient-to-br from-indigo-500/20 via-fuchsia-500/10 to-slate-900/60 px-6 py-5 shadow-[0_20px_60px_-20px_rgba(99,102,241,0.8)]">
+              <div className="flex flex-col items-center gap-3 rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 via-amber-500/10 to-slate-900/60 px-6 py-5 shadow-[0_20px_60px_-20px_rgba(99,102,241,0.8)]">
                 <div className="relative h-10 w-10">
-                  <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500/30" />
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500">
+                  <div className="absolute inset-0 animate-ping rounded-full bg-emerald-500/30" />
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-amber-500">
                     <Wand2 className="h-5 w-5 animate-pulse text-white" />
                   </div>
                 </div>
                 <div className="text-[12px] font-semibold text-white">AI Prompting in Progress…</div>
-                <div className="text-[10px] text-indigo-200/80">Crafting {numQuestions} {quizStructure.toUpperCase()} questions on "{aiTopic || "your topic"}"</div>
+                <div className="text-[10px] text-emerald-200/80">Crafting {numQuestions} {quizStructure.toUpperCase()} questions on "{aiTopic || "your topic"}"</div>
               </div>
             </div>
           )}
@@ -3405,7 +3405,7 @@ function TaskManagementPanel() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => publish("draft")}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/60 px-3 py-1.5 text-[11px] font-medium hover:border-indigo-400/50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/60 px-3 py-1.5 text-[11px] font-medium hover:border-emerald-400/50"
             >
               <FileText className="h-3.5 w-3.5" /> Save Draft
             </button>
@@ -3414,8 +3414,8 @@ function TaskManagementPanel() {
               className={cn(
                 "group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg px-3 py-1.5 text-[11px] font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]",
                 quiz.length > 0
-                  ? "bg-gradient-to-r from-emerald-500 via-indigo-500 to-fuchsia-500 shadow-[0_12px_36px_-10px_rgba(16,185,129,0.7)]"
-                  : "bg-gradient-to-r from-indigo-500 to-fuchsia-500 shadow-[0_10px_30px_-10px_rgba(99,102,241,0.7)]"
+                  ? "bg-gradient-to-r from-emerald-500 via-emerald-500 to-amber-500 shadow-[0_12px_36px_-10px_rgba(16,185,129,0.7)]"
+                  : "bg-gradient-to-r from-emerald-500 to-amber-500 shadow-[0_10px_30px_-10px_rgba(99,102,241,0.7)]"
               )}
             >
               <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
@@ -3443,7 +3443,7 @@ function TaskManagementPanel() {
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all",
                     active
-                      ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                      ? "bg-gradient-to-r from-emerald-500/90 to-amber-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -3461,15 +3461,15 @@ function TaskManagementPanel() {
             const overdue = dleft < 0;
             const rate = t.totalRecipients > 0 ? Math.min(100, Math.round((t.submissions / t.totalRecipients) * 100)) : 0;
             const typeMeta = t.type === "project"
-              ? { label: "Project", icon: FolderKanban, cls: "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" }
-              : { label: "Assignment", icon: ClipboardList, cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200" };
+              ? { label: "Project", icon: FolderKanban, cls: "border-amber-400/40 bg-amber-500/10 text-amber-200" }
+              : { label: "Assignment", icon: ClipboardList, cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200" };
             const TypeIcon = typeMeta.icon;
             return (
               <article
                 key={t.id}
-                className="group relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 to-slate-900/30 p-3 shadow-[0_8px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_12px_40px_-15px_rgba(99,102,241,0.5)]"
+                className="group relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-slate-900/60 to-slate-900/30 p-3 shadow-[0_8px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_12px_40px_-15px_rgba(99,102,241,0.5)]"
               >
-                <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -3487,7 +3487,7 @@ function TaskManagementPanel() {
                   </div>
                   <div className="shrink-0 text-right">
                     <div className="text-[10px] text-muted-foreground">Max</div>
-                    <div className="text-sm font-bold text-indigo-200">{t.maxMarks}</div>
+                    <div className="text-sm font-bold text-emerald-200">{t.maxMarks}</div>
                   </div>
                 </div>
 
@@ -3501,7 +3501,7 @@ function TaskManagementPanel() {
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted/40">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-[width] duration-700"
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-amber-500 transition-[width] duration-700"
                       style={{ width: `${rate}%` }}
                     />
                   </div>
@@ -3521,17 +3521,17 @@ function TaskManagementPanel() {
                   </div>
                   <div className="rounded-md border border-border/60 bg-background/40 p-1.5 text-center">
                     <div className="text-muted-foreground">Recipients</div>
-                    <div className="text-sm font-bold text-indigo-200">{t.totalRecipients}</div>
+                    <div className="text-sm font-bold text-emerald-200">{t.totalRecipients}</div>
                   </div>
                 </div>
 
                 {/* Targets pills */}
                 <div className="mt-2 flex flex-wrap gap-1">
                   {t.targets.classGrades.map((g) => (
-                    <span key={`g${g}`} className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] text-indigo-200">Gr {g}</span>
+                    <span key={`g${g}`} className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] text-emerald-200">Gr {g}</span>
                   ))}
                   {t.targets.sectionIds.slice(0, 3).map((sid) => (
-                    <span key={sid} className="rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-1.5 py-0.5 text-[9px] text-fuchsia-200">{sectionLabel(sid)}</span>
+                    <span key={sid} className="rounded-full border border-amber-400/30 bg-amber-500/10 px-1.5 py-0.5 text-[9px] text-amber-200">{sectionLabel(sid)}</span>
                   ))}
                   {t.targets.groups.map((g) => (
                     <span key={g} className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] text-emerald-200">{g}</span>
@@ -3543,14 +3543,14 @@ function TaskManagementPanel() {
                   <div className="text-[10px] text-muted-foreground">Due {t.deadline}</div>
                   <div className="flex items-center gap-1">
                     {t.status === "draft" && (
-                      <button onClick={() => publishDraft(t.id)} className="inline-flex items-center gap-1 rounded-md border border-indigo-400/40 bg-indigo-500/10 px-2 py-1 text-[10px] font-semibold text-indigo-200 hover:bg-indigo-500/20">
+                      <button onClick={() => publishDraft(t.id)} className="inline-flex items-center gap-1 rounded-md border border-emerald-400/40 bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-200 hover:bg-emerald-500/20">
                         <Send className="h-3 w-3" /> Publish
                       </button>
                     )}
                     {t.type === "project" && t.status === "active" && (
                       <button
                         onClick={() => setRubricTask(t)}
-                        className="group/eval relative inline-flex items-center gap-1 overflow-hidden rounded-md border border-fuchsia-400/40 bg-gradient-to-r from-fuchsia-500/15 to-indigo-500/15 px-2 py-1 text-[10px] font-bold text-fuchsia-200 shadow-[0_0_14px_-4px_rgba(217,70,239,0.6)] transition-all hover:scale-[1.04] hover:border-fuchsia-400/70 hover:text-fuchsia-100"
+                        className="group/eval relative inline-flex items-center gap-1 overflow-hidden rounded-md border border-amber-400/40 bg-gradient-to-r from-amber-500/15 to-emerald-500/15 px-2 py-1 text-[10px] font-bold text-amber-200 shadow-[0_0_14px_-4px_rgba(217,70,239,0.6)] transition-all hover:scale-[1.04] hover:border-amber-400/70 hover:text-amber-100"
                       >
                         <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover/eval:translate-x-full" />
                         <Award className="relative h-3 w-3" /> Rubric
@@ -3665,10 +3665,10 @@ function buildNotifications(tasks: Task[]): SystemNotif[] {
 }
 
 const NOTIF_META: Record<NotifKind, { icon: typeof Bell; cls: string; ring: string }> = {
-  new:        { icon: Megaphone,     cls: "text-indigo-300 bg-indigo-500/15 border-indigo-400/30",  ring: "shadow-[0_0_14px_-2px_rgba(99,102,241,0.55)]" },
+  new:        { icon: Megaphone,     cls: "text-emerald-300 bg-emerald-500/15 border-emerald-400/30",  ring: "shadow-[0_0_14px_-2px_rgba(99,102,241,0.55)]" },
   deadline:   { icon: AlarmClock,    cls: "text-amber-300 bg-amber-500/15 border-amber-400/30",     ring: "shadow-[0_0_14px_-2px_rgba(251,191,36,0.55)]" },
   evaluated:  { icon: CheckCheck,    cls: "text-emerald-300 bg-emerald-500/15 border-emerald-400/30", ring: "shadow-[0_0_14px_-2px_rgba(16,185,129,0.55)]" },
-  feedback:   { icon: MessageSquare, cls: "text-fuchsia-300 bg-fuchsia-500/15 border-fuchsia-400/30", ring: "shadow-[0_0_14px_-2px_rgba(217,70,239,0.55)]" },
+  feedback:   { icon: MessageSquare, cls: "text-amber-300 bg-amber-500/15 border-amber-400/30", ring: "shadow-[0_0_14px_-2px_rgba(217,70,239,0.55)]" },
 };
 
 function NotificationsBell({
@@ -3685,19 +3685,19 @@ function NotificationsBell({
       <Button variant="ghost" size="icon" className="relative h-8 w-8" onClick={() => onOpenChange(!open)}>
         <Bell className="h-4 w-4" />
         {unread > 0 && (
-          <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-fuchsia-500 px-1 text-[9px] font-bold text-white shadow-[0_0_10px_-1px_rgba(244,63,94,0.8)]">
+          <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-amber-500 px-1 text-[9px] font-bold text-white shadow-[0_0_10px_-1px_rgba(244,63,94,0.8)]">
             {unread}
           </span>
         )}
       </Button>
       {open && (
         <div className="absolute right-0 top-10 z-50 w-[22rem] overflow-hidden rounded-xl border border-white/10 bg-slate-950/80 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
           <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
             <div className="flex items-center gap-1.5">
-              <BellRing className="h-3.5 w-3.5 text-indigo-300" />
+              <BellRing className="h-3.5 w-3.5 text-emerald-300" />
               <div className="text-xs font-semibold">Live Notifications</div>
-              <span className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-200">{items.length}</span>
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-200">{items.length}</span>
             </div>
             <button onClick={() => setDismissed(new Set(derived.map((n) => n.id)))} className="text-[10px] text-muted-foreground hover:text-foreground">Mark all read</button>
           </div>
@@ -3716,7 +3716,7 @@ function NotificationsBell({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <div className="truncate text-[12px] font-semibold leading-tight">{n.title}</div>
-                      {n.unread && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_6px_1px_rgba(99,102,241,0.7)]" />}
+                      {n.unread && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_1px_rgba(99,102,241,0.7)]" />}
                     </div>
                     <div className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">{n.detail}</div>
                     <div className="mt-0.5 text-[10px] text-muted-foreground/80">{n.time}</div>
@@ -3833,15 +3833,15 @@ function StudentDashboardPanel() {
   return (
     <div className="space-y-4">
       {/* Profile Header */}
-      <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-950/60 via-slate-950/70 to-fuchsia-950/40 p-5 shadow-[0_20px_60px_-30px_rgba(99,102,241,0.6)] backdrop-blur-xl">
-        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-fuchsia-500/15 blur-3xl" />
-        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-300/60 to-transparent" />
+      <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-950/60 via-slate-950/70 to-amber-950/40 p-5 shadow-[0_20px_60px_-30px_rgba(99,102,241,0.6)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-amber-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-300/60 to-transparent" />
 
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-indigo-500 via-fuchsia-500 to-amber-400 opacity-60 blur" />
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-emerald-500 via-amber-500 to-amber-400 opacity-60 blur" />
               <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-slate-950 text-lg font-bold">
                 {me.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
               </div>
@@ -3858,8 +3858,8 @@ function StudentDashboardPanel() {
                 {["Scratch", "HTML", "Python"].map((tech, i) => (
                   <span key={tech} className={cn(
                     "rounded-full border px-1.5 py-0.5 text-[10px] font-medium",
-                    ["border-indigo-400/30 bg-indigo-500/10 text-indigo-200",
-                     "border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-200",
+                    ["border-emerald-400/30 bg-emerald-500/10 text-emerald-200",
+                     "border-amber-400/30 bg-amber-500/10 text-amber-200",
                      "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"][i]
                   )}>{tech}</span>
                 ))}
@@ -3874,12 +3874,12 @@ function StudentDashboardPanel() {
               <div className="mt-0.5 text-xl font-bold text-amber-200">7d</div>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur">
-              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"><Trophy className="h-3 w-3 text-fuchsia-300" /> XP</div>
-              <div className="mt-0.5 text-xl font-bold text-fuchsia-200">2,840</div>
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"><Trophy className="h-3 w-3 text-amber-300" /> XP</div>
+              <div className="mt-0.5 text-xl font-bold text-amber-200">2,840</div>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur">
-              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"><TrendingUp className="h-3 w-3 text-indigo-300" /> Overall</div>
-              <div className="mt-0.5 text-xl font-bold text-indigo-200">{Math.round(completionPct)}%</div>
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"><TrendingUp className="h-3 w-3 text-emerald-300" /> Overall</div>
+              <div className="mt-0.5 text-xl font-bold text-emerald-200">{Math.round(completionPct)}%</div>
             </div>
           </div>
         </div>
@@ -3892,7 +3892,7 @@ function StudentDashboardPanel() {
             { label: "Pending",   value: counts.assigned ? (counts.pending / counts.assigned) * 100 : 0, color: "#fbbf24", count: counts.pending },
             { label: "Overdue",   value: counts.assigned ? (counts.overdue / counts.assigned) * 100 : 0, color: "#f87171", count: counts.overdue },
           ].map((m) => (
-            <div key={m.label} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur transition-all hover:border-indigo-400/40 hover:bg-white/[0.05]">
+            <div key={m.label} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur transition-all hover:border-emerald-400/40 hover:bg-white/[0.05]">
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{m.label}</div>
                 <div className="text-2xl font-bold">{m.count}</div>
@@ -3921,7 +3921,7 @@ function StudentDashboardPanel() {
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all",
                     active
-                      ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                      ? "bg-gradient-to-r from-emerald-500/90 to-amber-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -3939,15 +3939,15 @@ function StudentDashboardPanel() {
             const overdue = dleft < 0;
             const sub = submissions[t.id];
             const typeMeta = t.type === "project"
-              ? { label: "Project", icon: FolderKanban, cls: "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" }
-              : { label: "Assignment", icon: ClipboardList, cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200" };
+              ? { label: "Project", icon: FolderKanban, cls: "border-amber-400/40 bg-amber-500/10 text-amber-200" }
+              : { label: "Assignment", icon: ClipboardList, cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200" };
             const TypeIcon = typeMeta.icon;
             return (
               <article
                 key={t.id}
-                className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-900/30 p-4 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_18px_50px_-15px_rgba(99,102,241,0.45)]"
+                className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-900/30 p-4 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_18px_50px_-15px_rgba(99,102,241,0.45)]"
               >
-                <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -3961,7 +3961,7 @@ function StudentDashboardPanel() {
                         <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-emerald-200">Evaluated</span>
                       )}
                       {sub === "submitted" && (
-                        <span className="inline-flex items-center rounded-full border border-indigo-400/40 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-indigo-200">Submitted</span>
+                        <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-emerald-200">Submitted</span>
                       )}
                     </div>
                     <h4 className="mt-1.5 text-sm font-semibold">{t.title}</h4>
@@ -3971,7 +3971,7 @@ function StudentDashboardPanel() {
                   </div>
                   <div className="shrink-0 text-right">
                     <div className="text-[10px] text-muted-foreground">Total</div>
-                    <div className="text-base font-bold text-indigo-200">{t.maxMarks}</div>
+                    <div className="text-base font-bold text-emerald-200">{t.maxMarks}</div>
                   </div>
                 </div>
 
@@ -3989,7 +3989,7 @@ function StudentDashboardPanel() {
                   {tab === "active" ? (
                     <button
                       onClick={() => t.type === "project" ? setProjectWorkspace(t) : submit(t.id)}
-                      className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+                      className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-amber-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
                     >
                       <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
                       <Rocket className="relative h-3.5 w-3.5" />
@@ -4041,14 +4041,14 @@ type LabId = "html" | "sql" | "java" | "scratch" | "scratchjr" | "word" | "excel
 
 const LABS: { id: LabId; name: string; tag: string; icon: typeof Code2; tint: string }[] = [
   { id: "html",      name: "HTML & CSS Lab",   tag: "Web Playground",    icon: Code2,        tint: "from-orange-500/30 to-rose-500/20"   },
-  { id: "sql",       name: "SQL Lab",          tag: "Query Console",     icon: Database,     tint: "from-sky-500/30 to-indigo-500/20"    },
+  { id: "sql",       name: "SQL Lab",          tag: "Query Console",     icon: Database,     tint: "from-sky-500/30 to-emerald-500/20"    },
   { id: "java",      name: "Java Lab",         tag: "Compiler",          icon: Coffee,       tint: "from-amber-500/30 to-orange-500/20"  },
   { id: "scratch",   name: "Scratch Lab",      tag: "Block Sandbox",     icon: Cat,          tint: "from-amber-400/30 to-yellow-500/20"  },
-  { id: "scratchjr", name: "Scratch Jr Lab",   tag: "Junior Blocks",     icon: Baby,         tint: "from-pink-500/30 to-fuchsia-500/20"  },
-  { id: "word",      name: "Word Processor",   tag: "Rich Text",         icon: FileType2,    tint: "from-blue-500/30 to-indigo-500/20"   },
+  { id: "scratchjr", name: "Scratch Jr Lab",   tag: "Junior Blocks",     icon: Baby,         tint: "from-pink-500/30 to-amber-500/20"  },
+  { id: "word",      name: "Word Processor",   tag: "Rich Text",         icon: FileType2,    tint: "from-blue-500/30 to-emerald-500/20"   },
   { id: "excel",     name: "Spreadsheet",      tag: "Formula Engine",    icon: Sheet,        tint: "from-emerald-500/30 to-teal-500/20"  },
   { id: "ppt",       name: "Presentation",     tag: "Slide Studio",      icon: Presentation, tint: "from-rose-500/30 to-orange-500/20"   },
-  { id: "paint",     name: "Paint Studio",     tag: "Canvas",            icon: Palette,      tint: "from-fuchsia-500/30 to-violet-500/20"},
+  { id: "paint",     name: "Paint Studio",     tag: "Canvas",            icon: Palette,      tint: "from-amber-500/30 to-teal-500/20"},
 ];
 
 function PracticeLabsPanel({ student }: { student: Student }) {
@@ -4136,11 +4136,11 @@ function PracticeLabsPanel({ student }: { student: Student }) {
 
   return (
     <LabSnapshotCtx.Provider value={{ register }}>
-      <section className="relative rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+      <section className="relative rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-emerald-950/30 p-4 shadow-[0_24px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
             <Sparkles className="h-3 w-3" /> Technology Practice Labs
           </div>
           <h3 className="mt-1 font-display text-base font-bold tracking-tight">Hey {student.name.split(" ")[0]} — pick a lab and build something live.</h3>
@@ -4153,13 +4153,13 @@ function PracticeLabsPanel({ student }: { student: Student }) {
           )}
           <button
             onClick={saveDraft}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition-all hover:border-indigo-400/40 hover:bg-white/[0.07]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition-all hover:border-emerald-400/40 hover:bg-white/[0.07]"
           >
             <Save className="h-3.5 w-3.5" /> Save Draft
           </button>
           <button
             onClick={submitAssignment}
-            className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+            className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-amber-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
           >
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
             <Send className="relative h-3.5 w-3.5" />
@@ -4180,14 +4180,14 @@ function PracticeLabsPanel({ student }: { student: Student }) {
               className={cn(
                 "group relative overflow-hidden rounded-xl border p-3 text-left transition-all duration-300",
                 sel
-                  ? "border-indigo-400/60 bg-indigo-500/10 shadow-[0_10px_30px_-10px_rgba(99,102,241,0.6)]"
-                  : "border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-indigo-400/40 hover:bg-white/[0.05]"
+                  ? "border-emerald-400/60 bg-emerald-500/10 shadow-[0_10px_30px_-10px_rgba(99,102,241,0.6)]"
+                  : "border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-white/[0.05]"
               )}
             >
               <div className={cn("pointer-events-none absolute -inset-12 rounded-full bg-gradient-to-br blur-3xl transition-opacity", lab.tint, sel ? "opacity-100" : "opacity-0 group-hover:opacity-60")} />
               <div className="relative flex items-center gap-2">
-                <div className={cn("inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-950/60 backdrop-blur", sel && "ring-1 ring-indigo-400/60")}>
-                  <Icon className="h-4 w-4 text-indigo-200" />
+                <div className={cn("inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-950/60 backdrop-blur", sel && "ring-1 ring-emerald-400/60")}>
+                  <Icon className="h-4 w-4 text-emerald-200" />
                 </div>
                 <div className="min-w-0">
                   <div className="truncate text-[12px] font-semibold">{lab.name}</div>
@@ -4204,8 +4204,8 @@ function PracticeLabsPanel({ student }: { student: Student }) {
         {!active && (
           <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
             <div className="relative">
-              <div className="absolute -inset-4 rounded-full bg-indigo-500/20 blur-2xl" />
-              <Rocket className="relative h-8 w-8 text-indigo-300" />
+              <div className="absolute -inset-4 rounded-full bg-emerald-500/20 blur-2xl" />
+              <Rocket className="relative h-8 w-8 text-emerald-300" />
             </div>
             <p className="mt-3 text-sm font-semibold">Pick a lab above to launch its workspace.</p>
             <p className="mt-1 text-[11px] text-muted-foreground">Every lab runs live in your browser — no install needed.</p>
@@ -4215,7 +4215,7 @@ function PracticeLabsPanel({ student }: { student: Student }) {
           <div>
             <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
               <div className="inline-flex items-center gap-2 text-[12px] font-semibold">
-                <activeMeta.icon className="h-3.5 w-3.5 text-indigo-300" /> {activeMeta.name}
+                <activeMeta.icon className="h-3.5 w-3.5 text-emerald-300" /> {activeMeta.name}
               </div>
               <button onClick={() => setActive(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Close ×</button>
             </div>
@@ -4240,11 +4240,11 @@ function PracticeLabsPanel({ student }: { student: Student }) {
           "pointer-events-none absolute bottom-4 right-4 z-30 flex max-w-[92%] flex-col items-end gap-2 transition-all",
         )}>
           <div className={cn(
-            "pointer-events-auto w-[340px] origin-bottom-right overflow-hidden rounded-2xl border border-indigo-400/30 bg-slate-950/85 shadow-[0_30px_60px_-20px_rgba(99,102,241,0.55)] backdrop-blur-xl transition-all duration-300",
+            "pointer-events-auto w-[340px] origin-bottom-right overflow-hidden rounded-2xl border border-emerald-400/30 bg-slate-950/85 shadow-[0_30px_60px_-20px_rgba(99,102,241,0.55)] backdrop-blur-xl transition-all duration-300",
             drawerOpen ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0 translate-y-2"
           )}>
             <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-200">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-200">
                 <Paperclip className="h-3.5 w-3.5" /> Link to Assignment
               </div>
               <button onClick={() => setDrawerOpen(false)} className="text-muted-foreground hover:text-foreground">
@@ -4262,7 +4262,7 @@ function PracticeLabsPanel({ student }: { student: Student }) {
                   <select
                     value={selectedTaskId}
                     onChange={(e) => setSelectedTaskId(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-white/10 bg-slate-900/80 px-2.5 py-2 pr-7 text-[12px] outline-none focus:border-indigo-400/60"
+                    className="w-full appearance-none rounded-lg border border-white/10 bg-slate-900/80 px-2.5 py-2 pr-7 text-[12px] outline-none focus:border-emerald-400/60"
                   >
                     {eligibleTasks.map((t) => {
                       const d = daysUntil(t.deadline);
@@ -4276,7 +4276,7 @@ function PracticeLabsPanel({ student }: { student: Student }) {
               {selectedTask && (
                 <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2 text-[10.5px] text-muted-foreground">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1 text-indigo-200"><ClipboardList className="h-3 w-3" /> {selectedTask.type === "project" ? "Project" : "Assignment"}</span>
+                    <span className="inline-flex items-center gap-1 text-emerald-200"><ClipboardList className="h-3 w-3" /> {selectedTask.type === "project" ? "Project" : "Assignment"}</span>
                     <span>{selectedTask.maxMarks} marks</span>
                   </div>
                   <div className="mt-0.5 inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {selectedTask.deadline}</div>
@@ -4286,14 +4286,14 @@ function PracticeLabsPanel({ student }: { student: Student }) {
                 <button
                   onClick={attachAsset}
                   disabled={!selectedTaskId}
-                  className="inline-flex items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[11px] font-semibold hover:border-indigo-400/40 hover:bg-white/[0.07] disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[11px] font-semibold hover:border-emerald-400/40 hover:bg-white/[0.07] disabled:opacity-50"
                 >
                   <Paperclip className="h-3.5 w-3.5" /> Attach Asset
                 </button>
                 <button
                   onClick={submitAssignment}
                   disabled={!selectedTaskId}
-                  className="group relative inline-flex items-center justify-center gap-1 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] disabled:opacity-50"
+                  className="group relative inline-flex items-center justify-center gap-1 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-amber-500 px-2 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.03] disabled:opacity-50"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   <Send className="relative h-3.5 w-3.5" /> <span className="relative">Submit</span>
@@ -4305,10 +4305,10 @@ function PracticeLabsPanel({ student }: { student: Student }) {
           {!drawerOpen && (
             <button
               onClick={() => setDrawerOpen(true)}
-              className="pointer-events-auto group inline-flex items-center gap-1.5 rounded-full border border-indigo-400/40 bg-slate-950/85 px-3 py-2 text-[11px] font-semibold text-indigo-100 shadow-[0_10px_25px_-10px_rgba(99,102,241,0.7)] backdrop-blur transition-all hover:scale-[1.03]"
+              className="pointer-events-auto group inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-slate-950/85 px-3 py-2 text-[11px] font-semibold text-emerald-100 shadow-[0_10px_25px_-10px_rgba(99,102,241,0.7)] backdrop-blur transition-all hover:scale-[1.03]"
             >
               <Paperclip className="h-3.5 w-3.5" /> Link to Assignment
-              <span className="inline-flex items-center justify-center rounded-full bg-indigo-500/30 px-1.5 text-[10px]">{eligibleTasks.length}</span>
+              <span className="inline-flex items-center justify-center rounded-full bg-emerald-500/30 px-1.5 text-[10px]">{eligibleTasks.length}</span>
               <ChevronUp className="h-3 w-3" />
             </button>
           )}
@@ -4334,14 +4334,14 @@ function HtmlCssLab() {
     <div className="grid gap-3 lg:grid-cols-2">
       <div className="space-y-2">
         <div>
-          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>HTML</span><span className="text-indigo-300">index.html</span></div>
-          <textarea value={html} onChange={(e) => setHtml(e.target.value)} rows={10} spellCheck={false} className="w-full resize-none rounded-lg border border-white/10 bg-slate-900/80 p-3 font-mono text-[11px] text-emerald-200 outline-none focus:border-indigo-400/50" />
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>HTML</span><span className="text-emerald-300">index.html</span></div>
+          <textarea value={html} onChange={(e) => setHtml(e.target.value)} rows={10} spellCheck={false} className="w-full resize-none rounded-lg border border-white/10 bg-slate-900/80 p-3 font-mono text-[11px] text-emerald-200 outline-none focus:border-emerald-400/50" />
         </div>
         <div>
-          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>CSS</span><span className="text-fuchsia-300">styles.css</span></div>
-          <textarea value={css} onChange={(e) => setCss(e.target.value)} rows={8} spellCheck={false} className="w-full resize-none rounded-lg border border-white/10 bg-slate-900/80 p-3 font-mono text-[11px] text-sky-200 outline-none focus:border-fuchsia-400/50" />
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>CSS</span><span className="text-amber-300">styles.css</span></div>
+          <textarea value={css} onChange={(e) => setCss(e.target.value)} rows={8} spellCheck={false} className="w-full resize-none rounded-lg border border-white/10 bg-slate-900/80 p-3 font-mono text-[11px] text-sky-200 outline-none focus:border-amber-400/50" />
         </div>
-        <button onClick={run} className="group inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-2 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.02]">
+        <button onClick={run} className="group inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-amber-500 px-3 py-2 text-[11px] font-semibold text-white shadow-[0_10px_25px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.02]">
           <Play className="h-3.5 w-3.5" /> Run Web Code
         </button>
       </div>
@@ -4409,7 +4409,7 @@ function SqlLab() {
       <div className="rounded-lg border border-white/10 bg-slate-900/80">
         <div className="flex items-center justify-between border-b border-white/5 px-3 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
           <span>Query Console · tables: students, teachers</span>
-          <button onClick={exec} className="inline-flex items-center gap-1 rounded bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-1 text-[10px] font-semibold text-white">
+          <button onClick={exec} className="inline-flex items-center gap-1 rounded bg-gradient-to-r from-emerald-500 to-amber-500 px-2 py-1 text-[10px] font-semibold text-white">
             <Play className="h-3 w-3" /> Run Query
           </button>
         </div>
@@ -4422,7 +4422,7 @@ function SqlLab() {
           <div className="px-3 py-6 text-center text-[12px] text-muted-foreground">No rows match.</div>
         ) : (
           <table className="w-full text-[11px]">
-            <thead className="bg-white/[0.04] text-[10px] uppercase tracking-wider text-indigo-200">
+            <thead className="bg-white/[0.04] text-[10px] uppercase tracking-wider text-emerald-200">
               <tr>{result.cols.map((c) => <th key={c} className="px-3 py-2 text-left">{c}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -4478,7 +4478,7 @@ function JavaLab() {
     <div className="space-y-2">
       <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1 text-[10px]">
         {(["embed", "mock"] as const).map((m) => (
-          <button key={m} onClick={() => setMode(m)} className={cn("rounded-full px-2.5 py-1 font-semibold transition", mode === m ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white" : "text-muted-foreground")}>
+          <button key={m} onClick={() => setMode(m)} className={cn("rounded-full px-2.5 py-1 font-semibold transition", mode === m ? "bg-gradient-to-r from-emerald-500 to-amber-500 text-white" : "text-muted-foreground")}>
             {m === "embed" ? "Online Compiler" : "Local Mock Terminal"}
           </button>
         ))}
@@ -4489,7 +4489,7 @@ function JavaLab() {
         <div className="grid gap-2 lg:grid-cols-2">
           <textarea value={code} onChange={(e) => setCode(e.target.value)} rows={14} spellCheck={false} className="resize-none rounded-lg border border-white/10 bg-slate-900/80 p-3 font-mono text-[11px] text-amber-200 outline-none" />
           <div className="rounded-lg border border-white/10 bg-black p-3 font-mono text-[11px] text-emerald-300 shadow-inner">
-            <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground"><span>~/lab/java $</span><button onClick={compile} disabled={running} className="inline-flex items-center gap-1 rounded bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-semibold text-white disabled:opacity-60">{running ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />} Compile &amp; Run</button></div>
+            <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground"><span>~/lab/java $</span><button onClick={compile} disabled={running} className="inline-flex items-center gap-1 rounded bg-gradient-to-r from-emerald-500 to-amber-500 px-2 py-0.5 text-[10px] font-semibold text-white disabled:opacity-60">{running ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />} Compile &amp; Run</button></div>
             <div className="max-h-72 overflow-y-auto whitespace-pre-wrap">{out.length === 0 ? "(terminal ready)" : out.join("\n")}</div>
           </div>
         </div>
@@ -4522,12 +4522,12 @@ function ScratchLab() {
 // ---------- Scratch Jr Lab ----------
 type JrBlock = { id: string; kind: "right" | "left" | "up" | "down" | "grow" | "shrink" | "say" };
 const JR_PALETTE: { kind: JrBlock["kind"]; label: string; cls: string }[] = [
-  { kind: "right",  label: "→ Right",  cls: "from-sky-500 to-indigo-500" },
-  { kind: "left",   label: "← Left",   cls: "from-sky-500 to-indigo-500" },
-  { kind: "up",     label: "↑ Up",     cls: "from-sky-500 to-indigo-500" },
-  { kind: "down",   label: "↓ Down",   cls: "from-sky-500 to-indigo-500" },
-  { kind: "grow",   label: "+ Grow",   cls: "from-fuchsia-500 to-rose-500" },
-  { kind: "shrink", label: "− Shrink", cls: "from-fuchsia-500 to-rose-500" },
+  { kind: "right",  label: "→ Right",  cls: "from-sky-500 to-emerald-500" },
+  { kind: "left",   label: "← Left",   cls: "from-sky-500 to-emerald-500" },
+  { kind: "up",     label: "↑ Up",     cls: "from-sky-500 to-emerald-500" },
+  { kind: "down",   label: "↓ Down",   cls: "from-sky-500 to-emerald-500" },
+  { kind: "grow",   label: "+ Grow",   cls: "from-amber-500 to-rose-500" },
+  { kind: "shrink", label: "− Shrink", cls: "from-amber-500 to-rose-500" },
   { kind: "say",    label: "💬 Say Hi", cls: "from-amber-400 to-orange-500" },
 ];
 
@@ -4613,7 +4613,7 @@ function ScratchJrLab() {
 function WordLab() {
   const ref = useRef<HTMLDivElement>(null);
   const cmd = (c: string, v?: string) => { document.execCommand(c, false, v); ref.current?.focus(); };
-  const btn = "inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-[11px] hover:border-indigo-400/40 hover:bg-white/[0.08]";
+  const btn = "inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-[11px] hover:border-emerald-400/40 hover:bg-white/[0.08]";
   useRegisterSnapshot(() => {
     const html = ref.current?.innerHTML ?? "";
     return { kind: "word", labName: "Word Processor", payload: { html }, preview: html, previewKind: "html", bytes: approxBytes(html) };
@@ -4718,13 +4718,13 @@ function ExcelLab() {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/70 p-2">
-        <div className="rounded-md border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[11px] text-indigo-200">{sel}</div>
+        <div className="rounded-md border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[11px] text-emerald-200">{sel}</div>
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">fx</span>
         <input
           value={grid[sel] ?? ""}
           onChange={(e) => setCell(sel, e.target.value)}
           placeholder="=SUM(A1:A5) or value"
-          className="flex-1 rounded-md border border-white/10 bg-slate-950/60 px-2 py-1 font-mono text-[11px] outline-none focus:border-indigo-400/50"
+          className="flex-1 rounded-md border border-white/10 bg-slate-950/60 px-2 py-1 font-mono text-[11px] outline-none focus:border-emerald-400/50"
         />
       </div>
       <div className="overflow-x-auto rounded-lg border border-white/10">
@@ -4732,7 +4732,7 @@ function ExcelLab() {
           <thead>
             <tr>
               <th className="w-8 border-b border-r border-white/5 bg-slate-900/70" />
-              {EX_COLS.map((c) => <th key={c} className="border-b border-r border-white/5 bg-slate-900/70 px-2 py-1 text-[10px] font-semibold text-indigo-200">{c}</th>)}
+              {EX_COLS.map((c) => <th key={c} className="border-b border-r border-white/5 bg-slate-900/70 px-2 py-1 text-[10px] font-semibold text-emerald-200">{c}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -4746,7 +4746,7 @@ function ExcelLab() {
                   const display = isFormula ? evalCell(addr, grid) : raw;
                   const selected = sel === addr;
                   return (
-                    <td key={addr} className={cn("border-b border-r border-white/5 p-0", selected && "ring-1 ring-inset ring-indigo-400/70 bg-indigo-500/10")}>
+                    <td key={addr} className={cn("border-b border-r border-white/5 p-0", selected && "ring-1 ring-inset ring-emerald-400/70 bg-emerald-500/10")}>
                       <input
                         value={selected ? raw : display}
                         onFocus={() => setSel(addr)}
@@ -4761,7 +4761,7 @@ function ExcelLab() {
           </tbody>
         </table>
       </div>
-      <p className="text-[10px] text-muted-foreground">Supports <code className="font-mono text-indigo-300">=SUM, =AVG, =MIN, =MAX, =COUNT</code>, ranges (A1:A5) and basic arithmetic.</p>
+      <p className="text-[10px] text-muted-foreground">Supports <code className="font-mono text-emerald-300">=SUM, =AVG, =MIN, =MAX, =COUNT</code>, ranges (A1:A5) and basic arithmetic.</p>
     </div>
   );
 }
@@ -4769,10 +4769,10 @@ function ExcelLab() {
 // ---------- PowerPoint Lab ----------
 type Slide = { id: string; title: string; body: string; theme: string };
 const SLIDE_THEMES = [
-  "from-indigo-600/80 via-fuchsia-600/70 to-rose-500/70",
+  "from-emerald-600/80 via-amber-600/70 to-rose-500/70",
   "from-sky-600/80 via-cyan-500/70 to-emerald-500/60",
   "from-amber-500/80 via-orange-500/70 to-rose-500/70",
-  "from-violet-600/80 via-purple-600/70 to-fuchsia-500/70",
+  "from-teal-600/80 via-amber-600/70 to-amber-500/70",
 ];
 
 function PowerPointLab() {
@@ -4796,7 +4796,7 @@ function PowerPointLab() {
         <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground"><span>Slides</span><span>{slides.length}</span></div>
         <div className="space-y-1.5">
           {slides.map((s, i) => (
-            <button key={s.id} onClick={() => setActive(s.id)} className={cn("group relative w-full overflow-hidden rounded-lg border text-left transition-all", active === s.id ? "border-indigo-400/60 shadow-[0_8px_20px_-10px_rgba(99,102,241,0.7)]" : "border-white/10 hover:border-indigo-400/40")}>
+            <button key={s.id} onClick={() => setActive(s.id)} className={cn("group relative w-full overflow-hidden rounded-lg border text-left transition-all", active === s.id ? "border-emerald-400/60 shadow-[0_8px_20px_-10px_rgba(99,102,241,0.7)]" : "border-white/10 hover:border-emerald-400/40")}>
               <div className={cn("h-16 w-full bg-gradient-to-br p-2", s.theme)}>
                 <div className="truncate text-[10px] font-bold text-white">{i + 1}. {s.title}</div>
                 <div className="mt-0.5 line-clamp-2 text-[8px] text-white/80">{s.body}</div>
@@ -4805,7 +4805,7 @@ function PowerPointLab() {
             </button>
           ))}
         </div>
-        <button onClick={add} className="inline-flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-white/15 px-2 py-2 text-[11px] hover:border-indigo-400/40 hover:text-foreground">
+        <button onClick={add} className="inline-flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-white/15 px-2 py-2 text-[11px] hover:border-emerald-400/40 hover:text-foreground">
           <Plus className="h-3 w-3" /> Add Slide
         </button>
       </div>
@@ -4865,7 +4865,7 @@ function PaintLab() {
   const save = () => { const url = ref.current!.toDataURL("image/png"); const a = document.createElement("a"); a.href = url; a.download = "paint.png"; a.click(); };
 
   const tBtn = (t: typeof tool, Icon: typeof Brush, label: string) => (
-    <button key={t} onClick={() => setTool(t)} className={cn("inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold transition", tool === t ? "border-indigo-400/60 bg-indigo-500/15 text-indigo-100" : "border-white/10 text-muted-foreground hover:text-foreground")}>
+    <button key={t} onClick={() => setTool(t)} className={cn("inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold transition", tool === t ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-100" : "border-white/10 text-muted-foreground hover:text-foreground")}>
       <Icon className="h-3 w-3" /> {label}
     </button>
   );
@@ -4880,17 +4880,17 @@ function PaintLab() {
           {tBtn("eraser", Eraser, "Eraser")}
         </div>
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Size · {size}px</div>
-        <input type="range" min={1} max={24} value={size} onChange={(e) => setSize(Number(e.target.value))} className="w-full accent-indigo-500" />
+        <input type="range" min={1} max={24} value={size} onChange={(e) => setSize(Number(e.target.value))} className="w-full accent-emerald-500" />
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Colour</div>
         <div className="grid grid-cols-4 gap-1.5">
           {COLORS.map((c) => (
-            <button key={c} onClick={() => setColor(c)} aria-label={c} className={cn("h-6 w-6 rounded-md border transition-transform hover:scale-110", color === c ? "ring-2 ring-indigo-400" : "border-white/20")} style={{ background: c }} />
+            <button key={c} onClick={() => setColor(c)} aria-label={c} className={cn("h-6 w-6 rounded-md border transition-transform hover:scale-110", color === c ? "ring-2 ring-emerald-400" : "border-white/20")} style={{ background: c }} />
           ))}
         </div>
         <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-7 w-full cursor-pointer rounded border border-white/10 bg-transparent" />
         <div className="flex gap-1">
           <button onClick={clear} className="flex-1 rounded-md border border-white/10 px-2 py-1 text-[10px] hover:border-rose-400/50 hover:text-rose-200">Clear</button>
-          <button onClick={save} className="flex-1 inline-flex items-center justify-center gap-1 rounded-md bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-1 text-[10px] font-semibold text-white">
+          <button onClick={save} className="flex-1 inline-flex items-center justify-center gap-1 rounded-md bg-gradient-to-r from-emerald-500 to-amber-500 px-2 py-1 text-[10px] font-semibold text-white">
             <Download className="h-3 w-3" /> Save
           </button>
         </div>
@@ -4931,17 +4931,17 @@ function PortfolioHub({ studentId }: { studentId: string }) {
 
   const statusMeta: Record<PortfolioStatus, { label: string; cls: string }> = {
     draft: { label: "Draft", cls: "border-amber-400/40 bg-amber-500/10 text-amber-200" },
-    submitted: { label: "Submitted for Review", cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200" },
+    submitted: { label: "Submitted for Review", cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200" },
     evaluated: { label: "Graded", cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200" },
   };
 
   const removeItem = (id: string) => setPortfolio((p) => p.filter((x) => x.id !== id));
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-fuchsia-950/20 p-4 shadow-[0_24px_60px_-30px_rgba(217,70,239,0.4)] backdrop-blur-xl">
+    <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-amber-950/20 p-4 shadow-[0_24px_60px_-30px_rgba(217,70,239,0.4)] backdrop-blur-xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200">
             <FolderKanban className="h-3 w-3" /> Digital Portfolio Hub
           </div>
           <h3 className="mt-1 font-display text-base font-bold tracking-tight">Every lab artefact you've saved, in one place.</h3>
@@ -4956,7 +4956,7 @@ function PortfolioHub({ studentId }: { studentId: string }) {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-all capitalize",
                   active
-                    ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
+                    ? "bg-gradient-to-r from-emerald-500/90 to-amber-500/90 text-white shadow-[0_4px_16px_-6px_rgba(99,102,241,0.7)]"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -4970,7 +4970,7 @@ function PortfolioHub({ studentId }: { studentId: string }) {
 
       {shown.length === 0 ? (
         <div className="mt-4 rounded-xl border border-dashed border-border/60 bg-background/30 p-8 text-center text-[12px] text-muted-foreground">
-          Nothing here yet — open a lab, build something, then tap <span className="text-indigo-300 font-semibold">Save Draft</span> or <span className="text-fuchsia-300 font-semibold">Submit Assignment</span>.
+          Nothing here yet — open a lab, build something, then tap <span className="text-emerald-300 font-semibold">Save Draft</span> or <span className="text-amber-300 font-semibold">Submit Assignment</span>.
         </div>
       ) : (
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -4981,12 +4981,12 @@ function PortfolioHub({ studentId }: { studentId: string }) {
             return (
               <article
                 key={item.id}
-                className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-900/30 p-3 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_18px_50px_-15px_rgba(99,102,241,0.45)]"
+                className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-900/30 p-3 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.6)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_18px_50px_-15px_rgba(99,102,241,0.45)]"
               >
                 <div className={cn("pointer-events-none absolute -inset-12 rounded-full bg-gradient-to-br opacity-30 blur-3xl transition-opacity group-hover:opacity-60", tint)} />
                 <div className="relative flex items-start gap-2.5">
                   <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-950/70 ring-1 ring-white/5">
-                    <Icon className="h-4 w-4 text-indigo-200" />
+                    <Icon className="h-4 w-4 text-emerald-200" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[12px] font-semibold">{item.snapshot.labName}</div>
@@ -5005,7 +5005,7 @@ function PortfolioHub({ studentId }: { studentId: string }) {
                 <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-2.5">
                   <button
                     onClick={() => setViewing(item)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10.5px] font-semibold hover:border-indigo-400/40 hover:bg-white/[0.08]"
+                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10.5px] font-semibold hover:border-emerald-400/40 hover:bg-white/[0.08]"
                   >
                     <Eye className="h-3 w-3" /> View Snapshot
                   </button>
@@ -5043,7 +5043,7 @@ function SnapshotViewer({ item, onClose }: { item: PortfolioItem; onClose: () =>
       >
         <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
           <div className="min-w-0">
-            <div className="text-[10px] uppercase tracking-wider text-indigo-200">Snapshot · {formatTime(item.createdAt)}</div>
+            <div className="text-[10px] uppercase tracking-wider text-emerald-200">Snapshot · {formatTime(item.createdAt)}</div>
             <div className="truncate text-sm font-semibold">{s.labName}{item.taskTitle ? ` · ${item.taskTitle}` : ""}</div>
           </div>
           <button onClick={onClose} className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground">Close ×</button>
@@ -5077,7 +5077,7 @@ function SnapshotRenderer({ snapshot }: { snapshot: LabSnapshot }) {
         ) : (
           <div className="overflow-x-auto rounded-lg border border-white/10">
             <table className="w-full text-[11px]">
-              <thead className="bg-white/[0.04] text-[10px] uppercase text-indigo-200">
+              <thead className="bg-white/[0.04] text-[10px] uppercase text-emerald-200">
                 <tr>{p.cols.map((c) => <th key={c} className="px-3 py-2 text-left">{c}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -5105,7 +5105,7 @@ function SnapshotRenderer({ snapshot }: { snapshot: LabSnapshot }) {
     return (
       <div className="flex flex-wrap gap-1.5">
         {p.program.map((b, i) => (
-          <span key={i} className="rounded-md bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-1 text-[11px] font-semibold text-white">{b.kind}</span>
+          <span key={i} className="rounded-md bg-gradient-to-r from-sky-500 to-emerald-500 px-2 py-1 text-[11px] font-semibold text-white">{b.kind}</span>
         ))}
         {p.program.length === 0 && <span className="text-[11px] text-muted-foreground">Empty program</span>}
       </div>
@@ -5126,12 +5126,12 @@ function SnapshotRenderer({ snapshot }: { snapshot: LabSnapshot }) {
     return (
       <div className="overflow-x-auto rounded-lg border border-white/10">
         <table className="w-full text-[11px]">
-          <thead className="bg-white/[0.04] text-[10px] uppercase text-indigo-200">
+          <thead className="bg-white/[0.04] text-[10px] uppercase text-emerald-200">
             <tr><th className="px-3 py-2 text-left">Cell</th><th className="px-3 py-2 text-left">Value</th></tr>
           </thead>
           <tbody className="divide-y divide-white/5">
             {cells.map(([k, v]) => (
-              <tr key={k}><td className="px-3 py-1.5 font-mono text-indigo-200">{k}</td><td className="px-3 py-1.5 font-mono">{v}</td></tr>
+              <tr key={k}><td className="px-3 py-1.5 font-mono text-emerald-200">{k}</td><td className="px-3 py-1.5 font-mono">{v}</td></tr>
             ))}
           </tbody>
         </table>
@@ -5160,7 +5160,7 @@ function SnapshotRenderer({ snapshot }: { snapshot: LabSnapshot }) {
   }
   // scratch / fallback
   return (
-    <pre className="overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-indigo-200">
+    <pre className="overflow-auto rounded-lg border border-white/10 bg-slate-950/70 p-3 font-mono text-[11px] text-emerald-200">
       {JSON.stringify(s.payload, null, 2)}
     </pre>
   );
@@ -5176,7 +5176,7 @@ type KanbanCard = { id: string; title: string; tag: string; col: KanbanCol };
 const KANBAN_META: Record<KanbanCol, { label: string; cls: string; ring: string; dot: string }> = {
   todo:     { label: "To Do",       cls: "border-slate-400/30 bg-slate-500/10 text-slate-200",     ring: "shadow-[0_0_18px_-4px_rgba(148,163,184,0.55)]", dot: "bg-slate-300" },
   progress: { label: "In Progress", cls: "border-amber-400/40 bg-amber-500/10 text-amber-200",    ring: "shadow-[0_0_22px_-4px_rgba(251,191,36,0.65)]",  dot: "bg-amber-300 shadow-[0_0_8px_2px_rgba(251,191,36,0.7)]" },
-  review:   { label: "Code Review", cls: "border-indigo-400/40 bg-indigo-500/10 text-indigo-200", ring: "shadow-[0_0_22px_-4px_rgba(99,102,241,0.65)]",  dot: "bg-indigo-300 shadow-[0_0_8px_2px_rgba(99,102,241,0.7)]" },
+  review:   { label: "Code Review", cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200", ring: "shadow-[0_0_22px_-4px_rgba(99,102,241,0.65)]",  dot: "bg-emerald-300 shadow-[0_0_8px_2px_rgba(99,102,241,0.7)]" },
   deployed: { label: "Deployed",    cls: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200", ring: "shadow-[0_0_22px_-4px_rgba(16,185,129,0.7)]",  dot: "bg-emerald-300 shadow-[0_0_8px_2px_rgba(16,185,129,0.75)]" },
 };
 
@@ -5268,12 +5268,12 @@ function ProjectWorkspaceModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
-      <div className="relative z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/95 via-slate-950/90 to-indigo-950/40 shadow-[0_40px_120px_-30px_rgba(99,102,241,0.65)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent" />
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/95 via-slate-950/90 to-emerald-950/40 shadow-[0_40px_120px_-30px_rgba(99,102,241,0.65)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-400/70 to-transparent" />
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-white/5 p-4">
           <div className="min-w-0">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200">
               <FolderKanban className="h-3 w-3" /> Project Lifecycle Workspace
             </div>
             <h3 className="mt-1.5 truncate font-display text-base font-bold tracking-tight">{task.title}</h3>
@@ -5298,7 +5298,7 @@ function ProjectWorkspaceModal({
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-300",
                   active
-                    ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.8)]"
+                    ? "bg-gradient-to-r from-emerald-500/90 to-amber-500/90 text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.8)]"
                     : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                 )}
               >
@@ -5309,7 +5309,7 @@ function ProjectWorkspaceModal({
           <div className="ml-auto inline-flex items-center gap-2">
             <button
               onClick={submitProject}
-              className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-indigo-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_12px_28px_-10px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+              className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_12px_28px_-10px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
             >
               <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               <Send className="relative h-3.5 w-3.5" />
@@ -5334,7 +5334,7 @@ function ProjectWorkspaceModal({
                     onDrop={(e) => { e.preventDefault(); if (dragId) moveCard(dragId, col); setDragId(null); setOverCol(null); }}
                     className={cn(
                       "relative flex min-h-[260px] flex-col rounded-xl border bg-slate-950/60 p-2.5 backdrop-blur-xl transition-all duration-300",
-                      isOver ? "border-indigo-400/70 bg-indigo-500/10 scale-[1.01]" : "border-white/10",
+                      isOver ? "border-emerald-400/70 bg-emerald-500/10 scale-[1.01]" : "border-white/10",
                       meta.ring
                     )}
                   >
@@ -5356,7 +5356,7 @@ function ProjectWorkspaceModal({
                           onDragStart={() => setDragId(card.id)}
                           onDragEnd={() => { setDragId(null); setOverCol(null); }}
                           className={cn(
-                            "group cursor-grab rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-900/40 p-2.5 shadow-[0_8px_22px_-12px_rgba(0,0,0,0.7)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/50 hover:shadow-[0_14px_36px_-12px_rgba(99,102,241,0.55)] active:cursor-grabbing",
+                            "group cursor-grab rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-900/40 p-2.5 shadow-[0_8px_22px_-12px_rgba(0,0,0,0.7)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/50 hover:shadow-[0_14px_36px_-12px_rgba(99,102,241,0.55)] active:cursor-grabbing",
                             dragId === card.id && "opacity-50"
                           )}
                         >
@@ -5391,23 +5391,23 @@ function ProjectWorkspaceModal({
           {tab === "deploy" && (
             <div className="grid gap-3 lg:grid-cols-2">
               {/* DevOps card */}
-              <div className="rounded-xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-indigo-950/30 p-4 shadow-[0_18px_50px_-20px_rgba(99,102,241,0.55)] backdrop-blur-xl">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200">
+              <div className="rounded-xl border border-white/10 bg-gradient-to-br from-slate-950/70 to-emerald-950/30 p-4 shadow-[0_18px_50px_-20px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
                   <Cpu className="h-3 w-3" /> Continuous Delivery Pipeline
                 </div>
                 <h4 className="mt-2 font-display text-sm font-bold">Connect Repository &amp; Target</h4>
                 <div className="mt-3 space-y-2.5">
                   <label className="block">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">GitHub Repository</span>
-                    <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/10 bg-slate-950/60 px-2 focus-within:border-indigo-400/60 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.18)]">
-                      <Link2 className="h-3.5 w-3.5 text-indigo-300" />
+                    <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/10 bg-slate-950/60 px-2 focus-within:border-emerald-400/60 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.18)]">
+                      <Link2 className="h-3.5 w-3.5 text-emerald-300" />
                       <input value={repo} onChange={(e) => setRepo(e.target.value)} className="h-9 w-full bg-transparent text-[12px] outline-none" />
                     </div>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <label className="block">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Deploy Target</span>
-                      <select value={target} onChange={(e) => setTarget(e.target.value as typeof target)} className="mt-1 h-9 w-full rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[12px] outline-none focus:border-indigo-400/60">
+                      <select value={target} onChange={(e) => setTarget(e.target.value as typeof target)} className="mt-1 h-9 w-full rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[12px] outline-none focus:border-emerald-400/60">
                         <option>Vercel</option>
                         <option>Netlify</option>
                         <option>Cloudflare</option>
@@ -5415,7 +5415,7 @@ function ProjectWorkspaceModal({
                     </label>
                     <label className="block">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Branch</span>
-                      <input value={branch} onChange={(e) => setBranch(e.target.value)} className="mt-1 h-9 w-full rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[12px] outline-none focus:border-indigo-400/60" />
+                      <input value={branch} onChange={(e) => setBranch(e.target.value)} className="mt-1 h-9 w-full rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[12px] outline-none focus:border-emerald-400/60" />
                     </label>
                   </div>
                   <button
@@ -5425,7 +5425,7 @@ function ProjectWorkspaceModal({
                       "group relative mt-1 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg px-4 py-2.5 text-[12px] font-bold text-white transition-all duration-300",
                       building
                         ? "cursor-not-allowed bg-slate-700/60"
-                        : "bg-gradient-to-r from-emerald-500 via-indigo-500 to-fuchsia-500 shadow-[0_16px_40px_-12px_rgba(99,102,241,0.85)] hover:scale-[1.02] active:scale-[0.98]"
+                        : "bg-gradient-to-r from-emerald-500 via-emerald-500 to-amber-500 shadow-[0_16px_40px_-12px_rgba(99,102,241,0.85)] hover:scale-[1.02] active:scale-[0.98]"
                     )}
                   >
                     {!building && <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />}
@@ -5453,7 +5453,7 @@ function ProjectWorkspaceModal({
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
                     <span className="ml-2 font-mono text-[10px] text-muted-foreground">build · {target.toLowerCase()}</span>
                   </div>
-                  {building && <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-300" />}
+                  {building && <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-300" />}
                 </div>
                 <div className="mt-2 h-[280px] overflow-auto rounded-md bg-black/50 p-2 font-mono text-[11px] leading-relaxed">
                   {buildLog.length === 0 && !building && (
@@ -5465,16 +5465,16 @@ function ProjectWorkspaceModal({
                       className={cn(
                         "animate-in fade-in slide-in-from-left-1 duration-200",
                         line.startsWith("✓") ? "text-emerald-300" :
-                        line.startsWith("→") ? "text-indigo-300" :
-                        line.startsWith("$") ? "text-fuchsia-300" : "text-foreground"
+                        line.startsWith("→") ? "text-emerald-300" :
+                        line.startsWith("$") ? "text-amber-300" : "text-foreground"
                       )}
                     >
                       {line}
                     </div>
                   ))}
                   {building && (
-                    <div className="mt-1 inline-flex items-center gap-1 text-indigo-300">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-400" /> running...
+                    <div className="mt-1 inline-flex items-center gap-1 text-emerald-300">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> running...
                     </div>
                   )}
                 </div>
@@ -5491,8 +5491,8 @@ function ProjectWorkspaceModal({
 
 type RubricScores = { architecture: number; ux: number; data: number; cleanliness: number };
 const RUBRIC_CRITERIA: { key: keyof RubricScores; label: string; tint: string; glow: string }[] = [
-  { key: "architecture", label: "Code Architecture & Logic",    tint: "from-indigo-500 to-violet-500",  glow: "rgba(99,102,241,0.7)" },
-  { key: "ux",           label: "UI/UX Excellence & Polish",    tint: "from-fuchsia-500 to-rose-500",   glow: "rgba(217,70,239,0.7)" },
+  { key: "architecture", label: "Code Architecture & Logic",    tint: "from-emerald-500 to-teal-500",  glow: "rgba(99,102,241,0.7)" },
+  { key: "ux",           label: "UI/UX Excellence & Polish",    tint: "from-amber-500 to-rose-500",   glow: "rgba(217,70,239,0.7)" },
   { key: "data",         label: "Database / Data Efficiency",   tint: "from-emerald-500 to-teal-500",   glow: "rgba(16,185,129,0.7)" },
   { key: "cleanliness",  label: "Code Cleanliness & Comments",  tint: "from-amber-500 to-orange-500",   glow: "rgba(251,191,36,0.7)" },
 ];
@@ -5500,8 +5500,8 @@ const RUBRIC_CRITERIA: { key: keyof RubricScores; label: string; tint: string; g
 function letterGrade(total: number): { grade: string; cls: string } {
   if (total >= 95) return { grade: "A+", cls: "text-emerald-300 shadow-[0_0_28px_rgba(16,185,129,0.8)]" };
   if (total >= 85) return { grade: "A",  cls: "text-emerald-300 shadow-[0_0_22px_rgba(16,185,129,0.7)]" };
-  if (total >= 75) return { grade: "B+", cls: "text-indigo-300 shadow-[0_0_22px_rgba(99,102,241,0.7)]" };
-  if (total >= 65) return { grade: "B",  cls: "text-indigo-300 shadow-[0_0_18px_rgba(99,102,241,0.6)]" };
+  if (total >= 75) return { grade: "B+", cls: "text-emerald-300 shadow-[0_0_22px_rgba(99,102,241,0.7)]" };
+  if (total >= 65) return { grade: "B",  cls: "text-emerald-300 shadow-[0_0_18px_rgba(99,102,241,0.6)]" };
   if (total >= 55) return { grade: "C+", cls: "text-amber-300 shadow-[0_0_18px_rgba(251,191,36,0.6)]" };
   if (total >= 45) return { grade: "C",  cls: "text-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.55)]" };
   if (total >= 35) return { grade: "D",  cls: "text-orange-300 shadow-[0_0_16px_rgba(251,146,60,0.55)]" };
@@ -5561,11 +5561,11 @@ function RubricEvaluationModal({ task, onClose }: { task: Task; onClose: () => v
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
-      <div className="relative z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/95 via-slate-950/90 to-fuchsia-950/30 shadow-[0_40px_120px_-30px_rgba(217,70,239,0.55)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-fuchsia-400/70 to-transparent" />
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/95 via-slate-950/90 to-amber-950/30 shadow-[0_40px_120px_-30px_rgba(217,70,239,0.55)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
         <div className="flex items-start justify-between gap-3 border-b border-white/5 p-4">
           <div className="min-w-0">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200">
               <Award className="h-3 w-3" /> Rubric Evaluation
             </div>
             <h3 className="mt-1.5 truncate font-display text-base font-bold">{task.title}</h3>
@@ -5589,7 +5589,7 @@ function RubricEvaluationModal({ task, onClose }: { task: Task; onClose: () => v
                   className={cn(
                     "group mb-1 flex w-full items-center gap-2 rounded-lg border px-2 py-1.5 text-left transition-all",
                     activeId === s.id
-                      ? "border-indigo-400/60 bg-indigo-500/10 shadow-[0_0_18px_-6px_rgba(99,102,241,0.7)]"
+                      ? "border-emerald-400/60 bg-emerald-500/10 shadow-[0_0_18px_-6px_rgba(99,102,241,0.7)]"
                       : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]"
                   )}
                 >
@@ -5608,15 +5608,15 @@ function RubricEvaluationModal({ task, onClose }: { task: Task; onClose: () => v
 
           {/* Rubric */}
           <div className="overflow-y-auto p-4">
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-slate-950/80 to-indigo-950/30 p-4 shadow-[0_18px_50px_-20px_rgba(99,102,241,0.55)]">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-slate-950/80 to-emerald-950/30 p-4 shadow-[0_18px_50px_-20px_rgba(99,102,241,0.55)]">
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Cumulative Score</div>
                 <div className="mt-0.5 inline-flex items-baseline gap-1.5">
-                  <span className="font-display text-4xl font-bold text-indigo-200 tabular-nums transition-all duration-300">{total}</span>
+                  <span className="font-display text-4xl font-bold text-emerald-200 tabular-nums transition-all duration-300">{total}</span>
                   <span className="text-sm text-muted-foreground">/ 100</span>
                 </div>
                 <div className="mt-1 h-1.5 w-48 overflow-hidden rounded-full bg-muted/40">
-                  <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500 transition-[width] duration-500" style={{ width: `${total}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500 transition-[width] duration-500" style={{ width: `${total}%` }} />
                 </div>
               </div>
               <div className="text-right">
@@ -5641,7 +5641,7 @@ function RubricEvaluationModal({ task, onClose }: { task: Task; onClose: () => v
                       <input
                         type="range" min={0} max={25} step={1} value={v}
                         onChange={(e) => setScore(c.key, Number(e.target.value))}
-                        className="w-full accent-indigo-400"
+                        className="w-full accent-emerald-400"
                         style={{ background: `linear-gradient(to right, transparent ${(v / 25) * 100}%, rgba(148,163,184,0.15) ${(v / 25) * 100}%)` }}
                       />
                       <div className={cn("pointer-events-none absolute -bottom-1 left-0 h-1 rounded-full bg-gradient-to-r", c.tint)} style={{ width: `${(v / 25) * 100}%`, boxShadow: `0 0 12px ${c.glow}` }} />
@@ -5656,12 +5656,12 @@ function RubricEvaluationModal({ task, onClose }: { task: Task; onClose: () => v
                 {graded.size} of {submitters.length} graded
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={commit} className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-400/40 bg-indigo-500/10 px-3 py-1.5 text-[11px] font-semibold text-indigo-200 transition-all hover:bg-indigo-500/20">
+                <button onClick={commit} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/40 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 transition-all hover:bg-emerald-500/20">
                   <Save className="h-3.5 w-3.5" /> Save &amp; Next
                 </button>
                 <button
                   onClick={finalize}
-                  className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-indigo-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_12px_28px_-10px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+                  className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_12px_28px_-10px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   <CheckCheck className="relative h-3.5 w-3.5" />
@@ -5696,11 +5696,11 @@ const SHOWCASE_PROJECTS: ShowcaseProject[] = [
     id: "sp1", title: "Library Companion Portal", blurb: "Search, reserve and review books with role-based dashboards.",
     stack: ["HTML5", "MySQL", "Java"], category: "Web",
     team: [
-      { name: "Aditya Shah", initials: "AS", tint: "from-indigo-500 to-violet-500" },
-      { name: "Diya Kulkarni", initials: "DK", tint: "from-fuchsia-500 to-rose-500" },
+      { name: "Aditya Shah", initials: "AS", tint: "from-emerald-500 to-teal-500" },
+      { name: "Diya Kulkarni", initials: "DK", tint: "from-amber-500 to-rose-500" },
       { name: "Veer Singh", initials: "VS", tint: "from-emerald-500 to-teal-500" },
     ],
-    preview: { kind: "html", bg: "from-indigo-500/30 via-fuchsia-500/20 to-emerald-500/20", title: "library-companion" },
+    preview: { kind: "html", bg: "from-emerald-500/30 via-amber-500/20 to-emerald-500/20", title: "library-companion" },
     liveUrl: "https://library-companion.vercel.app", repoUrl: "github.com/avartan-lab/library-companion",
   },
   {
@@ -5708,7 +5708,7 @@ const SHOWCASE_PROJECTS: ShowcaseProject[] = [
     stack: ["Excel", "Python"], category: "Data",
     team: [
       { name: "Myra Bansal", initials: "MB", tint: "from-emerald-500 to-teal-500" },
-      { name: "Ishaan Pandey", initials: "IP", tint: "from-sky-500 to-indigo-500" },
+      { name: "Ishaan Pandey", initials: "IP", tint: "from-sky-500 to-emerald-500" },
     ],
     preview: { kind: "html", bg: "from-emerald-500/30 via-teal-500/20 to-sky-500/20", title: "eco-tracker" },
     liveUrl: "https://eco-tracker.netlify.app", repoUrl: "github.com/avartan-lab/eco-tracker",
@@ -5717,10 +5717,10 @@ const SHOWCASE_PROJECTS: ShowcaseProject[] = [
     id: "sp3", title: "Pixel Pal Logo Studio", blurb: "Pixel-art logo generator with brand palette presets.",
     stack: ["Paint", "HTML5"], category: "Design",
     team: [
-      { name: "Tara Mehta", initials: "TM", tint: "from-fuchsia-500 to-purple-500" },
+      { name: "Tara Mehta", initials: "TM", tint: "from-amber-500 to-amber-500" },
       { name: "Reyansh Das", initials: "RD", tint: "from-amber-500 to-orange-500" },
     ],
-    preview: { kind: "paint", bg: "from-fuchsia-500/35 via-purple-500/20 to-rose-500/20", title: "pixel-pal" },
+    preview: { kind: "paint", bg: "from-amber-500/35 via-amber-500/20 to-rose-500/20", title: "pixel-pal" },
     liveUrl: "https://pixel-pal.cloudflare.app", repoUrl: "github.com/avartan-lab/pixel-pal",
   },
   {
@@ -5729,7 +5729,7 @@ const SHOWCASE_PROJECTS: ShowcaseProject[] = [
     team: [
       { name: "Sara Joseph", initials: "SJ", tint: "from-pink-500 to-rose-500" },
       { name: "Arjun Nair", initials: "AN", tint: "from-orange-500 to-amber-500" },
-      { name: "Aanya Iyer", initials: "AI", tint: "from-indigo-500 to-fuchsia-500" },
+      { name: "Aanya Iyer", initials: "AI", tint: "from-emerald-500 to-amber-500" },
     ],
     preview: { kind: "html", bg: "from-pink-500/30 via-rose-500/20 to-amber-500/20", title: "family-story" },
     liveUrl: "https://family-story.vercel.app", repoUrl: "github.com/avartan-lab/family-story",
@@ -5739,7 +5739,7 @@ const SHOWCASE_PROJECTS: ShowcaseProject[] = [
     stack: ["PowerPoint", "HTML5"], category: "Productivity",
     team: [
       { name: "Pari Saxena", initials: "PS", tint: "from-amber-500 to-yellow-500" },
-      { name: "Krishna Menon", initials: "KM", tint: "from-indigo-500 to-violet-500" },
+      { name: "Krishna Menon", initials: "KM", tint: "from-emerald-500 to-teal-500" },
     ],
     preview: { kind: "html", bg: "from-amber-500/30 via-orange-500/20 to-rose-500/20", title: "pitch-vault" },
     liveUrl: "https://pitch-vault.netlify.app", repoUrl: "github.com/avartan-lab/pitch-vault",
@@ -5751,7 +5751,7 @@ const SHOWCASE_PROJECTS: ShowcaseProject[] = [
       { name: "Vihaan Gupta", initials: "VG", tint: "from-sky-500 to-blue-500" },
       { name: "Anaya Sen", initials: "AS", tint: "from-emerald-500 to-cyan-500" },
     ],
-    preview: { kind: "html", bg: "from-sky-500/30 via-blue-500/20 to-indigo-500/20", title: "schema-studio" },
+    preview: { kind: "html", bg: "from-sky-500/30 via-blue-500/20 to-emerald-500/20", title: "schema-studio" },
     liveUrl: "https://schema-studio.vercel.app", repoUrl: "github.com/avartan-lab/schema-studio",
   },
 ];
@@ -5767,21 +5767,21 @@ function InnovationGallery() {
   );
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 via-indigo-950/30 to-fuchsia-950/20 p-5 shadow-[0_30px_80px_-30px_rgba(99,102,241,0.5)] backdrop-blur-xl">
-      <div className="pointer-events-none absolute -top-32 -right-24 h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent" />
+    <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 via-emerald-950/30 to-amber-950/20 p-5 shadow-[0_30px_80px_-30px_rgba(99,102,241,0.5)] backdrop-blur-xl">
+      <div className="pointer-events-none absolute -top-32 -right-24 h-72 w-72 rounded-full bg-amber-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
 
       <div className="relative flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fuchsia-200">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200">
             <Trophy className="h-3 w-3" /> Innovation Gallery &amp; Team Showcase
           </div>
           <h3 className="mt-1 font-display text-base font-bold tracking-tight">Public portfolio of student &amp; team projects</h3>
           <p className="mt-0.5 text-[11px] text-muted-foreground">Filterable by stack and category — visible to admins, visitors and partner schools.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <select value={stack} onChange={(e) => setStack(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[11px] outline-none focus:border-indigo-400/60">
+          <select value={stack} onChange={(e) => setStack(e.target.value)} className="h-8 rounded-lg border border-white/10 bg-slate-950/60 px-2 text-[11px] outline-none focus:border-emerald-400/60">
             <option value="all">All Stacks</option>
             {allStacks.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -5798,7 +5798,7 @@ function InnovationGallery() {
               className={cn(
                 "rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-300",
                 active
-                  ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_8px_22px_-8px_rgba(99,102,241,0.75)]"
+                  ? "bg-gradient-to-r from-emerald-500/90 to-amber-500/90 text-white shadow-[0_8px_22px_-8px_rgba(99,102,241,0.75)]"
                   : "border border-white/10 bg-white/[0.03] text-muted-foreground hover:text-foreground"
               )}
             >
@@ -5812,9 +5812,9 @@ function InnovationGallery() {
         {filtered.map((p) => (
           <article
             key={p.id}
-            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-indigo-400/60 hover:shadow-[0_30px_70px_-20px_rgba(99,102,241,0.65)]"
+            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-emerald-400/60 hover:shadow-[0_30px_70px_-20px_rgba(99,102,241,0.65)]"
           >
-            <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+            <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
             {/* Preview frame */}
             <div className={cn("relative h-40 w-full overflow-hidden bg-gradient-to-br", p.preview.bg)}>
@@ -5846,8 +5846,8 @@ function InnovationGallery() {
                       <div className="h-2 w-full rounded bg-white/15" />
                       <div className="h-2 w-5/6 rounded bg-white/15" />
                       <div className="mt-2 grid grid-cols-3 gap-1">
-                        <div className="h-8 rounded bg-indigo-400/40" />
-                        <div className="h-8 rounded bg-fuchsia-400/40" />
+                        <div className="h-8 rounded bg-emerald-400/40" />
+                        <div className="h-8 rounded bg-amber-400/40" />
                         <div className="h-8 rounded bg-emerald-400/40" />
                       </div>
                     </div>
@@ -5862,7 +5862,7 @@ function InnovationGallery() {
             <div className="flex flex-1 flex-col p-3.5">
               <div className="flex items-start justify-between gap-2">
                 <h4 className="font-display text-sm font-bold leading-tight">{p.title}</h4>
-                <span className="inline-flex items-center rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-indigo-200">{p.category}</span>
+                <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-emerald-200">{p.category}</span>
               </div>
               <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{p.blurb}</p>
 
@@ -5871,7 +5871,7 @@ function InnovationGallery() {
                   <button
                     key={s}
                     onClick={() => setStack(s)}
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-semibold text-foreground/90 transition-all hover:border-indigo-400/40 hover:text-indigo-200"
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-semibold text-foreground/90 transition-all hover:border-emerald-400/40 hover:text-emerald-200"
                   >
                     {s}
                   </button>
@@ -5897,13 +5897,13 @@ function InnovationGallery() {
               <div className="mt-3 flex items-center gap-2">
                 <a
                   href="#" onClick={(e) => { e.preventDefault(); toast.info("Opening repository", { description: p.repoUrl }); }}
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[10px] font-semibold backdrop-blur transition-all hover:border-indigo-400/40 hover:bg-white/[0.07]"
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[10px] font-semibold backdrop-blur transition-all hover:border-emerald-400/40 hover:bg-white/[0.07]"
                 >
                   <Code2 className="h-3 w-3" /> View Source
                 </a>
                 <a
                   href="#" onClick={(e) => { e.preventDefault(); toast.success("Launching live demo", { description: p.liveUrl }); }}
-                  className="group/btn relative inline-flex flex-1 items-center justify-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-indigo-500 px-2 py-1.5 text-[10px] font-bold text-white shadow-[0_10px_25px_-10px_rgba(16,185,129,0.75)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
+                  className="group/btn relative inline-flex flex-1 items-center justify-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-500 px-2 py-1.5 text-[10px] font-bold text-white shadow-[0_10px_25px_-10px_rgba(16,185,129,0.75)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
                   <Rocket className="relative h-3 w-3" />
@@ -5965,7 +5965,7 @@ function PMStatCard({ icon: Icon, label, value, tint }: { icon: typeof School2; 
           <div className="mt-1 font-display text-3xl font-black tabular-nums text-foreground">{value}</div>
         </div>
         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-slate-950/60 backdrop-blur">
-          <Icon className="h-5 w-5 text-indigo-200" />
+          <Icon className="h-5 w-5 text-emerald-200" />
         </div>
       </div>
       <div className="relative mt-3 inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300">
@@ -6238,9 +6238,9 @@ function PortalManagerDashboard({
   return (
     <div className="space-y-4">
       {/* Header strip */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 via-indigo-950/30 to-slate-950/70 p-4 shadow-[0_22px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/70 via-emerald-950/30 to-slate-950/70 p-4 shadow-[0_22px_60px_-30px_rgba(99,102,241,0.55)] backdrop-blur-xl">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-200">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
             <Briefcase className="h-3 w-3" /> Portal Manager · Central Operations
           </div>
           <h2 className="mt-1.5 font-display text-lg font-bold tracking-tight">Onboarding, allocation &amp; lifecycle controls</h2>
@@ -6253,8 +6253,8 @@ function PortalManagerDashboard({
 
       {/* Static, non-clickable stat widgets */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <PMStatCard icon={School2}      label="Total Schools"          value={stats.schools}  tint="from-indigo-500/15 to-indigo-500/0" />
-        <PMStatCard icon={GraduationCap} label="Active Teachers"        value={stats.teachers} tint="from-fuchsia-500/15 to-fuchsia-500/0" />
+        <PMStatCard icon={School2}      label="Total Schools"          value={stats.schools}  tint="from-emerald-500/15 to-emerald-500/0" />
+        <PMStatCard icon={GraduationCap} label="Active Teachers"        value={stats.teachers} tint="from-amber-500/15 to-amber-500/0" />
         <PMStatCard icon={Users}         label="Total Students"         value={stats.students} tint="from-emerald-500/15 to-emerald-500/0" />
         <PMStatCard icon={Briefcase}     label="Assigned Sales Reps"   value={stats.reps}     tint="from-amber-500/15 to-amber-500/0" />
       </div>
@@ -6290,7 +6290,7 @@ function PortalManagerDashboard({
                   <div className="truncate text-[12px] font-bold">{r.schoolName}</div>
                   <div className="line-clamp-1 text-[10px] text-muted-foreground">{r.notes || "No notes provided."}</div>
                 </div>
-                <div className="col-span-2 font-mono text-[11px] text-indigo-200">{r.schoolCode}</div>
+                <div className="col-span-2 font-mono text-[11px] text-emerald-200">{r.schoolCode}</div>
                 <div className="col-span-3 min-w-0">
                   <div className="truncate text-[11px]">{r.principalName} · <span className="text-muted-foreground">{r.designation}</span></div>
                   <div className="truncate text-[10px] text-muted-foreground">{r.region}</div>
@@ -6336,7 +6336,7 @@ function PortalManagerDashboard({
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-300",
                     active
-                      ? "bg-gradient-to-r from-indigo-500/90 to-fuchsia-500/90 text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.7)]"
+                      ? "bg-gradient-to-r from-emerald-500/90 to-amber-500/90 text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.7)]"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -6386,7 +6386,7 @@ function PortalManagerDashboard({
               <tbody className="divide-y divide-white/5">
                 {schools.filter((s) => matches(s.code) || matches(s.name) || matches(s.city)).map((s) => (
                   <tr key={s.id} className="transition-colors hover:bg-white/[0.03]">
-                    <td className="px-3 py-2 font-mono text-indigo-200">{s.code}</td>
+                    <td className="px-3 py-2 font-mono text-emerald-200">{s.code}</td>
                     <td className="px-3 py-2 font-semibold">{s.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">{s.city}</td>
                     <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground" title="Masked for Privacy">{PRIVATE_MASK}</td>
@@ -6417,16 +6417,16 @@ function PortalManagerDashboard({
               <tbody className="divide-y divide-white/5">
                 {teachers.filter((t) => matches(t.code) || matches(t.name) || matches(schoolCode(t.school_id))).map((t) => (
                   <tr key={t.id} className="transition-colors hover:bg-white/[0.03]">
-                    <td className="px-3 py-2 font-mono text-indigo-200">{t.code}</td>
+                    <td className="px-3 py-2 font-mono text-emerald-200">{t.code}</td>
                     <td className="px-3 py-2 font-semibold">{t.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">
-                      <div className="font-mono text-[10px] text-indigo-200">{schoolCode(t.school_id)}</div>
+                      <div className="font-mono text-[10px] text-emerald-200">{schoolCode(t.school_id)}</div>
                       <div className="truncate text-[10px]">{schoolName(t.school_id)}</div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex flex-wrap gap-1">
                         {t.expertise.map((e) => (
-                          <span key={e} className="rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-1.5 py-0.5 text-[9px] text-fuchsia-200">{e}</span>
+                          <span key={e} className="rounded-full border border-amber-400/30 bg-amber-500/10 px-1.5 py-0.5 text-[9px] text-amber-200">{e}</span>
                         ))}
                       </div>
                     </td>
@@ -6458,10 +6458,10 @@ function PortalManagerDashboard({
               <tbody className="divide-y divide-white/5">
                 {students.filter((s) => matches(s.admission) || matches(s.name) || matches(s.class) || matches(schoolCode(s.school_id))).map((s) => (
                   <tr key={s.id} className="transition-colors hover:bg-white/[0.03]">
-                    <td className="px-3 py-2 font-mono text-indigo-200">{s.admission}</td>
+                    <td className="px-3 py-2 font-mono text-emerald-200">{s.admission}</td>
                     <td className="px-3 py-2 font-semibold">{s.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">{s.class}</td>
-                    <td className="px-3 py-2 font-mono text-[10px] text-indigo-200">{schoolCode(s.school_id)}</td>
+                    <td className="px-3 py-2 font-mono text-[10px] text-emerald-200">{schoolCode(s.school_id)}</td>
                     <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{PRIVATE_MASK}</td>
                     <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{PRIVATE_MASK}</td>
                     <td className="px-3 py-2"><StatusPill s={s.disabled ? "Suspended" : s.status} /></td>
@@ -6490,7 +6490,7 @@ function PortalManagerDashboard({
               <tbody className="divide-y divide-white/5">
                 {reps.filter((r) => matches(r.code) || matches(r.name) || matches(r.region)).map((r) => (
                   <tr key={r.id} className="transition-colors hover:bg-white/[0.03]">
-                    <td className="px-3 py-2 font-mono text-indigo-200">{r.code}</td>
+                    <td className="px-3 py-2 font-mono text-emerald-200">{r.code}</td>
                     <td className="px-3 py-2 font-semibold">{r.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">{r.region}</td>
                     <td className="px-3 py-2">
@@ -6501,7 +6501,7 @@ function PortalManagerDashboard({
                         ))}
                         <button
                           onClick={() => assignSchoolToRep(r.id)}
-                          className="inline-flex items-center gap-0.5 rounded-full border border-dashed border-indigo-400/50 px-1.5 py-0.5 text-[9px] text-indigo-200 hover:bg-indigo-500/10"
+                          className="inline-flex items-center gap-0.5 rounded-full border border-dashed border-emerald-400/50 px-1.5 py-0.5 text-[9px] text-emerald-200 hover:bg-emerald-500/10"
                         >
                           <Plus className="h-2.5 w-2.5" /> Assign
                         </button>
@@ -6522,7 +6522,7 @@ function PortalManagerDashboard({
       {/* Audit Trail */}
       <section className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 shadow-[0_22px_60px_-30px_rgba(99,102,241,0.45)] backdrop-blur-xl">
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-200">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
             <History className="h-3 w-3" /> System Audit Trail
           </div>
           <span className="text-[10px] text-muted-foreground">{audit.length} events tracked · most recent first</span>
@@ -6542,11 +6542,11 @@ function PortalManagerDashboard({
                 const tone =
                   /REJECT|DISABLE|DELETE|SUSPEND|BLOCK|DEACTIVAT/i.test(e.action) ? "text-rose-300" :
                   /APPROVE|ENABLE|ACTIVAT|CREATE|ADD|BACKUP/i.test(e.action) ? "text-emerald-300" :
-                  /BULK|EXPORT|PUBLISH/i.test(e.action) ? "text-indigo-300" : "text-foreground";
+                  /BULK|EXPORT|PUBLISH/i.test(e.action) ? "text-emerald-300" : "text-foreground";
                 return (
                   <tr key={e.id} className="transition-colors hover:bg-white/[0.03]">
                     <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{e.ts}</td>
-                    <td className="px-3 py-1.5 font-mono text-[10px] text-indigo-200">{e.actor}</td>
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-emerald-200">{e.actor}</td>
                     <td className={cn("px-3 py-1.5 font-mono font-bold", tone)}>{e.action}</td>
                     <td className="px-3 py-1.5 font-mono text-[10px] text-muted-foreground">{e.target}</td>
                   </tr>
@@ -6567,7 +6567,7 @@ function ToolbarBtn({ onClick, icon: Icon, label }: { onClick: () => void; icon:
   return (
     <button
       onClick={onClick}
-      className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_10px_28px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.04] active:scale-[0.97]"
+      className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-amber-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_10px_28px_-10px_rgba(99,102,241,0.8)] transition-transform hover:scale-[1.04] active:scale-[0.97]"
     >
       <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
       <Icon className="relative h-3.5 w-3.5" />
