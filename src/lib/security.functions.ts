@@ -371,3 +371,35 @@ export const listAuditLogs = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { rows: rows ?? [], count: count ?? 0, page, pageSize: size };
   });
+export const adminUpdateUserProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { userId: string; fullName: string; email: string }) => {
+    if (!d.fullName || !d.fullName.trim()) throw new Error("Please enter a name.");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { getActorRoles, writeAudit } = await import("./security.server");
+    const actor = await getActorRoles(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: role } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", data.userId).maybeSingle();
+    assertCanManage(actor, role?.role ?? "", context.userId, data.userId);
+
+    const fullName = data.fullName.trim();
+    const email = data.email.trim().toLowerCase();
+    const payload: { user_metadata: Record<string, unknown>; email?: string } = {
+      user_metadata: { full_name: fullName },
+    };
+    if (email) payload.email = email;
+    const upd = await supabaseAdmin.auth.admin.updateUserById(data.userId, payload);
+    if (upd.error) throw new Error(upd.error.message);
+    await supabaseAdmin.from("profiles").update({ full_name: fullName }).eq("id", data.userId);
+    await writeAudit({
+      actorUserId: context.userId,
+      actorRole: actor.isAdmin ? "admin" : "portal_manager",
+      action: "admin.user.profile.update",
+      entityType: "user",
+      entityId: data.userId,
+      newValue: { full_name: fullName, email },
+    });
+    return { ok: true };
+  });
