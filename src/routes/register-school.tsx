@@ -185,17 +185,18 @@ function RegisterSchool() {
             <div className="pointer-events-none absolute -inset-px rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-50" />
 
             <div className="relative">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="font-display text-xl font-bold tracking-tight">Institutional Registration</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">All fields are mandatory unless marked optional. Your data is encrypted and visible only to authorized portal administrators.</p>
+                  <p className="mt-1 max-w-md text-xs text-muted-foreground">All fields are mandatory unless marked optional. Your data is encrypted and visible only to authorized portal administrators.</p>
                 </div>
-                <span className="chip-3d inline-flex items-center gap-1.5 self-start rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-400">
+                <span className="inline-flex shrink-0 items-center gap-1.5 self-start whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-500/10 px-3.5 py-2 text-[11px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400">
                   <ClipboardList className="h-3.5 w-3.5" /> Approval Required
                 </span>
               </div>
 
-              <div className="mt-8 grid gap-5 sm:grid-cols-2">
+              <SectionHeading step="01" title="Institution details" caption="Identify the school applying for the portal." />
+              <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
                   label="Institutional School Name"
                   icon={Building2}
@@ -253,6 +254,10 @@ function RegisterSchool() {
                   onFocus={() => setFocused((f) => ({ ...f, designation: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, designation: false }))}
                 />
+              </div>
+
+              <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
+              <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
                   label="Login Username"
                   icon={UserSquare2}
@@ -277,6 +282,10 @@ function RegisterSchool() {
                   onFocus={() => setFocused((f) => ({ ...f, password: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, password: false }))}
                 />
+              </div>
+
+              <SectionHeading step="03" title="Contact & location" caption="How our onboarding team reaches your institution." />
+              <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
                   label="Contact Email"
                   icon={Send}
