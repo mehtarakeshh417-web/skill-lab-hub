@@ -391,21 +391,6 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={false} onOpenChange={() => {}}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Change username — {unameTarget?.username}</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <Label>New username</Label>
-            <Input value={unameValue} onChange={(e) => setUnameValue(e.target.value.trim().toLowerCase())} />
-            <p className="text-xs text-muted-foreground">Must be unique. The user will sign in with this new username immediately.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUnameTarget(null)} disabled={busy}>Cancel</Button>
-            <Button onClick={submitUname} disabled={busy || unameValue.length < 3}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update username"}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <ConfirmDialog
         open={Boolean(activeTarget) && activeTarget?.nextActive === false}
         onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
