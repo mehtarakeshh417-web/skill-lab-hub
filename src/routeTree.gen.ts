@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeacherRouteImport } from './routes/teacher'
+import { Route as StudentRouteImport } from './routes/student'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SetupSecurityRouteImport } from './routes/setup-security'
 import { Route as SchoolRouteImport } from './routes/school'
@@ -53,6 +54,11 @@ import { Route as ApiPublicSalesRepsRouteImport } from './routes/api/public/sale
 const TeacherRoute = TeacherRouteImport.update({
   id: '/teacher',
   path: '/teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentRoute = StudentRouteImport.update({
+  id: '/student',
+  path: '/student',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -116,9 +122,9 @@ const TeacherIndexRoute = TeacherIndexRouteImport.update({
   getParentRoute: () => TeacherRoute,
 } as any)
 const StudentIndexRoute = StudentIndexRouteImport.update({
-  id: '/student/',
-  path: '/student/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudentRoute,
 } as any)
 const SchoolIndexRoute = SchoolIndexRouteImport.update({
   id: '/',
@@ -146,14 +152,14 @@ const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
   getParentRoute: () => TeacherRoute,
 } as any)
 const StudentQuizzesRoute = StudentQuizzesRouteImport.update({
-  id: '/student/quizzes',
-  path: '/student/quizzes',
-  getParentRoute: () => rootRouteImport,
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => StudentRoute,
 } as any)
 const StudentAssignmentsRoute = StudentAssignmentsRouteImport.update({
-  id: '/student/assignments',
-  path: '/student/assignments',
-  getParentRoute: () => rootRouteImport,
+  id: '/assignments',
+  path: '/assignments',
+  getParentRoute: () => StudentRoute,
 } as any)
 const SettingsChangePasswordRoute = SettingsChangePasswordRouteImport.update({
   id: '/settings/change-password',
@@ -264,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/school': typeof SchoolRouteWithChildren
   '/setup-security': typeof SetupSecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
@@ -345,6 +352,7 @@ export interface FileRoutesById {
   '/school': typeof SchoolRouteWithChildren
   '/setup-security': typeof SetupSecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
@@ -389,6 +397,7 @@ export interface FileRouteTypes {
     | '/school'
     | '/setup-security'
     | '/sitemap.xml'
+    | '/student'
     | '/teacher'
     | '/admin/audit-logs'
     | '/admin/create-sales-rep'
@@ -469,6 +478,7 @@ export interface FileRouteTypes {
     | '/school'
     | '/setup-security'
     | '/sitemap.xml'
+    | '/student'
     | '/teacher'
     | '/admin/audit-logs'
     | '/admin/create-sales-rep'
@@ -512,12 +522,10 @@ export interface RootRouteChildren {
   SchoolRoute: typeof SchoolRouteWithChildren
   SetupSecurityRoute: typeof SetupSecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StudentRoute: typeof StudentRouteWithChildren
   TeacherRoute: typeof TeacherRouteWithChildren
   LearnSlugRoute: typeof LearnSlugRoute
   SettingsChangePasswordRoute: typeof SettingsChangePasswordRoute
-  StudentAssignmentsRoute: typeof StudentAssignmentsRoute
-  StudentQuizzesRoute: typeof StudentQuizzesRoute
-  StudentIndexRoute: typeof StudentIndexRoute
   ApiPublicSalesRepsRoute: typeof ApiPublicSalesRepsRoute
   ApiPublicSchoolRegistrationsRoute: typeof ApiPublicSchoolRegistrationsRoute
 }
@@ -529,6 +537,13 @@ declare module '@tanstack/react-router' {
       path: '/teacher'
       fullPath: '/teacher'
       preLoaderRoute: typeof TeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student': {
+      id: '/student'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof StudentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -617,10 +632,10 @@ declare module '@tanstack/react-router' {
     }
     '/student/': {
       id: '/student/'
-      path: '/student'
+      path: '/'
       fullPath: '/student/'
       preLoaderRoute: typeof StudentIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof StudentRoute
     }
     '/school/': {
       id: '/school/'
@@ -659,17 +674,17 @@ declare module '@tanstack/react-router' {
     }
     '/student/quizzes': {
       id: '/student/quizzes'
-      path: '/student/quizzes'
+      path: '/quizzes'
       fullPath: '/student/quizzes'
       preLoaderRoute: typeof StudentQuizzesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof StudentRoute
     }
     '/student/assignments': {
       id: '/student/assignments'
-      path: '/student/assignments'
+      path: '/assignments'
       fullPath: '/student/assignments'
       preLoaderRoute: typeof StudentAssignmentsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof StudentRoute
     }
     '/settings/change-password': {
       id: '/settings/change-password'
@@ -869,6 +884,21 @@ const SchoolRouteChildren: SchoolRouteChildren = {
 const SchoolRouteWithChildren =
   SchoolRoute._addFileChildren(SchoolRouteChildren)
 
+interface StudentRouteChildren {
+  StudentAssignmentsRoute: typeof StudentAssignmentsRoute
+  StudentQuizzesRoute: typeof StudentQuizzesRoute
+  StudentIndexRoute: typeof StudentIndexRoute
+}
+
+const StudentRouteChildren: StudentRouteChildren = {
+  StudentAssignmentsRoute: StudentAssignmentsRoute,
+  StudentQuizzesRoute: StudentQuizzesRoute,
+  StudentIndexRoute: StudentIndexRoute,
+}
+
+const StudentRouteWithChildren =
+  StudentRoute._addFileChildren(StudentRouteChildren)
+
 interface TeacherRouteChildren {
   TeacherAssignmentsRoute: typeof TeacherAssignmentsRoute
   TeacherQuizzesRoute: typeof TeacherQuizzesRoute
@@ -896,12 +926,10 @@ const rootRouteChildren: RootRouteChildren = {
   SchoolRoute: SchoolRouteWithChildren,
   SetupSecurityRoute: SetupSecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StudentRoute: StudentRouteWithChildren,
   TeacherRoute: TeacherRouteWithChildren,
   LearnSlugRoute: LearnSlugRoute,
   SettingsChangePasswordRoute: SettingsChangePasswordRoute,
-  StudentAssignmentsRoute: StudentAssignmentsRoute,
-  StudentQuizzesRoute: StudentQuizzesRoute,
-  StudentIndexRoute: StudentIndexRoute,
   ApiPublicSalesRepsRoute: ApiPublicSalesRepsRoute,
   ApiPublicSchoolRegistrationsRoute: ApiPublicSchoolRegistrationsRoute,
 }
