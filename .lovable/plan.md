@@ -1,47 +1,58 @@
-## Goal
+# Premium UI/UX Redesign — Emerald Prestige
 
-Replace the current free-text Assignments page for Teachers and Students with a complete objective assignment module: MCQs, True/False, Fill in the Blanks, and Mixed. Auto-scored on submit, teacher-reviewed, published with remarks, notified end-to-end. Quizzes and Projects stay exactly as they are.
+Purely visual. No changes to state, server functions, RLS, routing logic, permissions, or data flow. Only class names, tokens, and presentational wrappers change.
 
-## What the Teacher gets
+## Design direction (locked)
 
-Assignments page (`/teacher/assignments`, rebuilt):
+- **Palette:** Emerald Prestige — deep emerald `#064e3b`, emerald `#0d7a5f`, champagne gold `#c9a84c`, warm ivory `#f5f0e0`. Replaces the current indigo/violet brand across light and dark themes.
+- **Typography:** Sora for headings/display, Manrope for body and UI. Loaded via `<link>` tags in the root route head, wired into `@theme` as `--font-display` / `--font-sans`.
+- **Feel:** dark-first enterprise console with ivory light mode, generous whitespace, `rounded-2xl` surfaces, layered soft shadows, restrained gold used only for accents and highlights (never large fills).
 
-- **Create assignment**: title, technology (Scratch Jr, Scratch, HTML, Python, Java, MySQL, Paint, Editor, Spreadsheet, Presentation, and a free-text "Other"), description/instructions, assignment type (MCQ / True-False / Fill blanks / Mixed).
-- **Question builder**: add unlimited questions; per question — text, type (locked to the assignment type, free per-question when Mixed), options (MCQ), correct answer, marks. Fill-in-the-blank answers accept multiple accepted spellings, matched case-insensitively with trimmed whitespace. Running total of marks shown live.
-- **Settings**: passing score (marks or %), due date **and time**, time limit in minutes, shuffle questions, shuffle options, allow multiple attempts (with max attempts), randomize question order per student, show correct answers to students after publication, and **auto-publish results vs hold for manual review** (per assignment, as chosen).
-- **Assign to**: selected students or a whole class/section, reusing the existing audience resolver.
-- **Monitor**: per-assignment roster showing each student's status — Assigned, In Progress, Submitted, Auto-scored, Published, Overdue — plus score, attempt count and timing.
-- **Review & publish**: open an attempt, see every question with the student's answer marked right/wrong, override marks per question or on the total, add remarks, then Publish result (or Republish after edits).
-- **Dashboard analytics**: counts for assigned / pending / completed / overdue, plus class-wise performance (average score, pass rate, highest/lowest, per-question accuracy so weak topics are visible).
+## Step 1 — Token foundation (`src/styles.css`)
 
-## What the Student gets
+The whole platform already reads semantic tokens, so this single file changes the look everywhere.
 
-Assignments page (`/student/assignments`, rebuilt):
+- Recolor `:root` and `.dark` with the emerald/gold OKLCH scale: background, card, popover, primary, primary-glow, accent, sidebar, ring, chart 1–5, borders, inputs.
+- Refresh the gradient tokens (`--gradient-hero`, `--gradient-brand`, `--gradient-accent`, `--gradient-surface`) to emerald→teal with a gold sweep.
+- Add a shared motion + elevation scale: `--shadow-xs/sm/md/lg/glow`, `--ease-spring`, `--dur-fast/base/slow`, glass surface tokens.
+- Add utilities: `glass-panel`, `surface-card`, `hover-lift`, `shimmer`, `focus-ring`, `press`, `page-enter`, `stagger-in`, animated gradient border.
+- Keep the existing 3D/flat-lift fixes intact so nothing becomes unclickable again.
 
-- Buckets for Pending, Upcoming, Completed and Graded, plus overdue flagging.
-- Attempt runner: one screen with all questions (shuffled/randomized per the settings), a live countdown when a time limit is set, auto-submit when the timer expires or the due time passes, and answer autosave in local state so an accidental scroll or refresh mid-attempt is not fatal.
-- Blocked from attempting after the due date, or after the attempt limit is used.
-- Result view: score, pass/fail against the passing score, teacher remarks, correct answers when the teacher enabled that, and full attempt history when multiple attempts are allowed.
+## Step 2 — Shared UI primitives (`src/components/ui/*`)
 
-## Notifications (same workflow as Projects)
+Restyle variants only; props, refs, and Radix behaviour untouched.
 
-- Assignment created → every targeted student gets a clickable notification opening that assignment.
-- Student submits → assigned teacher gets a clickable notification opening that attempt for review.
-- Result published → student gets a notification with the score, opening the result view.
+- **Button** — refined size scale, gradient `default`, subtle `press` scale, glow-on-hover, built-in spinner slot styling for loading states.
+- **Card** — softer border, layered shadow, optional hover elevation.
+- **Input / Textarea / Select** — taller comfortable fields, clear focus ring, error/success ring states, helper-text spacing.
+- **Table** — sticky header, zebra-free hover highlight, roomier cells, rounded container.
+- **Dialog / Sheet / Drawer / Alert-Dialog** — blurred scrim, spring entrance, tighter header/footer rhythm.
+- **Dropdown / Select / Popover / Tabs / Badge / Progress / Skeleton / Sonner toasts** — matching radius, motion, and status colours; skeletons gain shimmer.
 
-## Technical section
+## Step 3 — App chrome
 
-**Database (one migration)** — new tables, kept separate from `assignments` (which now backs Projects) and from `quizzes`:
+- `src/components/app-shell.tsx`: floating glass sidebar with animated active pill, smooth collapse, refined header, role chip, polished notifications bell, mobile drawer polish.
+- `src/routes/__root.tsx`: font `<link>` tags, page-transition wrapper, restyled 404 and error screens.
+- `src/components/stat-card.tsx`: count-up animation on mount plus hover elevation (display only — values unchanged).
 
-- `objective_assignments` — teacher_id, school_id, title, description, technology, assignment_type, total_marks, passing_marks, due_at, time_limit_minutes, shuffle_questions, shuffle_options, randomize_per_student, allow_multiple_attempts, max_attempts, show_correct_answers, auto_publish, target_kind/target_class/target_section, timestamps.
-- `objective_questions` — assignment_id, question_text, question_type, options (jsonb), correct_answers (jsonb, array to support multiple accepted blank answers), marks, order_index.
-- `objective_targets` — assignment_id + student_id for "selected students" targeting.
-- `objective_attempts` — assignment_id, student_id, attempt_no, answers (jsonb), per_question_result (jsonb), auto_score, final_score, passed, remarks, status (in_progress | submitted | auto_scored | published), started_at, submitted_at, reviewed_at, reviewed_by.
-- `objective_events` — immutable assignment history (assigned, started, submitted, auto-scored, marks adjusted, published), mirroring `project_events`.
-- Each table: GRANTs for `authenticated` and `service_role`, RLS enabled, policies scoping teachers to their own assignments and students to their own attempts; correct answers are never exposed to students through the client — they are only ever included in a published result payload when `show_correct_answers` is on.
+## Step 4 — Public and auth surfaces
 
-**Server** — `src/lib/objective-assignments.server.ts` (scoring engine, audience/access checks, history writer) and `src/lib/objective-assignments.functions.ts` with `requireSupabaseAuth`-protected server functions: `createObjectiveAssignment`, `updateObjectiveAssignment`, `listTeacherObjectiveAssignments`, `listStudentObjectiveAssignments`, `startAttempt`, `submitAttempt` (auto-scores server-side, auto-publishes when configured), `reviewAttempt` (override marks + remarks), `publishResult`, `listAssignmentHistory`, `getTeacherAnalytics`. Auto-scoring, time-limit enforcement and due-date enforcement all run server-side; the client timer is display only.
+`index.tsx`, `auth.tsx`, `forgot-password.tsx`, `setup-security.tsx`, `register-school.tsx`, `settings.change-password.tsx` — hero and form layouts recomposed with the new palette, floating labels, and animated validation states. Submit handlers unchanged.
 
-**Frontend** — rebuild `src/routes/teacher.assignments.tsx` and `src/routes/student.assignments.tsx`; add a shared `src/components/objective-question-editor.tsx` and `src/lib/objective-assignments.schema.ts`. Add an assignments summary widget to both dashboards next to the existing Projects widget. The Assignments menu entries in `src/components/app-shell.tsx` keep their current paths, so no navigation changes are needed.
+## Step 5 — Role dashboards and workspaces
 
-**Not touched**: Quizzes module, Projects module, notifications infrastructure, roles/auth, and all existing business logic. The legacy free-text assignment rows remain in the database untouched but are no longer surfaced in the UI.
+Spot-polish after the shared layer lands, since most gains come free: Admin, Manager, School, Sales Rep, Teacher, Student dashboards plus `user-management-panel`, `audit-trail-workspace`, `directory-workspace`, `sales-hierarchy`, `pending-schools-panel`, `projects-widget`, `assignments-widget`, quizzes, projects, and assignments pages. Focus on empty states, filter bars, list/table density, and status badges.
+
+## Responsiveness and accessibility
+
+Every touched surface uses the `grid-cols-[minmax(0,1fr)_auto]` → `sm:flex` header pattern, `min-w-0` on text containers, `shrink-0` on icons. Contrast checked in both themes; focus rings visible on all interactive elements; motion respects `prefers-reduced-motion`.
+
+## Technical notes
+
+- Tailwind v4: all tokens in `src/styles.css` under `@theme inline`; custom utilities via `@utility`; no `tailwind.config.js`, no remote `@import`.
+- No component signatures, hooks, handlers, queries, or server functions are modified — edits are limited to `className`, token values, and presentational markup.
+- Typecheck runs after each step; Playwright screenshot pass on key routes at the end.
+
+## Order of delivery
+
+Steps 1–3 in this pass (that is the visible transformation across all pages), then steps 4–5 immediately after in the same session.
