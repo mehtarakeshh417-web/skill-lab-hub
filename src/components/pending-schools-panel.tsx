@@ -58,7 +58,10 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
       qc.invalidateQueries({ queryKey: ["sales-reps"] });
       setEditingId(null);
     },
-    onError: (err: unknown) => toast.error("Approval failed", { description: err instanceof Error ? err.message : String(err) }),
+    onError: (err: unknown) =>
+      toast.error("Approval failed", {
+        description: parseFieldError(err instanceof Error ? err.message : String(err)).message,
+      }),
   });
 
   const reject = useMutation({
@@ -67,7 +70,10 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
       toast.success("Registration rejected");
       qc.invalidateQueries({ queryKey: ["school-registrations"] });
     },
-    onError: (err: unknown) => toast.error("Rejection failed", { description: err instanceof Error ? err.message : String(err) }),
+    onError: (err: unknown) =>
+      toast.error("Rejection failed", {
+        description: parseFieldError(err instanceof Error ? err.message : String(err)).message,
+      }),
   });
 
   const counts = data?.counts ?? { total: 0, pending: 0, approved: 0, rejected: 0 };

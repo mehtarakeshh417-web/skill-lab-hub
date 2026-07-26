@@ -441,7 +441,7 @@ function RegisterSchool() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block">
+                  <label className="block" data-field="notes">
                     <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Submission Notes
                     </span>
