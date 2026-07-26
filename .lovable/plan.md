@@ -1,54 +1,30 @@
-## Goal
+## What's actually happening
 
-Every admin menu item is its own working page, every overview card actually clicks through, and the Users page gives full control (modify, block, delete, filter) over any account.
+The Admin sidebar already has **Users** and **Audit Trail**, and they point to `/admin/users` and `/admin/audit-logs`, which use the exact same components as the Manager pages (`UserManagementPanel`, `AuditTrailWorkspace`). The backend already allows admins everywhere (audit read policy covers admin; the user-management functions treat admin as a superset of manager).
 
-## 1. Fix the "nothing is clickable" bug first
+The pages are blank because of a routing structure problem, not permissions:
 
-The global 3D card style (`.slab-3d:hover`) applies a `rotateX/rotateY/translateZ` transform on hover. In Chromium this moves the painted card away from the pointer's hit-test target — the same bug that previously broke the Register School submit button (which was fixed with a one-off `registration-form-surface` opt-out).
+- `src/routes/manager.tsx` is a thin layout that renders `<Outlet />`, and the Manager dashboard lives separately in `manager.index.tsx`. So `/manager/users` renders correctly.
+- `src/routes/admin.tsx` is the full Admin dashboard **and** the parent of every `/admin/*` route, but it never renders `<Outlet />`. TanStack mounts it as the parent for `/admin/users`, `/admin/audit-logs`, `/admin/directory`, `/admin/pending-schools`, `/admin/sales-hierarchy`, `/admin/create-sales-rep` — and since there is no `<Outlet />`, the child page never mounts.
 
-Fix it properly and globally in `src/styles.css`:
-- Hover lift becomes a flat `translateY` only — no `rotateX`/`rotateY`/`perspective` on any element that contains links, buttons, inputs, tables, or menus.
-- Remove `body { perspective }` so no ancestor re-projects the whole page.
-- Keep the depth look through shadows, borders and glow (visually unchanged, hit-testing correct).
-- Drop the now-unneeded `registration-form-surface` special case.
+The same defect exists on `src/routes/teacher.tsx` (children: assignments, quizzes) and `src/routes/student.tsx` (children: assignments, quizzes).
 
-Verification: after the change, run an automated pointer hit-test over every link/button on each admin page and confirm each element is the top element at its own centre.
+## Plan
 
-## 2. Overview (`/admin`) — lean dashboard only
+1. **Split the Admin route**
+   - Create `src/routes/admin.index.tsx` containing the current Admin dashboard component, stat cards, quick actions, exports, and its page metadata — code moved as-is, no logic changes.
+   - Reduce `src/routes/admin.tsx` to a layout: `createFileRoute("/admin")` with `component: () => <Outlet />` and a generic Admin console title, mirroring `manager.tsx` exactly.
 
-Strip everything that isn't a dashboard summary: remove the "Recently onboarded schools" list and the health tiles block from the overview page. What stays:
-- Six live stat cards (Schools, Teachers, Students, Sales reps, Pending approvals, Deactivated) — each opens its detailed view.
-- One compact row of quick links to the other four menu pages.
+2. **Apply the same split to Teacher and Student**
+   - `src/routes/teacher.index.tsx` + `teacher.tsx` as an `<Outlet />` layout.
+   - `src/routes/student.index.tsx` + `student.tsx` as an `<Outlet />` layout.
+   - This makes `/teacher/assignments`, `/teacher/quizzes`, `/student/assignments`, `/student/quizzes` render instead of falling back to the dashboard.
 
-Detailed drill-down views stay on the directory page, which is reachable only from a card click (not from the menu).
-
-## 3. Menu structure
-
-Sidebar (`app-shell`): Overview, Approvals, Sales hierarchy, Users, Audit Trail. The Directory entry is already removed from the menu and stays removed.
-
-## 4. Approvals (`/admin/pending-schools`)
-
-Dedicated page listing every school submitted through Register School with status Pending. Each row expands to show full submitted details (contact, state/city/area, sales rep) with Approve and Reject actions, plus tabs for Approved / Rejected history and a search box. Approve provisions the school login exactly as it does today.
-
-## 5. Sales hierarchy (`/admin/sales-hierarchy`)
-
-Full-page premium org tree: expand/collapse parent-child nodes with chevrons, connector lines, per-rep cards showing name, code, region, schools owned and direct reports count, plus Expand-all / Collapse-all and a search that reveals matching branches.
-
-## 6. Users (`/admin/users`) — full control
-
-One page listing every account on the portal with:
-- Filters: role (admin, manager, sales rep, school, teacher, student), status (active / blocked), school, state/city, and free-text search on name, username or email.
-- Row actions: Edit profile details, Change username, Reset password, Block / Unblock, Reset security setup, Delete (with a clear confirmation dialog explaining consequences).
-- Bulk select for block/unblock/delete, and CSV/Excel export of the filtered list.
-- Status shown as a coloured badge; every action writes to the audit log as it does today.
-
-## 7. Audit Trail (`/admin/audit-logs`)
-
-Stays an intentionally empty page with a clean "coming soon" placeholder, as requested.
+3. **Verify**
+   - Typecheck, then load each admin sub-route in a headless browser signed in as the admin account and confirm the Users table and Audit Trail workspace render with data — identical to the Manager views.
 
 ## Technical notes
 
-- No changes to data flow, server functions, RLS, roles or business logic — only the CSS hit-testing fix, page composition, and wiring existing server functions (`adminSetUserActive`, `adminDeleteUser`, `adminChangeUsername`, `adminResetUserPassword`, `adminResetSecurity`, `getDirectory`) into the Users page UI.
-- A profile-edit server function will be added only if one doesn't already cover name/email/phone updates.
-- Each route keeps its own `head()` metadata.
-- Final check runs the automated click test across `/admin`, `/admin/pending-schools`, `/admin/sales-hierarchy`, `/admin/users`, `/admin/audit-logs`.
+- No changes to state, server functions, RLS, role checks, or business logic — this is purely route composition.
+- Each new `*.index.tsx` keeps its own `head()` metadata (title/description/og), and the parent layouts keep only a generic title so leaf metadata wins.
+- Admin's Users page intentionally keeps its extra capabilities (all role filters, admin/manager account management) since it passes `actor="admin"`; the layout, filters, and audit workspace are otherwise identical to the Manager pages.
