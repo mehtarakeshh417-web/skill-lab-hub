@@ -54,6 +54,7 @@ export type RegistrationRecord = {
   address: string;
   status: "pending" | "approved" | "rejected";
   rejectionReason: string;
+  salesRepId: string | null;
   submittedAt: string;
   reviewedAt: string | null;
   createdSchoolId: string | null;
@@ -77,6 +78,7 @@ function toRecord(row: Database["public"]["Tables"]["school_registrations"]["Row
     address: row.address ?? "",
     status: (row.status as "pending" | "approved" | "rejected") ?? "pending",
     rejectionReason: row.rejection_reason ?? "",
+    salesRepId: (row as { sales_rep_id?: string | null }).sales_rep_id ?? null,
     submittedAt: row.submitted_at,
     reviewedAt: row.reviewed_at,
     createdSchoolId: row.created_school_id,
@@ -154,6 +156,7 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
       address: input.address?.trim() || null,
       encrypted_password: encrypted,
       status: "pending",
+      sales_rep_id: input.salesRepId,
     })
     .select("*")
     .single();

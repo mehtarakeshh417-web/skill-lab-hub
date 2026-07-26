@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { parseFieldError } from "@/lib/registrations";
 import { INDIA_STATES, citiesForState } from "@/lib/india-locations";
@@ -18,6 +18,7 @@ import {
   Send,
   ChevronDown,
   CheckCircle2,
+  UserCheck,
 } from "lucide-react";
 
 export const Route = createFileRoute("/register-school")({
@@ -72,6 +73,7 @@ function RegisterSchool() {
     state: "",
     city: "",
     area: "",
+    salesRepId: "",
     notes: "",
     username: "",
     password: "",
@@ -85,6 +87,34 @@ function RegisterSchool() {
   const [focused, setFocused] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState<{ schoolName: string; schoolCode: string } | null>(null);
   const [formError, setFormError] = useState<string>("");
+  const [reps, setReps] = useState<{ id: string; fullName: string; designation: string }[]>([]);
+  const [repsLoading, setRepsLoading] = useState(true);
+
+  const loadReps = useCallback(async () => {
+    try {
+      const res = await fetch("/api/public/sales-reps", { headers: { accept: "application/json" } });
+      const json = (await res.json().catch(() => null)) as
+        | { ok?: boolean; reps?: { id: string; fullName: string; designation: string }[] }
+        | null;
+      if (json?.ok && Array.isArray(json.reps)) setReps(json.reps);
+    } catch {
+      /* keep the previously loaded list */
+    } finally {
+      setRepsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadReps();
+    if (typeof window === "undefined") return;
+    const onFocus = () => void loadReps();
+    window.addEventListener("focus", onFocus);
+    const interval = window.setInterval(() => void loadReps(), 60_000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(interval);
+    };
+  }, [loadReps]);
 
   const update = (k: keyof typeof empty, v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -104,6 +134,7 @@ function RegisterSchool() {
     state: "State",
     city: "City",
     area: "Area",
+    salesRepId: "Sales Representative",
     notes: "Submission Notes",
     username: "Login Username",
     password: "Login Password",
@@ -191,6 +222,7 @@ function RegisterSchool() {
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(),
           address: form.address.trim(),
+          salesRepId: form.salesRepId,
         }),
       });
       const result = (await response.json().catch(() => null)) as
@@ -389,6 +421,27 @@ function RegisterSchool() {
                   focused={focused.area}
                   onFocus={() => setFocused((f) => ({ ...f, area: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, area: false }))}
+                />
+                <SelectField
+                  name="salesRepId"
+                  label="Sales Representative"
+                  icon={UserCheck}
+                  value={form.salesRepId}
+                  onChange={(v) => update("salesRepId", v)}
+                  placeholder={repsLoading ? "Loading representatives…" : reps.length ? "Select your sales representative" : "No representatives available yet"}
+                  options={reps.map((r) => ({
+                    value: r.id,
+                    label: r.designation ? `${r.fullName} — ${r.designation}` : r.fullName,
+                  }))}
+                  disabled={repsLoading || reps.length === 0}
+                  error={errors.salesRepId}
+                  hint={
+                    repsLoading
+                      ? "Fetching the latest representative list."
+                      : reps.length === 0
+                      ? "No active sales representatives yet — please contact the portal team."
+                      : "Choose the representative who introduced Avartan to your school."
+                  }
                 />
               </div>
 
@@ -594,12 +647,13 @@ function SelectField({
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  options: string[];
+  options: (string | { value: string; label: string })[];
   error?: string;
   hint?: string;
   disabled?: boolean;
 }) {
   const isActive = value.length > 0;
+  const items = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
   return (
     <label className="group block" data-field={name}>
       <span className={
@@ -630,8 +684,8 @@ function SelectField({
           }
         >
           <option value="">{placeholder ?? "Select"}</option>
-          {options.map((o) => (
-            <option key={o} value={o} className="text-foreground">{o}</option>
+          {items.map((o) => (
+            <option key={o.value} value={o.value} className="text-foreground">{o.label}</option>
           ))}
         </select>
         <ChevronDown className="pointer-events-none absolute right-4 h-5 w-5 text-muted-foreground/60" />

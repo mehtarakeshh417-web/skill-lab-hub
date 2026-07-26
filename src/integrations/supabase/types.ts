@@ -522,6 +522,7 @@ export type Database = {
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          sales_rep_id: string | null
           school_code: string
           school_name: string
           state: string | null
@@ -547,6 +548,7 @@ export type Database = {
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          sales_rep_id?: string | null
           school_code: string
           school_name: string
           state?: string | null
@@ -572,6 +574,7 @@ export type Database = {
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          sales_rep_id?: string | null
           school_code?: string
           school_name?: string
           state?: string | null
@@ -586,6 +589,13 @@ export type Database = {
             columns: ["created_school_id"]
             isOneToOne: false
             referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_registrations_sales_rep_id_fkey"
+            columns: ["sales_rep_id"]
+            isOneToOne: false
+            referencedRelation: "sales_reps"
             referencedColumns: ["id"]
           },
         ]

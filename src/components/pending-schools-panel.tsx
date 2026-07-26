@@ -121,7 +121,7 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
           const val = (k: string, fallback: string) => draft[k] ?? fallback;
           const setDraft = (k: string, v: string) =>
             setEdits((e) => ({ ...e, [r.id]: { ...(e[r.id] ?? {}), [k]: v } }));
-          const chosenRep = salesRepId[r.id] ?? "";
+          const chosenRep = salesRepId[r.id] ?? r.salesRepId ?? "";
           const activeReps = (reps ?? []).filter((x) => x.status === "active");
           return (
             <div
