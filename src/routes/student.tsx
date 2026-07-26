@@ -65,10 +65,10 @@ function StudentDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Technologies started" value={0} icon={BookOpen} />
-        <StatCard label="Lessons completed" value={0} icon={Trophy} />
-        <StatCard label="Day streak" value={0} icon={Flame} />
-        <StatCard label="Pending assignments" value={0} icon={ClipboardList} />
+        <StatCard label="Technologies started" value={0} icon={BookOpen} hash="practice" hint="Browse technologies" />
+        <StatCard label="Lessons completed" value={0} icon={Trophy} hash="practice" hint="Keep learning" />
+        <StatCard label="Day streak" value={0} icon={Flame} hash="practice" hint="Practice today" />
+        <StatCard label="Pending assignments" value={0} icon={ClipboardList} to="/student/assignments" hint="View my assignments" />
       </div>
 
       <div id="practice" className="mt-10 scroll-mt-20">
