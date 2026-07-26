@@ -1,28 +1,24 @@
-## Confirmed diagnosis
-- The button and client-side validation are connected: an empty submit produces all inline field errors and focuses the first invalid field.
-- A valid submit is failing before database insertion because the runtime cannot resolve `submitSchoolRegistration` and logs: `Invalid server function ID: ...submitSchoolRegistration_createServerFn_handler`.
-- The registration table currently has no rows, confirming the failed requests are not being persisted.
-- The exact `preview--...` URL supplied redirects automated access to a Lovable login surface, so final app verification will use the running preview plus the deployed app endpoint available to the project.
+## What's wrong
 
-## Fix plan
-1. **Create a stable public registration endpoint**
-   - Add a TanStack POST route under `/api/public/school-registrations`.
-   - Validate the JSON body with the existing registration schema.
-   - Call the existing server-only registration service that checks uniqueness, encrypts the temporary password, inserts the row, and explicitly sets `status = pending`.
-   - Return structured field errors for validation/duplicate failures and safe generic errors for unexpected failures.
+1. **"Invalid origin" rejection** — `src/routes/api/public/school-registrations.ts` compares the browser's `Origin` header against the origin of `request.url`. In the Lovable preview the page is served from `...lovableproject.com` while the server sees a different internal host, so every real submission is rejected with HTTP 403 before validation or the database is ever reached. The network log confirms: `403 {"ok":false,"error":"This registration request came from an invalid origin."}`.
 
-2. **Reconnect the unchanged form UI**
-   - Keep the current page layout and field components exactly as they are.
-   - Replace only the broken generated server-function call in the submit handler with the stable endpoint request.
-   - Preserve current inline missing-field errors, focus behavior, loading state, success screen, and Pending Approval messaging.
-   - Ensure failures always clear the loading state and map backend field errors beside the relevant input.
+2. **Error not visible** — the failure is only reported through a Sonner toast pinned to the top of the viewport. The user is at the bottom of a long form when they submit, and (with the 3D-transformed page shell) the toast renders far from the button, so the message appears "off-screen" until scrolling up.
 
-3. **Remove the unstable public submission declaration**
-   - Remove only `submitSchoolRegistration` from `registrations.functions.ts` after the form no longer imports it.
-   - Keep authenticated list/approve/reject server functions unchanged.
+## Plan
 
-4. **End-to-end verification**
-   - Test empty and malformed submissions: no network insert, inline errors visible, first invalid field focused.
-   - Submit a unique complete registration with a real button click.
-   - Confirm the POST succeeds, the success confirmation appears, and the database row exists with `pending` status and all fields saved.
-   - Confirm the new row appears in the Manager pending-approval section, then remove only the test row.
+### 1. Allow any origin
+- Delete the origin comparison in the POST handler. Keep the JSON content-type check, Zod validation, tagged field errors, and server-side uniqueness checks — those are the real protections.
+- Add `Access-Control-Allow-Origin: *` plus an `OPTIONS` 204 handler so the endpoint works from any host/preview/published domain.
+
+### 2. Make the error impossible to miss
+In `src/routes/register-school.tsx`, without changing the layout or field structure:
+- Add a submission-error banner rendered directly above the Submit Registration button, showing the returned message (and the field name when the error is field-tagged). It clears on the next submit attempt.
+- On failure, scroll the offending field (or the banner) into view with `scrollIntoView({ behavior: "smooth", block: "center" })` and focus it — the same focus mechanism already used for missing-field validation.
+- Keep the existing toast as a secondary signal.
+
+### 3. Verify
+- Post malformed and valid JSON straight to `/api/public/school-registrations` to confirm no 403 and a 201 with `status: "pending"`.
+- Run a real browser submission on `/register-school`: confirm the row lands in `school_registrations` as **Pending Approval**, the success screen shows, and a forced failure (duplicate school code) surfaces the inline banner next to the button without scrolling. Clean up test rows afterwards.
+
+## Technical notes
+Files touched: `src/routes/api/public/school-registrations.ts` (drop origin gate, add CORS + OPTIONS) and `src/routes/register-school.tsx` (inline error banner + scroll-to-error). No schema, business-logic, or approval-workflow changes.
