@@ -43,6 +43,9 @@ export type RegistrationRecord = {
   schoolCode: string;
   principalName: string;
   region: string;
+  state: string;
+  city: string;
+  area: string;
   designation: string;
   notes: string;
   username: string;
@@ -63,6 +66,9 @@ function toRecord(row: Database["public"]["Tables"]["school_registrations"]["Row
     schoolCode: row.school_code,
     principalName: row.principal_name ?? "",
     region: row.region ?? "",
+    state: (row as { state?: string | null }).state ?? "",
+    city: (row as { city?: string | null }).city ?? "",
+    area: (row as { area?: string | null }).area ?? "",
     designation: row.designation ?? "",
     notes: row.notes ?? "",
     username: row.username,
@@ -137,6 +143,9 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
       school_code: schoolCode,
       principal_name: input.principalName?.trim() || null,
       region: input.region?.trim() || null,
+      state: input.state?.trim() || null,
+      city: input.city?.trim() || null,
+      area: input.area?.trim() || null,
       designation: input.designation?.trim() || null,
       notes: input.notes?.trim() || null,
       username,
@@ -190,6 +199,9 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
   const schoolCode = normCode(input.schoolCode ?? reg.school_code);
   const principalName = (input.principalName ?? reg.principal_name ?? "").trim();
   const region = (input.region ?? reg.region ?? "").trim();
+  const state = (input.state ?? (reg as { state?: string | null }).state ?? "").trim();
+  const city = (input.city ?? (reg as { city?: string | null }).city ?? "").trim();
+  const area = (input.area ?? (reg as { area?: string | null }).area ?? "").trim();
   const designation = (input.designation ?? reg.designation ?? "Principal").trim();
   const notes = (input.notes ?? reg.notes ?? "").trim();
   const email = (input.email ?? reg.email).trim().toLowerCase();
@@ -240,7 +252,9 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
         email,
         phone,
         address: address || null,
-        area: region || null,
+        area: area || region || null,
+        city: city || null,
+        state: state || null,
         principal_name: principalName || null,
         designation: designation || "Principal",
         notes: notes || null,
@@ -265,6 +279,9 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
         school_code: schoolCode,
         principal_name: principalName || null,
         region: region || null,
+        state: state || null,
+        city: city || null,
+        area: area || null,
         designation: designation || null,
         notes: notes || null,
         email,
