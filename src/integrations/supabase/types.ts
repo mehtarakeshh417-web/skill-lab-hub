@@ -507,6 +507,8 @@ export type Database = {
       school_registrations: {
         Row: {
           address: string | null
+          area: string | null
+          city: string | null
           created_at: string
           created_school_id: string | null
           designation: string | null
@@ -522,6 +524,7 @@ export type Database = {
           reviewed_by: string | null
           school_code: string
           school_name: string
+          state: string | null
           status: string
           submitted_at: string
           updated_at: string
@@ -529,6 +532,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          area?: string | null
+          city?: string | null
           created_at?: string
           created_school_id?: string | null
           designation?: string | null
@@ -544,6 +549,7 @@ export type Database = {
           reviewed_by?: string | null
           school_code: string
           school_name: string
+          state?: string | null
           status?: string
           submitted_at?: string
           updated_at?: string
@@ -551,6 +557,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          area?: string | null
+          city?: string | null
           created_at?: string
           created_school_id?: string | null
           designation?: string | null
@@ -566,6 +574,7 @@ export type Database = {
           reviewed_by?: string | null
           school_code?: string
           school_name?: string
+          state?: string | null
           status?: string
           submitted_at?: string
           updated_at?: string
