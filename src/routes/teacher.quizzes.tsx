@@ -207,7 +207,7 @@ function CreateQuizDialog({ students, onCreated }: { students: StudentRow[]; onC
       setOpen(false);
       setTitle(""); setSubject(""); setGradeLevel(""); setDescription(""); setQuestions([blankQ("mcq")]); setSelected(new Set());
       onCreated();
-    } catch (e) { toast.error("We couldn't load your quizzes", { description: friendlyError(e) }); }
+    } catch (e) { toast.error("We couldn't assign this quiz", { description: friendlyError(e) }); }
     finally { setSaving(false); }
   }
 
