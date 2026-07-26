@@ -223,6 +223,15 @@ export async function bulkCreateStudentsForSchool(
       await Promise.all(
         created.map((c) => supabaseAdmin.auth.admin.deleteUser(c.userId).catch(() => null)),
       );
+      await writeAudit({
+        actorUserId,
+        action: "student.bulk_upload",
+        module: "Students",
+        entityType: "student_batch",
+        entityLabel: `${inputs.length} rows`,
+        status: "failure",
+        remarks: `Bulk upload rolled back at row ${i + 2}: ${e instanceof Error ? e.message : "unknown error"}`,
+      });
       return {
         createdCount: 0,
         created: [],
