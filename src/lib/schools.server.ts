@@ -15,6 +15,9 @@ export type SchoolDashboardRecord = {
   principalName: string;
   designation: string;
   region: string;
+  state: string;
+  city: string;
+  area: string;
   status: string;
   createdAt: string;
 };
@@ -58,6 +61,9 @@ function toRecord(row: SchoolRow, audience: "admin" | "manager" | "school"): Sch
     principalName: row.principal_name ?? "",
     designation: row.designation ?? "",
     region: [row.city, row.state].filter(Boolean).join(" / ") || row.area || "",
+    state: row.state ?? "",
+    city: row.city ?? "",
+    area: row.area ?? "",
     status: row.status,
     createdAt: row.created_at,
   };
@@ -131,7 +137,9 @@ export async function createSchoolForActor(input: SchoolOnboardingInput, actorSu
         email: contactEmail,
         phone: input.phone.trim(),
         address: input.address?.trim() || null,
-        area: input.region?.trim() || null,
+        area: input.area?.trim() || input.region?.trim() || null,
+        city: input.city?.trim() || null,
+        state: input.state?.trim() || null,
         principal_name: input.principalName?.trim() || null,
         designation: input.designation?.trim() || "Principal",
         notes: input.notes?.trim() || null,
