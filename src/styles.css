@@ -391,6 +391,14 @@
     0 50px 110px -20px oklch(0.62 0.205 274 / 0.35);
 }
 
+/* Forms must retain flat browser hit-testing; 3D hover transforms can move the
+   painted controls away from their pointer target in Chromium. */
+.slab-3d.registration-form-surface,
+.slab-3d.registration-form-surface:hover {
+  transform-style: flat;
+  transform: none;
+}
+
 /* Tilt / lift-only variant — keeps content readable, adds depth on hover */
 @utility lift-3d {
   transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 500ms ease-out;
