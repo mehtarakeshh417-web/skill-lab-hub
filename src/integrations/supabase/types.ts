@@ -53,13 +53,17 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
+          instructions: string | null
           kind: string
           max_marks: number | null
           school_id: string
+          submission_type: string
           target_class: string | null
           target_kind: string
           target_section: string | null
           teacher_id: string
+          technology: string | null
+          template_key: string | null
           title: string
           updated_at: string
         }
@@ -68,13 +72,17 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          instructions?: string | null
           kind?: string
           max_marks?: number | null
           school_id: string
+          submission_type?: string
           target_class?: string | null
           target_kind: string
           target_section?: string | null
           teacher_id: string
+          technology?: string | null
+          template_key?: string | null
           title: string
           updated_at?: string
         }
@@ -83,13 +91,17 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          instructions?: string | null
           kind?: string
           max_marks?: number | null
           school_id?: string
+          submission_type?: string
           target_class?: string | null
           target_kind?: string
           target_section?: string | null
           teacher_id?: string
+          technology?: string | null
+          template_key?: string | null
           title?: string
           updated_at?: string
         }
@@ -265,6 +277,64 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      project_events: {
+        Row: {
+          actor_name: string | null
+          actor_role: string
+          assignment_id: string
+          created_at: string
+          id: string
+          note: string | null
+          status: string
+          student_id: string
+          submission_id: string | null
+        }
+        Insert: {
+          actor_name?: string | null
+          actor_role: string
+          assignment_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          status: string
+          student_id: string
+          submission_id?: string | null
+        }
+        Update: {
+          actor_name?: string | null
+          actor_role?: string
+          assignment_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          status?: string
+          student_id?: string
+          submission_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_events_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_events_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_events_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiz_assignments: {
         Row: {
@@ -787,14 +857,19 @@ export type Database = {
       submissions: {
         Row: {
           assignment_id: string
+          attempt: number
           content: string | null
           created_at: string
           feedback: string | null
           file_name: string | null
           file_url: string | null
+          files: Json
           grade: number | null
+          grade_letter: string | null
           id: string
           reviewed_at: string | null
+          reviewed_by: string | null
+          source_code: string | null
           status: string
           student_id: string
           submitted_at: string
@@ -802,14 +877,19 @@ export type Database = {
         }
         Insert: {
           assignment_id: string
+          attempt?: number
           content?: string | null
           created_at?: string
           feedback?: string | null
           file_name?: string | null
           file_url?: string | null
+          files?: Json
           grade?: number | null
+          grade_letter?: string | null
           id?: string
           reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_code?: string | null
           status?: string
           student_id: string
           submitted_at?: string
@@ -817,14 +897,19 @@ export type Database = {
         }
         Update: {
           assignment_id?: string
+          attempt?: number
           content?: string | null
           created_at?: string
           feedback?: string | null
           file_name?: string | null
           file_url?: string | null
+          files?: Json
           grade?: number | null
+          grade_letter?: string | null
           id?: string
           reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_code?: string | null
           status?: string
           student_id?: string
           submitted_at?: string
