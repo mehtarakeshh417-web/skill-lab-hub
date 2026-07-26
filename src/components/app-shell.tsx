@@ -18,6 +18,7 @@ import {
   KeyRound,
   ScrollText,
   UserCog,
+  FolderKanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/notifications-bell";
@@ -52,6 +53,7 @@ const NAV: Record<AppRole, NavItem[]> = {
   student: [
     { label: "My Lab", to: "/student", icon: LayoutDashboard },
     { label: "Assignments", to: "/student/assignments", icon: ClipboardList },
+    { label: "Projects", to: "/student/projects", icon: FolderKanban },
     { label: "Quizzes", to: "/student/quizzes", icon: BookOpen },
   ],
 };
@@ -59,6 +61,7 @@ const NAV: Record<AppRole, NavItem[]> = {
 NAV.teacher = [
   { label: "Dashboard", to: "/teacher", icon: LayoutDashboard },
   { label: "Assignments", to: "/teacher/assignments", icon: ClipboardList },
+  { label: "Projects", to: "/teacher/projects", icon: FolderKanban },
   { label: "Quizzes", to: "/teacher/quizzes", icon: BookOpen },
 ];
 
