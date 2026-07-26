@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/messages";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ function TeacherAssignmentsPage() {
       setAssignments(a as AsgRow[]);
       setStudents(s as StudentRow[]);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to load");
+      toast.error("We couldn't load your assignments", { description: friendlyError(e) });
     } finally {
       setLoading(false);
     }
@@ -140,7 +141,7 @@ function SubmissionRow({ sub, maxMarks, onGraded }: { sub: SubRow; maxMarks: num
 
   async function save() {
     const g = Number(grade);
-    if (Number.isNaN(g) || g < 0) { toast.error("Enter a valid grade"); return; }
+    if (Number.isNaN(g) || g < 0) { toast.error("Please enter a valid grade", { description: "Grades must be a number of 0 or more." }); return; }
     setSaving(true);
     try {
       await doGrade({ data: { submissionId: sub.id, grade: g, feedback, status: "reviewed" } });
@@ -148,7 +149,7 @@ function SubmissionRow({ sub, maxMarks, onGraded }: { sub: SubRow; maxMarks: num
       setOpen(false);
       onGraded();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Grade failed");
+      toast.error("We couldn't save this grade", { description: friendlyError(e) });
     } finally {
       setSaving(false);
     }
@@ -226,9 +227,9 @@ function CreateAssignmentDialog({ students, onCreated }: { students: StudentRow[
   }
 
   async function submit() {
-    if (!title.trim()) { toast.error("Title required"); return; }
-    if (mode === "class" && !targetClass) { toast.error("Choose a class"); return; }
-    if (mode === "students" && selected.size === 0) { toast.error("Select at least one student"); return; }
+    if (!title.trim()) { toast.error("Please add an assignment title", { description: "Students will see this title on their dashboard." }); return; }
+    if (mode === "class" && !targetClass) { toast.error("Please choose a class", { description: "Select which class should receive this assignment." }); return; }
+    if (mode === "students" && selected.size === 0) { toast.error("Please select at least one student", { description: "Choose who should receive this assignment." }); return; }
     setSaving(true);
     try {
       const r = await doCreate({
@@ -247,7 +248,7 @@ function CreateAssignmentDialog({ students, onCreated }: { students: StudentRow[
       setOpen(false); setTitle(""); setDescription(""); setDueDate(""); setSelected(new Set());
       onCreated();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed");
+      toast.error("We couldn't create this assignment", { description: friendlyError(e) });
     } finally { setSaving(false); }
   }
 
