@@ -98,7 +98,7 @@ function TeacherAssignmentsPage() {
 
   async function refresh() {
     try {
-      const res = (await load()) as { assignments: AssignmentRow[]; roster: StudentRow[] };
+      const res = (await load()) as unknown as { assignments: AssignmentRow[]; roster: StudentRow[] };
       setAssignments(res.assignments ?? []);
       setRoster(res.roster ?? []);
       return res.assignments ?? [];
