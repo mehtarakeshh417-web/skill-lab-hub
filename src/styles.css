@@ -394,10 +394,10 @@
 /* Tilt / lift-only variant — keeps content readable, adds depth on hover */
 @utility lift-3d {
   transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 500ms ease-out;
-  transform: translateY(0) translateZ(0);
+  transform: translateY(0);
 }
 .lift-3d:hover {
-  transform: translateY(-4px) translateZ(10px);
+  transform: translateY(-4px);
   box-shadow:
     0 18px 40px -12px oklch(0 0 0 / 0.55),
     0 40px 80px -20px oklch(0.62 0.205 274 / 0.35);
