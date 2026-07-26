@@ -370,6 +370,42 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={!!editTarget} onOpenChange={(o) => !o && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit details — {editTarget?.username}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Full name</Label>
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Full name" />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="name@example.com" />
+            </div>
+            <p className="text-xs text-muted-foreground">These details appear across directories and reports. Changing the email also changes the address used for sign-in links.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
+            <Button onClick={submitProfile} disabled={busy || editName.trim().length < 2}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={false} onOpenChange={() => {}}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Change username — {unameTarget?.username}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Label>New username</Label>
+            <Input value={unameValue} onChange={(e) => setUnameValue(e.target.value.trim().toLowerCase())} />
+            <p className="text-xs text-muted-foreground">Must be unique. The user will sign in with this new username immediately.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUnameTarget(null)} disabled={busy}>Cancel</Button>
+            <Button onClick={submitUname} disabled={busy || unameValue.length < 3}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update username"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <ConfirmDialog
         open={Boolean(activeTarget) && activeTarget?.nextActive === false}
         onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
