@@ -1,3 +1,4 @@
+import { TechLogo } from "@/lib/tech-logos";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
