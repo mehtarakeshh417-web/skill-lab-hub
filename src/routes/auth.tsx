@@ -200,7 +200,7 @@ function AuthPage() {
             <form onSubmit={onSubmit} className="mt-8 space-y-5" noValidate>
               <div className="space-y-2">
                 <Label htmlFor="identifier" className="text-sm font-semibold">
-                  Username or email
+                  Username, email or phone
                 </Label>
                 <Input
                   id="identifier"
@@ -209,7 +209,7 @@ function AuthPage() {
                     setIdentifier(e.target.value);
                     if (fieldError.identifier || fieldError.form) setFieldError({});
                   }}
-                  placeholder="e.g. delhi-public or school@example.com"
+                  placeholder="e.g. delhi-public, school@example.com or 9876543210"
                   autoComplete="username"
                   className={`h-12 text-base ${fieldError.identifier ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
                   aria-invalid={Boolean(fieldError.identifier)}
