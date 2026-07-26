@@ -497,20 +497,19 @@ function RegisterSchool() {
                 </div>
               </div>
 
-              <div className="mt-10 flex flex-col gap-5 border-t border-border/60 pt-7 sm:flex-row sm:items-center sm:justify-between">
-                {formError ? (
-                  <div
-                    data-form-error
-                    role="alert"
-                    aria-live="assertive"
-                    className="order-first w-full rounded-2xl border border-rose-500/40 bg-rose-500/10 px-5 py-4 text-sm font-semibold text-rose-600 shadow-[0_10px_30px_-14px_rgba(244,63,94,0.6)] dark:text-rose-300 sm:absolute sm:static"
-                  >
-                    <span className="inline-flex items-start gap-2">
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                      <span>{formError}</span>
-                    </span>
-                  </div>
-                ) : null}
+              {formError ? (
+                <div
+                  data-form-error
+                  role="alert"
+                  aria-live="assertive"
+                  className="mt-8 flex items-start gap-2.5 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-5 py-4 text-sm font-semibold text-rose-600 shadow-[0_10px_30px_-14px_rgba(244,63,94,0.6)] dark:text-rose-300"
+                >
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              ) : null}
+
+              <div className="mt-6 flex flex-col gap-5 border-t border-border/60 pt-7 sm:flex-row sm:items-center sm:justify-between">
                 <p className="max-w-md text-xs text-muted-foreground leading-relaxed">
                   By submitting, you authorize Avartan to contact your institution regarding onboarding. Your application enters the
                   review queue as <span className="font-semibold text-amber-500 dark:text-amber-400">Pending Approval</span> and will typically be processed within one business day.
