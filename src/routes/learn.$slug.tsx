@@ -92,7 +92,7 @@ function LearnPage() {
           {!live && (
             <>
           <Button variant="outline" size="sm" onClick={reset}><RotateCcw className="h-4 w-4" /> Reset</Button>
-          <Button variant="soft" size="sm" onClick={() => toast.success("Snippet saved")}><Save className="h-4 w-4" /> Save</Button>
+          <Button variant="soft" size="sm" onClick={() => toast.success("Your code has been saved")}><Save className="h-4 w-4" /> Save</Button>
           {info.lang !== "other" && (
             <Button variant="hero" size="sm" onClick={run}><Play className="h-4 w-4" /> Run</Button>
           )}

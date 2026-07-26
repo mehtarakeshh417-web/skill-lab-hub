@@ -541,7 +541,7 @@ function StructurePanel({
     const grade = newClass.trim();
     if (!grade) return;
     if (classes.some((c) => c.grade.toLowerCase() === grade.toLowerCase())) {
-      toast.error("Class already exists");
+      toast.error("That class already exists", { description: "Choose a different grade or edit the existing class." });
       return;
     }
     setClasses((arr) => [

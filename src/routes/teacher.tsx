@@ -242,15 +242,15 @@ function TaskAuthoring({
   const reset = () => { setTitle(""); setInstructions(""); setMaxMarks(100); setSecs([]); setStus([]); };
 
   const publish = () => {
-    if (!title.trim()) return toast.error("Title is required");
-    if (!instructions.trim()) return toast.error("Instructions are required");
-    if (maxMarks <= 0) return toast.error("Max marks must be positive");
+    if (!title.trim()) return toast.error("Please add a title", { description: "Students will see this title on their dashboard." });
+    if (!instructions.trim()) return toast.error("Please add instructions", { description: "Explain what students need to do to complete this task." });
+    if (maxMarks <= 0) return toast.error("Enter the maximum marks", { description: "Maximum marks must be greater than zero." });
     const audience: TaskAudience =
       mode === "class" ? { mode, classKey } :
       mode === "sections" ? { mode, sections: secs } :
       { mode, students: stus };
-    if (mode === "sections" && secs.length === 0) return toast.error("Select at least one section");
-    if (mode === "students" && stus.length === 0) return toast.error("Select at least one student");
+    if (mode === "sections" && secs.length === 0) return toast.error("Please select at least one section", { description: "Choose which sections should receive this task." });
+    if (mode === "students" && stus.length === 0) return toast.error("Please select at least one student", { description: "Choose who should receive this task." });
     const task: Task = {
       id: `T${Date.now().toString(36)}`,
       type, title: title.trim(), instructions: instructions.trim(),
@@ -498,7 +498,7 @@ function StudentRoster({
       classSection: `${s.cls}-${s.section}`,
       meta: { admissionId: s.roll, grade: s.cls, section: s.section, createdBy: teacherUsername },
     });
-    if (!res.ok) { toast.error(res.reason || "Could not add"); return false; }
+    if (!res.ok) { toast.error("We couldn't add this student", { description: res.reason || "Please check the details and try again." }); return false; }
     toast.success(`Added ${s.name} · login: ${s.loginId.toLowerCase()} / ${s.loginId.toLowerCase()}123`);
     return true;
   };
@@ -641,7 +641,7 @@ function ManualStudentDialog({ onSubmit }: { onSubmit: (s: { name: string; cls: 
       </div>
       <DialogFooter>
         <Button onClick={() => {
-          if (!name || !loginId) { toast.error("Name and Login ID are required"); return; }
+          if (!name || !loginId) { toast.error("Name and Login ID are required", { description: "Both fields are needed to create the account." }); return; }
           onSubmit({ name, cls, section, roll: roll || `R${Math.floor(Math.random()*90+10)}`, loginId });
         }}>Create Student</Button>
       </DialogFooter>
@@ -676,7 +676,7 @@ function TeacherProfilePanel({ defaults }: {
   const [mapCls, setMapCls] = useState("Class 6");
   const [mapSec, setMapSec] = useState("A");
 
-  const save = () => { writeLS(K_PROFILE, stored); toast.success("Teacher profile saved & dashboard initialized"); };
+  const save = () => { writeLS(K_PROFILE, stored); toast.success("Your profile has been saved", { description: "Your dashboard is ready to use." }); };
 
   return (
     <Card className="backdrop-blur bg-card/60 border-border/60">
