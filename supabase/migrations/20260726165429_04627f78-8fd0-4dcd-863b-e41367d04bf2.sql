@@ -1,0 +1,1 @@
+DELETE FROM public.school_registrations WHERE school_code LIKE 'ZZTEST%';
