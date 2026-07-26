@@ -343,6 +343,8 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
       <Dialog open={!!pwTarget} onOpenChange={(o) => !o && setPwTarget(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Reset password — {pwTarget?.username}</DialogTitle></DialogHeader>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Reset password — {pwTarget?.username}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <Label>New password</Label>
             <Input type="password" value={pwValue} onChange={(e) => setPwValue(e.target.value)} placeholder="Min 6 characters" />
