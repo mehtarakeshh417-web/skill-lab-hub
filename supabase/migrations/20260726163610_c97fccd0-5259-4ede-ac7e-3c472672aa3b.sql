@@ -1,0 +1,1 @@
+DELETE FROM public.school_registrations WHERE school_code IN ('SCH-TST-901','SCH-TST-902','SCH-TST-903');
