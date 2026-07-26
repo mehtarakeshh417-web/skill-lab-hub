@@ -84,6 +84,7 @@ function RegisterSchool() {
   const [submitting, setSubmitting] = useState(false);
   const [focused, setFocused] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState<{ schoolName: string; schoolCode: string } | null>(null);
+  const [formError, setFormError] = useState<string>("");
 
   const update = (k: keyof typeof empty, v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -137,6 +138,12 @@ function RegisterSchool() {
     el.focus({ preventScroll: true });
   };
 
+  const revealBanner = () => {
+    if (typeof document === "undefined") return;
+    const el = document.querySelector<HTMLElement>("[data-form-error]");
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   // Re-validate a single field when the user leaves it (focusout bubbles to the form).
   const handleBlur = (ev: React.FocusEvent<HTMLFormElement>) => {
     const name = (ev.target as HTMLElement & { name?: string }).name as keyof typeof empty | undefined;
@@ -147,10 +154,16 @@ function RegisterSchool() {
 
   const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
+    setFormError("");
     const e = validate();
     if (Object.keys(e).length) {
       setErrors(e);
       const missing = Object.keys(e).map((k) => LABELS[k as keyof typeof empty]);
+      setFormError(
+        missing.length === 1
+          ? `${missing[0]} is missing — please complete it before submitting.`
+          : `${missing.length} required fields are missing: ${missing.join(", ")}`,
+      );
       toast.error(
         missing.length === 1 ? `${missing[0]} is missing` : `${missing.length} required fields are missing`,
         { description: missing.join(", ") },
@@ -193,15 +206,19 @@ function RegisterSchool() {
       setSubmitted({ schoolName: form.schoolName.trim(), schoolCode: form.schoolCode.trim().toUpperCase() });
       setForm(empty);
       setErrors({});
+      setFormError("");
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       const raw = err instanceof Error ? err.message : String(err);
       const { field, message } = parseFieldError(raw);
       if (field && field in empty) {
         setErrors((e) => ({ ...e, [field]: message }));
+        setFormError(`${LABELS[field as keyof typeof empty]}: ${message}`);
         focusField(field);
         toast.error(`${LABELS[field as keyof typeof empty]} needs attention`, { description: message });
       } else {
+        setFormError(message);
+        revealBanner();
         toast.error("Registration failed", { description: message });
       }
     } finally {
@@ -481,6 +498,19 @@ function RegisterSchool() {
               </div>
 
               <div className="mt-10 flex flex-col gap-5 border-t border-border/60 pt-7 sm:flex-row sm:items-center sm:justify-between">
+                {formError ? (
+                  <div
+                    data-form-error
+                    role="alert"
+                    aria-live="assertive"
+                    className="order-first w-full rounded-2xl border border-rose-500/40 bg-rose-500/10 px-5 py-4 text-sm font-semibold text-rose-600 shadow-[0_10px_30px_-14px_rgba(244,63,94,0.6)] dark:text-rose-300 sm:absolute sm:static"
+                  >
+                    <span className="inline-flex items-start gap-2">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{formError}</span>
+                    </span>
+                  </div>
+                ) : null}
                 <p className="max-w-md text-xs text-muted-foreground leading-relaxed">
                   By submitting, you authorize Avartan to contact your institution regarding onboarding. Your application enters the
                   review queue as <span className="font-semibold text-amber-500 dark:text-amber-400">Pending Approval</span> and will typically be processed within one business day.
