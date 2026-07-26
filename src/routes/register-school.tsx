@@ -328,10 +328,10 @@ function RegisterSchool() {
                     </span>
                     <div
                       className={
-                        "group relative overflow-hidden rounded-2xl border bg-background/40 shadow-inner transition-all duration-300 focus-within:shadow-[0_0_0_4px_hsl(var(--primary)/0.15)] " +
+                        "group relative overflow-hidden rounded-2xl border bg-muted/50 transition-all duration-300 dark:bg-background/40 " +
                         (errors.notes
                           ? "border-rose-400/60 shadow-[0_0_0_4px_rgba(244,63,94,0.12)]"
-                          : "border-border/60 focus-within:border-primary/60")
+                          : "border-border focus-within:border-primary/70 focus-within:bg-background focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_18%,transparent)]")
                       }
                     >
                       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 transition-opacity duration-300 group-focus-within:opacity-100" />
