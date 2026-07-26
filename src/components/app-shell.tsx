@@ -25,6 +25,8 @@ import { NotificationsBell } from "@/components/notifications-bell";
 import { useServerFn } from "@tanstack/react-start";
 import { getMySecurityStatus } from "@/lib/security.functions";
 import { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
 type NavItem = { label: string; to: string; icon: typeof LayoutDashboard };
 
