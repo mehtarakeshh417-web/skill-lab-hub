@@ -150,9 +150,34 @@ export async function createSchoolForActor(input: SchoolOnboardingInput, actorSu
       .single();
 
     if (schoolInsert.error) throw new Error(schoolInsert.error.message);
+    const { writeAudit } = await import("./security.server");
+    await writeAudit({
+      actorUserId,
+      actorRole: flags.isAdmin ? "admin" : "portal_manager",
+      action: "school.onboard",
+      module: "Schools",
+      entityType: "school",
+      entityId: userId,
+      entityLabel: input.schoolName.trim(),
+      targetUserId: userId,
+      targetRole: "school",
+      newValue: { schoolCode, username, city: input.city, state: input.state, salesRepId: input.salesRepId },
+      remarks: "School onboarded directly from the portal",
+    });
     return toRecord(schoolInsert.data, flags.isAdmin ? "admin" : "manager");
   } catch (error) {
     await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { writeAudit } = await import("./security.server");
+    await writeAudit({
+      actorUserId,
+      actorRole: flags.isAdmin ? "admin" : "portal_manager",
+      action: "school.onboard",
+      module: "Schools",
+      entityType: "school",
+      entityLabel: input.schoolName.trim(),
+      status: "failure",
+      remarks: error instanceof Error ? error.message : "School onboarding failed",
+    });
     throw error;
   }
 }
