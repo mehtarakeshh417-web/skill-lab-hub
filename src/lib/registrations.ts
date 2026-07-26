@@ -103,14 +103,3 @@ export function parseFieldError(message: string): { field?: string; message: str
   return { field: m[1], message: m[2] };
 }
 
-function _unusedGeneratePassword(len = 14): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*";
-  let out = "";
-  const buf = new Uint32Array(len);
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) crypto.getRandomValues(buf);
-  for (let i = 0; i < len; i++) {
-    const idx = (buf[i] || Math.floor(Math.random() * 1e9)) % chars.length;
-    out += chars[idx];
-  }
-  return out;
-}
