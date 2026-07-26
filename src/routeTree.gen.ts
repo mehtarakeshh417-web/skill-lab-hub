@@ -42,6 +42,7 @@ import { Route as AdminSalesHierarchyRouteImport } from './routes/admin.sales-hi
 import { Route as AdminPendingSchoolsRouteImport } from './routes/admin.pending-schools'
 import { Route as AdminCreateSalesRepRouteImport } from './routes/admin.create-sales-rep'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
+import { Route as ApiPublicSchoolRegistrationsRouteImport } from './routes/api/public/school-registrations'
 
 const TeacherRoute = TeacherRouteImport.update({
   id: '/teacher',
@@ -208,6 +209,12 @@ const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
   path: '/audit-logs',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicSchoolRegistrationsRoute =
+  ApiPublicSchoolRegistrationsRouteImport.update({
+    id: '/api/public/school-registrations',
+    path: '/api/public/school-registrations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
+  '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -276,6 +284,7 @@ export interface FileRoutesByTo {
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager': typeof ManagerIndexRoute
   '/school': typeof SchoolIndexRoute
+  '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -312,6 +321,7 @@ export interface FileRoutesById {
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
+  '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/teacher/quizzes'
     | '/manager/'
     | '/school/'
+    | '/api/public/school-registrations'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/teacher/quizzes'
     | '/manager'
     | '/school'
+    | '/api/public/school-registrations'
   id:
     | '__root__'
     | '/'
@@ -417,6 +429,7 @@ export interface FileRouteTypes {
     | '/teacher/quizzes'
     | '/manager/'
     | '/school/'
+    | '/api/public/school-registrations'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -435,6 +448,7 @@ export interface RootRouteChildren {
   TeacherRoute: typeof TeacherRouteWithChildren
   LearnSlugRoute: typeof LearnSlugRoute
   SettingsChangePasswordRoute: typeof SettingsChangePasswordRoute
+  ApiPublicSchoolRegistrationsRoute: typeof ApiPublicSchoolRegistrationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -670,6 +684,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditLogsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/school-registrations': {
+      id: '/api/public/school-registrations'
+      path: '/api/public/school-registrations'
+      fullPath: '/api/public/school-registrations'
+      preLoaderRoute: typeof ApiPublicSchoolRegistrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -769,7 +790,18 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherRoute: TeacherRouteWithChildren,
   LearnSlugRoute: LearnSlugRoute,
   SettingsChangePasswordRoute: SettingsChangePasswordRoute,
+  ApiPublicSchoolRegistrationsRoute: ApiPublicSchoolRegistrationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
