@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
-import { AuditTrailPlaceholder } from "@/components/audit-trail-placeholder";
+import { AuditTrailWorkspace } from "@/components/audit-trail-workspace";
 
 export const Route = createFileRoute("/manager/audit-logs")({
   head: () => ({
     meta: [
       { title: "Audit Trail — Avartan Manager Console" },
-      { name: "description", content: "Activity history for portal managers on the Avartan Skill Lab portal. The detailed audit trail view is being prepared." },
+      { name: "description", content: "Complete, searchable activity history of portal actions available to Avartan portal managers." },
       { property: "og:title", content: "Audit Trail — Avartan Manager Console" },
       { property: "og:description", content: "Portal activity history for managers." },
       { property: "og:type", content: "website" },
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/manager/audit-logs")({
   }),
   component: () => (
     <AppShell requireRole="portal_manager" title="Audit Trail">
-      <AuditTrailPlaceholder />
+      <AuditTrailWorkspace />
     </AppShell>
   ),
 });
