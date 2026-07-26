@@ -163,9 +163,42 @@ export async function createSalesRepForActor(
       .single();
 
     if (insert.error) throw new Error(insert.error.message);
+    const { writeAudit } = await import("./security.server");
+    await writeAudit({
+      actorUserId,
+      actorRole: flags.isAdmin ? "admin" : "portal_manager",
+      action: "sales.rep.create",
+      module: "Sales Network",
+      entityType: "sales_rep",
+      entityId: userId,
+      entityLabel: input.fullName.trim(),
+      targetUserId: userId,
+      targetRole: "sales_rep",
+      newValue: {
+        username,
+        designation: input.designation.trim(),
+        employeeId: input.employeeId?.trim() || null,
+        reportingManagerId: input.reportingManagerId ?? null,
+        status: input.status,
+      },
+      remarks: input.reportingManagerId
+        ? "Sales representative created and placed in the reporting hierarchy"
+        : "Sales representative created reporting to Admin",
+    });
     return toRecord(insert.data as SalesRepRow, "Admin", 0, flags.isAdmin ? "admin" : "manager");
   } catch (error) {
     await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { writeAudit } = await import("./security.server");
+    await writeAudit({
+      actorUserId,
+      actorRole: flags.isAdmin ? "admin" : "portal_manager",
+      action: "sales.rep.create",
+      module: "Sales Network",
+      entityType: "sales_rep",
+      entityLabel: input.fullName.trim(),
+      status: "failure",
+      remarks: error instanceof Error ? error.message : "Sales representative creation failed",
+    });
     throw error;
   }
 }

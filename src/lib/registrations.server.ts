@@ -161,6 +161,19 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
     .select("*")
     .single();
   if (insert.error) throw new Error(insert.error.message);
+  const { writeAudit } = await import("./security.server");
+  await writeAudit({
+    actorUserId: null,
+    actorUsername: username,
+    actorRole: "public",
+    action: "registration.submit",
+    module: "School Registrations",
+    entityType: "school_registration",
+    entityId: insert.data.id,
+    entityLabel: input.schoolName.trim(),
+    newValue: { schoolCode, username, email, city: input.city, state: input.state, salesRepId: input.salesRepId },
+    remarks: "Public school registration submitted for approval",
+  });
   return toRecord(insert.data);
 }
 
@@ -294,9 +307,34 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
       .eq("id", reg.id);
     if (update.error) throw new Error(update.error.message);
 
+    const { writeAudit } = await import("./security.server");
+    await writeAudit({
+      actorUserId,
+      action: "registration.approve",
+      module: "School Registrations",
+      entityType: "school_registration",
+      entityId: input.id,
+      entityLabel: schoolName,
+      targetUserId: userId,
+      targetRole: "school",
+      previousValue: { status: "pending" },
+      newValue: { status: "approved", schoolId: schoolInsert.data.id, schoolCode, username },
+      remarks: "Registration approved — school account provisioned and can sign in immediately",
+    });
     return { ok: true, schoolId: schoolInsert.data.id };
   } catch (err) {
     await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { writeAudit } = await import("./security.server");
+    await writeAudit({
+      actorUserId,
+      action: "registration.approve",
+      module: "School Registrations",
+      entityType: "school_registration",
+      entityId: input.id,
+      entityLabel: schoolName,
+      status: "failure",
+      remarks: err instanceof Error ? err.message : "Approval failed",
+    });
     throw err;
   }
 }
@@ -319,5 +357,16 @@ export async function rejectRegistration(input: RejectRegistrationInput, actorUs
     .maybeSingle();
   if (update.error) throw new Error(update.error.message);
   if (!update.data) throw new Error("Registration could not be rejected (not pending or not found).");
+  const { writeAudit } = await import("./security.server");
+  await writeAudit({
+    actorUserId,
+    action: "registration.reject",
+    module: "School Registrations",
+    entityType: "school_registration",
+    entityId: input.id,
+    previousValue: { status: "pending" },
+    newValue: { status: "rejected", reason: input.reason?.trim() || null },
+    remarks: input.reason?.trim() || "Registration rejected",
+  });
   return { ok: true };
 }

@@ -114,6 +114,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     role,
     loading,
     signOut: async () => {
+      const identifier =
+        (session?.user?.user_metadata?.username as string | undefined) ??
+        session?.user?.email ??
+        mock?.username ??
+        null;
+      const { recordAuthEvent } = await import("./audit.functions");
+      void recordAuthEvent({ data: { event: "logout", identifier } }).catch(() => null);
       mockSignOut();
       setMock(null);
       setRole(null);

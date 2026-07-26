@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, ROLE_HOME } from "@/lib/auth";
 import { mockSignIn, mockSignOut } from "@/lib/mock-auth";
+import { recordAuthEvent } from "@/lib/audit.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +73,7 @@ function AuthPage() {
       mockSignOut();
       setSubmitting(false);
       toast.success("Welcome back!");
+      void recordAuthEvent({ data: { event: "login", identifier } }).catch(() => null);
       return;
     }
 
@@ -82,11 +84,13 @@ function AuthPage() {
       toast.success(`Welcome, ${mock.session.fullName}`, {
         description: `Signed in as ${mock.session.role.replace("_", " ")}`,
       });
+      void recordAuthEvent({ data: { event: "login", identifier } }).catch(() => null);
       navigate({ to: ROLE_HOME[mock.session.role], replace: true });
       return;
     }
     setSubmitting(false);
     const description = mock.reason || error.message;
+    void recordAuthEvent({ data: { event: "login_failed", identifier, reason: description } }).catch(() => null);
     setFieldError({ form: description });
     toast.error("Sign in failed", { description });
   }

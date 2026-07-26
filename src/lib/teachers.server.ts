@@ -121,9 +121,32 @@ export async function createTeacherForSchool(
       .select("*")
       .single();
     if (insert.error) throw new Error(insert.error.message);
+    const { writeAudit } = await import("./security.server");
+    await writeAudit({
+      actorUserId,
+      action: "teacher.create",
+      module: "Teachers",
+      entityType: "teacher",
+      entityId: userId,
+      entityLabel: input.fullName.trim(),
+      targetUserId: userId,
+      targetRole: "teacher",
+      newValue: { username, fullName: input.fullName.trim(), schoolId: school.id, status: input.status },
+      remarks: `Teacher account created for ${school.name ?? "school"}`,
+    });
     return toRecord(insert.data);
   } catch (error) {
     await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { writeAudit } = await import("./security.server");
+    await writeAudit({
+      actorUserId,
+      action: "teacher.create",
+      module: "Teachers",
+      entityType: "teacher",
+      entityLabel: input.fullName.trim(),
+      status: "failure",
+      remarks: error instanceof Error ? error.message : "Teacher creation failed",
+    });
     throw error;
   }
 }
