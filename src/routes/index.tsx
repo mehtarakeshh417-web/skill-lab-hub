@@ -1,15 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
-import { submitSchoolRegistration } from "@/lib/registrations.functions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/lib/theme";
 import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
-import {
-  addRegistration,
-} from "@/lib/registrations";
 import {
   Code2,
   Sparkles,
@@ -33,14 +26,6 @@ import {
   Users,
   Cpu,
   Play,
-  Building2,
-  UserSquare2,
-  MapPin,
-  Briefcase,
-  ClipboardList,
-  Loader2,
-  AlertCircle,
-  Send,
 } from "lucide-react";
 import auroraImg from "@/assets/aurora.jpg";
 
@@ -89,7 +74,6 @@ function Landing() {
       <Technologies />
       <FeatureBento />
       <Roles />
-      <RegisterSchool />
       <Testimonials />
       <CTA />
       <Footer />
@@ -144,7 +128,7 @@ function Header() {
             </span>
           </Link>
           <Button variant="hero" size="sm" className="h-11 rounded-full px-5" asChild>
-            <a href="#register-school">Register School <ArrowRight className="h-4 w-4" /></a>
+            <Link to="/register-school">Register School <ArrowRight className="h-4 w-4" /></Link>
           </Button>
         </div>
       </div>
