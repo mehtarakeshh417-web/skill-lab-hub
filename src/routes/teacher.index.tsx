@@ -20,7 +20,7 @@ import {
   ClipboardList, Inbox, Settings2, Users, Trash2, Send, BookOpen,
 } from "lucide-react";
 
-export const Route = createFileRoute("/teacher")({
+export const Route = createFileRoute("/teacher/")({
   head: () => ({ meta: [{ title: "Teacher · Avartan Skill Lab" }] }),
   component: TeacherWorkspace,
 });

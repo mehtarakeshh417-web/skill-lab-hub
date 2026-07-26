@@ -9,8 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TeacherRouteImport } from './routes/teacher'
-import { Route as StudentRouteImport } from './routes/student'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SetupSecurityRouteImport } from './routes/setup-security'
 import { Route as SchoolRouteImport } from './routes/school'
@@ -20,10 +18,12 @@ import { Route as ManagerRouteImport } from './routes/manager'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
+import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as SchoolIndexRouteImport } from './routes/school.index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TeacherQuizzesRouteImport } from './routes/teacher.quizzes'
 import { Route as TeacherAssignmentsRouteImport } from './routes/teacher.assignments'
 import { Route as StudentQuizzesRouteImport } from './routes/student.quizzes'
@@ -48,16 +48,6 @@ import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as ApiPublicSchoolRegistrationsRouteImport } from './routes/api/public/school-registrations'
 import { Route as ApiPublicSalesRepsRouteImport } from './routes/api/public/sales-reps'
 
-const TeacherRoute = TeacherRouteImport.update({
-  id: '/teacher',
-  path: '/teacher',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StudentRoute = StudentRouteImport.update({
-  id: '/student',
-  path: '/student',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -103,14 +93,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherIndexRoute = TeacherIndexRouteImport.update({
+  id: '/teacher/',
+  path: '/teacher/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentIndexRoute = StudentIndexRouteImport.update({
+  id: '/student/',
+  path: '/student/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SchoolIndexRoute = SchoolIndexRouteImport.update({
@@ -123,25 +118,30 @@ const ManagerIndexRoute = ManagerIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ManagerRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeacherQuizzesRoute = TeacherQuizzesRouteImport.update({
-  id: '/quizzes',
-  path: '/quizzes',
-  getParentRoute: () => TeacherRoute,
+  id: '/teacher/quizzes',
+  path: '/teacher/quizzes',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
-  id: '/assignments',
-  path: '/assignments',
-  getParentRoute: () => TeacherRoute,
+  id: '/teacher/assignments',
+  path: '/teacher/assignments',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const StudentQuizzesRoute = StudentQuizzesRouteImport.update({
-  id: '/quizzes',
-  path: '/quizzes',
-  getParentRoute: () => StudentRoute,
+  id: '/student/quizzes',
+  path: '/student/quizzes',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const StudentAssignmentsRoute = StudentAssignmentsRouteImport.update({
-  id: '/assignments',
-  path: '/assignments',
-  getParentRoute: () => StudentRoute,
+  id: '/student/assignments',
+  path: '/student/assignments',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsChangePasswordRoute = SettingsChangePasswordRouteImport.update({
   id: '/settings/change-password',
@@ -199,34 +199,34 @@ const LearnSlugRoute = LearnSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSalesHierarchyRoute = AdminSalesHierarchyRouteImport.update({
-  id: '/sales-hierarchy',
-  path: '/sales-hierarchy',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/sales-hierarchy',
+  path: '/admin/sales-hierarchy',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPendingSchoolsRoute = AdminPendingSchoolsRouteImport.update({
-  id: '/pending-schools',
-  path: '/pending-schools',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/pending-schools',
+  path: '/admin/pending-schools',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminDirectoryRoute = AdminDirectoryRouteImport.update({
-  id: '/directory',
-  path: '/directory',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/directory',
+  path: '/admin/directory',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCreateSalesRepRoute = AdminCreateSalesRepRouteImport.update({
-  id: '/create-sales-rep',
-  path: '/create-sales-rep',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/create-sales-rep',
+  path: '/admin/create-sales-rep',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
-  id: '/audit-logs',
-  path: '/audit-logs',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/audit-logs',
+  path: '/admin/audit-logs',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSchoolRegistrationsRoute =
   ApiPublicSchoolRegistrationsRouteImport.update({
@@ -242,7 +242,6 @@ const ApiPublicSalesRepsRoute = ApiPublicSalesRepsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -252,8 +251,6 @@ export interface FileRoutesByFullPath {
   '/school': typeof SchoolRouteWithChildren
   '/setup-security': typeof SetupSecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/student': typeof StudentRouteWithChildren
-  '/teacher': typeof TeacherRouteWithChildren
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/directory': typeof AdminDirectoryRoute
@@ -275,14 +272,16 @@ export interface FileRoutesByFullPath {
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
+  '/admin/': typeof AdminIndexRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
+  '/student/': typeof StudentIndexRoute
+  '/teacher/': typeof TeacherIndexRoute
   '/api/public/sales-reps': typeof ApiPublicSalesRepsRoute
   '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -290,8 +289,6 @@ export interface FileRoutesByTo {
   '/sales-rep': typeof SalesRepRoute
   '/setup-security': typeof SetupSecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/student': typeof StudentRouteWithChildren
-  '/teacher': typeof TeacherRouteWithChildren
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/directory': typeof AdminDirectoryRoute
@@ -313,15 +310,17 @@ export interface FileRoutesByTo {
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
+  '/admin': typeof AdminIndexRoute
   '/manager': typeof ManagerIndexRoute
   '/school': typeof SchoolIndexRoute
+  '/student': typeof StudentIndexRoute
+  '/teacher': typeof TeacherIndexRoute
   '/api/public/sales-reps': typeof ApiPublicSalesRepsRoute
   '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -331,8 +330,6 @@ export interface FileRoutesById {
   '/school': typeof SchoolRouteWithChildren
   '/setup-security': typeof SetupSecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/student': typeof StudentRouteWithChildren
-  '/teacher': typeof TeacherRouteWithChildren
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/directory': typeof AdminDirectoryRoute
@@ -354,8 +351,11 @@ export interface FileRoutesById {
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
+  '/admin/': typeof AdminIndexRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
+  '/student/': typeof StudentIndexRoute
+  '/teacher/': typeof TeacherIndexRoute
   '/api/public/sales-reps': typeof ApiPublicSalesRepsRoute
   '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
@@ -363,7 +363,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
     | '/auth'
     | '/console'
     | '/forgot-password'
@@ -373,8 +372,6 @@ export interface FileRouteTypes {
     | '/school'
     | '/setup-security'
     | '/sitemap.xml'
-    | '/student'
-    | '/teacher'
     | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/directory'
@@ -396,14 +393,16 @@ export interface FileRouteTypes {
     | '/student/quizzes'
     | '/teacher/assignments'
     | '/teacher/quizzes'
+    | '/admin/'
     | '/manager/'
     | '/school/'
+    | '/student/'
+    | '/teacher/'
     | '/api/public/sales-reps'
     | '/api/public/school-registrations'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/auth'
     | '/console'
     | '/forgot-password'
@@ -411,8 +410,6 @@ export interface FileRouteTypes {
     | '/sales-rep'
     | '/setup-security'
     | '/sitemap.xml'
-    | '/student'
-    | '/teacher'
     | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/directory'
@@ -434,14 +431,16 @@ export interface FileRouteTypes {
     | '/student/quizzes'
     | '/teacher/assignments'
     | '/teacher/quizzes'
+    | '/admin'
     | '/manager'
     | '/school'
+    | '/student'
+    | '/teacher'
     | '/api/public/sales-reps'
     | '/api/public/school-registrations'
   id:
     | '__root__'
     | '/'
-    | '/admin'
     | '/auth'
     | '/console'
     | '/forgot-password'
@@ -451,8 +450,6 @@ export interface FileRouteTypes {
     | '/school'
     | '/setup-security'
     | '/sitemap.xml'
-    | '/student'
-    | '/teacher'
     | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/directory'
@@ -474,15 +471,17 @@ export interface FileRouteTypes {
     | '/student/quizzes'
     | '/teacher/assignments'
     | '/teacher/quizzes'
+    | '/admin/'
     | '/manager/'
     | '/school/'
+    | '/student/'
+    | '/teacher/'
     | '/api/public/sales-reps'
     | '/api/public/school-registrations'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   ConsoleRoute: typeof ConsoleRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -492,30 +491,27 @@ export interface RootRouteChildren {
   SchoolRoute: typeof SchoolRouteWithChildren
   SetupSecurityRoute: typeof SetupSecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  StudentRoute: typeof StudentRouteWithChildren
-  TeacherRoute: typeof TeacherRouteWithChildren
+  AdminAuditLogsRoute: typeof AdminAuditLogsRoute
+  AdminCreateSalesRepRoute: typeof AdminCreateSalesRepRoute
+  AdminDirectoryRoute: typeof AdminDirectoryRoute
+  AdminPendingSchoolsRoute: typeof AdminPendingSchoolsRoute
+  AdminSalesHierarchyRoute: typeof AdminSalesHierarchyRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   LearnSlugRoute: typeof LearnSlugRoute
   SettingsChangePasswordRoute: typeof SettingsChangePasswordRoute
+  StudentAssignmentsRoute: typeof StudentAssignmentsRoute
+  StudentQuizzesRoute: typeof StudentQuizzesRoute
+  TeacherAssignmentsRoute: typeof TeacherAssignmentsRoute
+  TeacherQuizzesRoute: typeof TeacherQuizzesRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  StudentIndexRoute: typeof StudentIndexRoute
+  TeacherIndexRoute: typeof TeacherIndexRoute
   ApiPublicSalesRepsRoute: typeof ApiPublicSalesRepsRoute
   ApiPublicSchoolRegistrationsRoute: typeof ApiPublicSchoolRegistrationsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/teacher': {
-      id: '/teacher'
-      path: '/teacher'
-      fullPath: '/teacher'
-      preLoaderRoute: typeof TeacherRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/student': {
-      id: '/student'
-      path: '/student'
-      fullPath: '/student'
-      preLoaderRoute: typeof StudentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -579,18 +575,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/': {
+      id: '/teacher/'
+      path: '/teacher'
+      fullPath: '/teacher/'
+      preLoaderRoute: typeof TeacherIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student/': {
+      id: '/student/'
+      path: '/student'
+      fullPath: '/student/'
+      preLoaderRoute: typeof StudentIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/school/': {
@@ -607,33 +610,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerIndexRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/teacher/quizzes': {
       id: '/teacher/quizzes'
-      path: '/quizzes'
+      path: '/teacher/quizzes'
       fullPath: '/teacher/quizzes'
       preLoaderRoute: typeof TeacherQuizzesRouteImport
-      parentRoute: typeof TeacherRoute
+      parentRoute: typeof rootRouteImport
     }
     '/teacher/assignments': {
       id: '/teacher/assignments'
-      path: '/assignments'
+      path: '/teacher/assignments'
       fullPath: '/teacher/assignments'
       preLoaderRoute: typeof TeacherAssignmentsRouteImport
-      parentRoute: typeof TeacherRoute
+      parentRoute: typeof rootRouteImport
     }
     '/student/quizzes': {
       id: '/student/quizzes'
-      path: '/quizzes'
+      path: '/student/quizzes'
       fullPath: '/student/quizzes'
       preLoaderRoute: typeof StudentQuizzesRouteImport
-      parentRoute: typeof StudentRoute
+      parentRoute: typeof rootRouteImport
     }
     '/student/assignments': {
       id: '/student/assignments'
-      path: '/assignments'
+      path: '/student/assignments'
       fullPath: '/student/assignments'
       preLoaderRoute: typeof StudentAssignmentsRouteImport
-      parentRoute: typeof StudentRoute
+      parentRoute: typeof rootRouteImport
     }
     '/settings/change-password': {
       id: '/settings/change-password'
@@ -714,45 +724,45 @@ declare module '@tanstack/react-router' {
     }
     '/admin/users': {
       id: '/admin/users'
-      path: '/users'
+      path: '/admin/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/sales-hierarchy': {
       id: '/admin/sales-hierarchy'
-      path: '/sales-hierarchy'
+      path: '/admin/sales-hierarchy'
       fullPath: '/admin/sales-hierarchy'
       preLoaderRoute: typeof AdminSalesHierarchyRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/pending-schools': {
       id: '/admin/pending-schools'
-      path: '/pending-schools'
+      path: '/admin/pending-schools'
       fullPath: '/admin/pending-schools'
       preLoaderRoute: typeof AdminPendingSchoolsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/directory': {
       id: '/admin/directory'
-      path: '/directory'
+      path: '/admin/directory'
       fullPath: '/admin/directory'
       preLoaderRoute: typeof AdminDirectoryRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/create-sales-rep': {
       id: '/admin/create-sales-rep'
-      path: '/create-sales-rep'
+      path: '/admin/create-sales-rep'
       fullPath: '/admin/create-sales-rep'
       preLoaderRoute: typeof AdminCreateSalesRepRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/audit-logs': {
       id: '/admin/audit-logs'
-      path: '/audit-logs'
+      path: '/admin/audit-logs'
       fullPath: '/admin/audit-logs'
       preLoaderRoute: typeof AdminAuditLogsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/school-registrations': {
       id: '/api/public/school-registrations'
@@ -770,26 +780,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface AdminRouteChildren {
-  AdminAuditLogsRoute: typeof AdminAuditLogsRoute
-  AdminCreateSalesRepRoute: typeof AdminCreateSalesRepRoute
-  AdminDirectoryRoute: typeof AdminDirectoryRoute
-  AdminPendingSchoolsRoute: typeof AdminPendingSchoolsRoute
-  AdminSalesHierarchyRoute: typeof AdminSalesHierarchyRoute
-  AdminUsersRoute: typeof AdminUsersRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminAuditLogsRoute: AdminAuditLogsRoute,
-  AdminCreateSalesRepRoute: AdminCreateSalesRepRoute,
-  AdminDirectoryRoute: AdminDirectoryRoute,
-  AdminPendingSchoolsRoute: AdminPendingSchoolsRoute,
-  AdminSalesHierarchyRoute: AdminSalesHierarchyRoute,
-  AdminUsersRoute: AdminUsersRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface ManagerRouteChildren {
   ManagerAuditLogsRoute: typeof ManagerAuditLogsRoute
@@ -831,35 +821,8 @@ const SchoolRouteChildren: SchoolRouteChildren = {
 const SchoolRouteWithChildren =
   SchoolRoute._addFileChildren(SchoolRouteChildren)
 
-interface StudentRouteChildren {
-  StudentAssignmentsRoute: typeof StudentAssignmentsRoute
-  StudentQuizzesRoute: typeof StudentQuizzesRoute
-}
-
-const StudentRouteChildren: StudentRouteChildren = {
-  StudentAssignmentsRoute: StudentAssignmentsRoute,
-  StudentQuizzesRoute: StudentQuizzesRoute,
-}
-
-const StudentRouteWithChildren =
-  StudentRoute._addFileChildren(StudentRouteChildren)
-
-interface TeacherRouteChildren {
-  TeacherAssignmentsRoute: typeof TeacherAssignmentsRoute
-  TeacherQuizzesRoute: typeof TeacherQuizzesRoute
-}
-
-const TeacherRouteChildren: TeacherRouteChildren = {
-  TeacherAssignmentsRoute: TeacherAssignmentsRoute,
-  TeacherQuizzesRoute: TeacherQuizzesRoute,
-}
-
-const TeacherRouteWithChildren =
-  TeacherRoute._addFileChildren(TeacherRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   ConsoleRoute: ConsoleRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
@@ -869,10 +832,21 @@ const rootRouteChildren: RootRouteChildren = {
   SchoolRoute: SchoolRouteWithChildren,
   SetupSecurityRoute: SetupSecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  StudentRoute: StudentRouteWithChildren,
-  TeacherRoute: TeacherRouteWithChildren,
+  AdminAuditLogsRoute: AdminAuditLogsRoute,
+  AdminCreateSalesRepRoute: AdminCreateSalesRepRoute,
+  AdminDirectoryRoute: AdminDirectoryRoute,
+  AdminPendingSchoolsRoute: AdminPendingSchoolsRoute,
+  AdminSalesHierarchyRoute: AdminSalesHierarchyRoute,
+  AdminUsersRoute: AdminUsersRoute,
   LearnSlugRoute: LearnSlugRoute,
   SettingsChangePasswordRoute: SettingsChangePasswordRoute,
+  StudentAssignmentsRoute: StudentAssignmentsRoute,
+  StudentQuizzesRoute: StudentQuizzesRoute,
+  TeacherAssignmentsRoute: TeacherAssignmentsRoute,
+  TeacherQuizzesRoute: TeacherQuizzesRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  StudentIndexRoute: StudentIndexRoute,
+  TeacherIndexRoute: TeacherIndexRoute,
   ApiPublicSalesRepsRoute: ApiPublicSalesRepsRoute,
   ApiPublicSchoolRegistrationsRoute: ApiPublicSchoolRegistrationsRoute,
 }

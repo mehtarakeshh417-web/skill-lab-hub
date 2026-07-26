@@ -13,7 +13,7 @@ import {
   UserCog, ScrollText, FileSpreadsheet, BarChart3, Building2, ArrowRight, PlusCircle,
 } from "lucide-react";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/admin/")({
   head: () => ({
     meta: [
       { title: "Admin Console — Avartan Skill Lab" },

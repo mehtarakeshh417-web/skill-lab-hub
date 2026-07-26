@@ -19,7 +19,7 @@ import {
   Play,
 } from "lucide-react";
 
-export const Route = createFileRoute("/student")({
+export const Route = createFileRoute("/student/")({
   head: () => ({ meta: [{ title: "Student Lab · Avartan Skill Lab" }] }),
   component: StudentDashboard,
 });
