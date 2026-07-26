@@ -69,8 +69,10 @@ function RegisterSchool() {
     schoolName: "",
     schoolCode: "",
     principalName: "",
-    region: "",
     designation: "",
+    state: "",
+    city: "",
+    area: "",
     notes: "",
     username: "",
     password: "",
@@ -88,20 +90,28 @@ function RegisterSchool() {
     if (errors[k]) setErrors((e) => ({ ...e, [k]: "" }));
   };
 
+  const LABELS: Record<keyof typeof empty, string> = {
+    schoolName: "School Name",
+    schoolCode: "School Code",
+    principalName: "Principal Name",
+    designation: "Contact Designation",
+    state: "State",
+    city: "City",
+    area: "Area",
+    notes: "Submission Notes",
+    username: "Login Username",
+    password: "Login Password",
+    email: "Contact Email",
+    phone: "Phone Number",
+    address: "Address",
+  };
+
   const validate = (): Record<string, string> => {
     const e: Record<string, string> = {};
-    const code = form.schoolCode.trim().toUpperCase();
-    if (!form.schoolName.trim() || form.schoolName.trim().length < 3) e.schoolName = "Please enter the full institutional name.";
-    if (!code) e.schoolCode = "School code is required.";
-    else if (code.length < 3) e.schoolCode = "School code must be at least 3 characters.";
-    if (!form.principalName.trim()) e.principalName = "Principal name is required.";
-    if (!form.region.trim()) e.region = "Region / area is required.";
-    if (!form.designation.trim()) e.designation = "Contact designation is required.";
-    if (!form.username.trim()) e.username = "Choose a login username.";
-    if (!form.password) e.password = "Choose a password.";
-    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) e.email = "Valid contact email required.";
-    if (!form.phone.trim()) e.phone = "Phone number is required.";
-    if (form.notes.length > 600) e.notes = "Notes must be under 600 characters.";
+    (Object.keys(empty) as (keyof typeof empty)[]).forEach((k) => {
+      if (!String(form[k] ?? "").trim()) e[k] = `${LABELS[k]} is missing — this field is required.`;
+    });
+    if (!e.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = "Enter a valid email address.";
     return e;
   };
 
@@ -110,7 +120,11 @@ function RegisterSchool() {
     const e = validate();
     if (Object.keys(e).length) {
       setErrors(e);
-      toast.error("Please fix the highlighted fields before submitting.");
+      const missing = Object.keys(e).map((k) => LABELS[k as keyof typeof empty]);
+      toast.error(
+        missing.length === 1 ? `${missing[0]} is missing` : `${missing.length} required fields are missing`,
+        { description: missing.join(", ") },
+      );
       return;
     }
     setSubmitting(true);
@@ -120,7 +134,10 @@ function RegisterSchool() {
           schoolName: form.schoolName.trim(),
           schoolCode: form.schoolCode.trim().toUpperCase(),
           principalName: form.principalName.trim(),
-          region: form.region.trim(),
+          state: form.state.trim(),
+          city: form.city.trim(),
+          area: form.area.trim(),
+          region: [form.city.trim(), form.state.trim()].filter(Boolean).join(" / "),
           designation: form.designation.trim(),
           notes: form.notes.trim(),
           username: form.username.trim().toLowerCase(),
@@ -135,7 +152,7 @@ function RegisterSchool() {
         schoolName: form.schoolName.trim(),
         schoolCode: form.schoolCode.trim().toUpperCase(),
         principalName: form.principalName.trim(),
-        region: form.region.trim(),
+        region: [form.area.trim(), form.city.trim(), form.state.trim()].filter(Boolean).join(", "),
         designation: form.designation.trim(),
         notes: form.notes.trim(),
       });
@@ -213,8 +230,6 @@ function RegisterSchool() {
                   onChange={(v) => update("schoolCode", v.toUpperCase())}
                   placeholder="SCH-DEL-208"
                   error={errors.schoolCode}
-                  hint="4–16 chars · uppercase letters, digits, hyphen"
-                  maxLength={16}
                   focused={focused.schoolCode}
                   onFocus={() => setFocused((f) => ({ ...f, schoolCode: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, schoolCode: false }))}
@@ -231,17 +246,6 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, principalName: false }))}
                 />
                 <Field
-                  label="Region / Area"
-                  icon={MapPin}
-                  value={form.region}
-                  onChange={(v) => update("region", v)}
-                  placeholder="Maharashtra / Pune"
-                  error={errors.region}
-                  focused={focused.region}
-                  onFocus={() => setFocused((f) => ({ ...f, region: true }))}
-                  onBlur={() => setFocused((f) => ({ ...f, region: false }))}
-                />
-                <Field
                   label="Contact Designation"
                   icon={Briefcase}
                   value={form.designation}
@@ -251,6 +255,39 @@ function RegisterSchool() {
                   focused={focused.designation}
                   onFocus={() => setFocused((f) => ({ ...f, designation: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, designation: false }))}
+                />
+                <Field
+                  label="State"
+                  icon={MapPin}
+                  value={form.state}
+                  onChange={(v) => update("state", v)}
+                  placeholder="Maharashtra"
+                  error={errors.state}
+                  focused={focused.state}
+                  onFocus={() => setFocused((f) => ({ ...f, state: true }))}
+                  onBlur={() => setFocused((f) => ({ ...f, state: false }))}
+                />
+                <Field
+                  label="City"
+                  icon={MapPin}
+                  value={form.city}
+                  onChange={(v) => update("city", v)}
+                  placeholder="Pune"
+                  error={errors.city}
+                  focused={focused.city}
+                  onFocus={() => setFocused((f) => ({ ...f, city: true }))}
+                  onBlur={() => setFocused((f) => ({ ...f, city: false }))}
+                />
+                <Field
+                  label="Area"
+                  icon={MapPin}
+                  value={form.area}
+                  onChange={(v) => update("area", v)}
+                  placeholder="Kothrud"
+                  error={errors.area}
+                  focused={focused.area}
+                  onFocus={() => setFocused((f) => ({ ...f, area: true }))}
+                  onBlur={() => setFocused((f) => ({ ...f, area: false }))}
                 />
               </div>
 
@@ -313,6 +350,7 @@ function RegisterSchool() {
                     value={form.address}
                     onChange={(v) => update("address", v)}
                     placeholder="Street, city, state, PIN"
+                    error={errors.address}
                     focused={focused.address}
                     onFocus={() => setFocused((f) => ({ ...f, address: true }))}
                     onBlur={() => setFocused((f) => ({ ...f, address: false }))}
@@ -322,7 +360,6 @@ function RegisterSchool() {
                   <label className="block">
                     <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Submission Notes
-                      <span className="text-[10px] font-normal normal-case text-muted-foreground/70">optional</span>
                     </span>
                     <div
                       className={
@@ -337,7 +374,6 @@ function RegisterSchool() {
                         value={form.notes}
                         onChange={(e) => update("notes", e.target.value)}
                         rows={4}
-                        maxLength={600}
                         placeholder="Tell us about your school size, requested tracks, timelines, or any special requirements…"
                         className="relative w-full resize-none bg-transparent px-5 py-4 text-base outline-none placeholder:text-muted-foreground/60"
                       />
@@ -349,7 +385,7 @@ function RegisterSchool() {
                     ) : (
                       <span>Plain text only · no HTML.</span>
                     )}
-                    <span className="tabular-nums">{form.notes.length}/600</span>
+                    <span className="tabular-nums">{form.notes.length} characters</span>
                   </div>
                 </div>
               </div>
