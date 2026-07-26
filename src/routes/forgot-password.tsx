@@ -70,8 +70,8 @@ function ForgotPage() {
           {step === "identifier" && (
             <form onSubmit={onLookup} className="space-y-4">
               <div>
-                <Label className="text-slate-200">Username or email</Label>
-                <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="e.g. admin or you@school.com" autoFocus />
+                <Label className="text-slate-200">Username, email or phone</Label>
+                <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="e.g. admin, you@school.com or 9876543210" autoFocus />
               </div>
               <Button type="submit" className="w-full" disabled={busy || !identifier.trim()}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue"}
