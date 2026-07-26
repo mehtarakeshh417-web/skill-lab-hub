@@ -4,14 +4,13 @@ import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
-import { PendingSchoolsPanel } from "@/components/pending-schools-panel";
 import { getDirectory } from "@/lib/directory.functions";
 import { exportXlsx, type ExportColumn } from "@/lib/export-report";
 import { useAuth } from "@/lib/auth";
 import type { SchoolRow } from "@/lib/directory.server";
 import {
   School2, Users, GraduationCap, ClipboardList, Briefcase, ShieldAlert,
-  UserCog, ScrollText, FileSpreadsheet, LayoutGrid, Building2, ArrowRight, PlusCircle,
+  UserCog, ScrollText, FileSpreadsheet, BarChart3, Building2, ArrowRight, PlusCircle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -78,8 +77,8 @@ function AdminDashboard() {
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <QuickAction to="/admin/directory" icon={LayoutGrid} label="Portal directory" hint="Schools, teachers, students" />
         <QuickAction to="/admin/pending-schools" icon={ClipboardList} label="Approvals" hint={`${totals?.pendingRegistrations ?? 0} awaiting review`} />
+        <QuickAction to="/admin/sales-hierarchy" icon={BarChart3} label="Sales hierarchy" hint="Org reporting tree" />
         <QuickAction to="/admin/users" icon={UserCog} label="User management" hint="Passwords & access" />
         <QuickAction to="/admin/create-sales-rep" icon={PlusCircle} label="Add sales rep" hint="Grow the field team" />
         <QuickAction to="/admin/audit-logs" icon={ScrollText} label="Audit trail" hint="Activity history" />
@@ -89,21 +88,6 @@ function AdminDashboard() {
         <HealthTile label="Accounts pending security setup" value={totals?.pendingSecurity ?? 0} to="/admin/users" hint="Manage these users" />
         <HealthTile label="Schools with zero students" value={totals?.schoolsWithoutStudents ?? 0} to="/admin/directory" search={{ tab: "schools" }} hint="Review those schools" />
         <HealthTile label="Deactivated accounts" value={totals?.inactiveAccounts ?? 0} to="/admin/directory" search={{ tab: "schools", status: "inactive" }} hint="See paused accounts" />
-      </div>
-
-      <div className="mt-6 rounded-3xl border border-border/60 bg-card/70 p-6 shadow-elegant backdrop-blur-xl lg:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-primary" />
-            <div className="font-display text-lg font-semibold">Pending school approvals</div>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            Approve to activate the school login, or reject to keep it inactive.
-          </div>
-        </div>
-        <div className="mt-5">
-          <PendingSchoolsPanel audience="admin" />
-        </div>
       </div>
 
       <div className="mt-6 rounded-3xl border border-border/60 bg-card/70 p-6 shadow-elegant backdrop-blur-xl lg:p-8">
