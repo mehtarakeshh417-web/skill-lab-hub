@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
@@ -534,6 +535,7 @@ function StructurePanel({
   teachers: MockAccount[];
 }) {
   const [newClass, setNewClass] = useState("");
+  const [classToRemove, setClassToRemove] = useState<string | null>(null);
 
   const addClass = () => {
     const grade = newClass.trim();
@@ -773,6 +775,22 @@ function StructurePanel({
           ))}
         </div>
       </section>
+
+      <ConfirmDialog
+        open={Boolean(classToRemove)}
+        onOpenChange={(o) => { if (!o) setClassToRemove(null); }}
+        tone="danger"
+        title="Remove this class?"
+        description="This class and every section inside it will be removed from your school setup."
+        impact={[
+          "All sections under this class will be removed.",
+          "Teachers assigned to those sections will become unassigned.",
+          "Students stay on your roster — you can move them to another class.",
+        ]}
+        confirmLabel="Remove class"
+        cancelLabel="Keep class"
+        onConfirm={confirmRemoveClass}
+      />
     </div>
   );
 }
