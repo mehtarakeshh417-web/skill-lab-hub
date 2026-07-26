@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
-import { submitSchoolRegistration } from "@/lib/registrations.functions";
 import { parseFieldError } from "@/lib/registrations";
 import { INDIA_STATES, citiesForState } from "@/lib/india-locations";
 import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
@@ -66,8 +64,6 @@ function RegisterSchoolPage() {
 // Public School Self-Registration Form
 // ============================================================
 function RegisterSchool() {
-  const submitFn = useServerFn(submitSchoolRegistration);
-
   const empty = {
     schoolName: "",
     schoolCode: "",
@@ -164,8 +160,10 @@ function RegisterSchool() {
     }
     setSubmitting(true);
     try {
-      await submitFn({
-        data: {
+      const response = await fetch("/api/public/school-registrations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
           schoolName: form.schoolName.trim(),
           schoolCode: form.schoolCode.trim().toUpperCase(),
           principalName: form.principalName.trim(),
@@ -180,8 +178,15 @@ function RegisterSchool() {
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(),
           address: form.address.trim(),
-        },
+        }),
       });
+      const result = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string; field?: string }
+        | null;
+      if (!response.ok || !result?.ok) {
+        const message = result?.error ?? "Registration could not be submitted. Please try again.";
+        throw new Error(result?.field ? `[${result.field}] ${message}` : message);
+      }
       toast.success("Registration submitted", {
         description: `${form.schoolName.trim()} · status: Pending Approval`,
       });
@@ -268,7 +273,7 @@ function RegisterSchool() {
             onSubmit={submit}
             onBlur={handleBlur}
             noValidate
-            className="slab-3d relative overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-7 shadow-[0_30px_80px_-30px_hsl(var(--primary)/0.5)] backdrop-blur-2xl sm:p-10"
+            className="registration-form-surface slab-3d relative overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-7 shadow-[0_30px_80px_-30px_hsl(var(--primary)/0.5)] backdrop-blur-2xl sm:p-10"
           >
             <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
             <div className="pointer-events-none absolute -inset-px rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-50" />
