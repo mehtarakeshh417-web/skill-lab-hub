@@ -44,10 +44,10 @@ function ManagerDashboard() {
   return (
     <AppShell requireRole="portal_manager" title="Operations">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total schools" value={data?.counts.schools ?? schools.length} icon={School2} />
-        <StatCard label="Pending approvals" value={regsData?.counts.pending ?? 0} icon={ClipboardList} />
-        <StatCard label="Students" value={data?.counts.students ?? 0} icon={Users} />
-        <StatCard label="Sales reps" value={repsData?.counts.total ?? 0} icon={UserCog} />
+        <StatCard label="Total schools" value={data?.counts.schools ?? schools.length} icon={School2} to="/manager/directory" search={{ tab: "schools" }} hint="Open school directory" />
+        <StatCard label="Pending approvals" value={regsData?.counts.pending ?? 0} icon={ClipboardList} to="/manager/pending-schools" hint="Review registrations" />
+        <StatCard label="Students" value={data?.counts.students ?? 0} icon={Users} to="/manager/directory" search={{ tab: "students" }} hint="Open student directory" />
+        <StatCard label="Sales reps" value={repsData?.counts.total ?? 0} icon={UserCog} to="/manager/sales-hierarchy" hint="View sales hierarchy" />
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-elegant">
@@ -69,8 +69,8 @@ function ManagerDashboard() {
         <div className="rounded-2xl border border-border bg-card p-6 shadow-elegant lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-display text-lg font-semibold">Pending school registrations</div>
-              <div className="text-sm text-muted-foreground">Review self-registered schools</div>
+              <div className="font-display text-lg font-semibold">Your schools</div>
+              <div className="text-sm text-muted-foreground">Schools you've onboarded or approved. Contact details are partly hidden for privacy.</div>
             </div>
             <Button variant="hero" size="sm" asChild>
               <Link to="/manager/onboard-school"><Plus className="h-4 w-4" /> Onboard school</Link>
@@ -79,13 +79,21 @@ function ManagerDashboard() {
           {schools.length === 0 ? (
             <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/30 py-12 text-center">
               <Clock className="h-8 w-8 text-muted-foreground" />
-              <div className="mt-2 font-medium">No schools onboarded</div>
-              <div className="text-sm text-muted-foreground">Created schools appear here with masked contact details.</div>
+              <div className="mt-2 font-medium">No schools yet</div>
+              <div className="text-sm text-muted-foreground">Once you onboard a school or approve a registration, it will appear here.</div>
+              <Button variant="hero" size="sm" className="mt-4" asChild>
+                <Link to="/manager/onboard-school"><Plus className="h-4 w-4" /> Onboard your first school</Link>
+              </Button>
             </div>
           ) : (
             <div className="mt-6 space-y-3">
               {schools.map((school) => (
-                <div key={school.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm backdrop-blur md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                <Link
+                  key={school.id}
+                  to="/manager/directory"
+                  search={{ tab: "schools", status: "all" }}
+                  className="grid gap-3 rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+                >
                   <div className="min-w-0">
                     <div className="truncate font-display text-base font-bold">{school.schoolName}</div>
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -98,7 +106,7 @@ function ManagerDashboard() {
                   <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-500">
                     {school.status}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -106,6 +114,9 @@ function ManagerDashboard() {
         <div className="rounded-2xl border border-border bg-card p-6 shadow-elegant">
           <div className="font-display text-lg font-semibold">Quick actions</div>
           <div className="mt-4 space-y-2">
+            <Button variant="soft" className="w-full justify-start" asChild>
+              <Link to="/manager/directory" search={{ tab: "schools", status: "all" }}><School2 className="h-4 w-4" /> Browse directory</Link>
+            </Button>
             <Button variant="soft" className="w-full justify-start" asChild>
               <Link to="/manager/onboard-school"><School2 className="h-4 w-4" /> Create school</Link>
             </Button>
@@ -129,13 +140,18 @@ function ManagerDashboard() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-elegant">
+      <Link
+        to="/manager/audit-logs"
+        className="mt-6 block rounded-2xl border border-border bg-card p-6 shadow-elegant transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
+      >
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-success" />
           <div className="font-display text-lg font-semibold">Audit trail</div>
         </div>
-        <div className="mt-4 text-sm text-muted-foreground">No actions recorded yet.</div>
-      </div>
+        <div className="mt-4 text-sm text-muted-foreground">
+          Your activity is being recorded safely. Open the audit trail to review it.
+        </div>
+      </Link>
     </AppShell>
   );
 }
