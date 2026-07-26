@@ -153,7 +153,7 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                   value={audience === "manager" ? maskPhone(r.phone) : r.phone}
                 />
                 <FieldPair label="Address" value={r.address || "—"} />
-                {r.notes && <FieldPair label="Notes" value={r.notes} full />}
+                <FieldPair label="Submission notes" value={r.notes || "— none provided —"} full />
               </div>
 
               {r.status === "pending" && (
