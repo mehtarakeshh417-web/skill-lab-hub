@@ -133,7 +133,7 @@
   --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.4);
   --shadow-md: 0 4px 14px -2px oklch(0 0 0 / 0.5), 0 2px 4px -2px oklch(0 0 0 / 0.4);
   --shadow-lg: 0 24px 56px -12px oklch(0 0 0 / 0.7);
-  --shadow-glow: 0 0 0 1px oklch(0.62 0.13 165 / 0.35), 0 16px 48px -8px oklch(0.62 0.13 165 / 0.5);
+  --shadow-glow: 0 0 0 1px oklch(0.62 0.18 25 / 0.35), 0 16px 48px -8px oklch(0.62 0.18 25 / 0.5);
   --shadow-gold: 0 0 0 1px oklch(0.79 0.115 88 / 0.35), 0 14px 40px -10px oklch(0.79 0.115 88 / 0.35);
 }
 
@@ -296,14 +296,14 @@
 @utility shadow-glow { box-shadow: var(--shadow-glow); }
 
 @utility dot-grid {
-  background-image: radial-gradient(oklch(0.62 0.13 165 / 0.15) 1px, transparent 1px);
+  background-image: radial-gradient(oklch(0.62 0.18 25 / 0.15) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
 @utility grid-lines {
   background-image:
-    linear-gradient(to right, oklch(0.62 0.13 165 / 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.62 0.13 165 / 0.08) 1px, transparent 1px);
+    linear-gradient(to right, oklch(0.62 0.18 25 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.62 0.18 25 / 0.08) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
@@ -338,8 +338,8 @@
   100% { transform: translateX(-50%); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.62 0.13 165 / 0.5); }
-  50% { box-shadow: 0 0 0 14px oklch(0.62 0.13 165 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.62 0.18 25 / 0.5); }
+  50% { box-shadow: 0 0 0 14px oklch(0.62 0.18 25 / 0); }
 }
 
 .animate-float { animation: float-y 6s ease-in-out infinite; }
@@ -368,7 +368,7 @@
   inset: 0;
   padding: 1px;
   border-radius: inherit;
-  background: linear-gradient(135deg, oklch(0.62 0.13 165 / 0.7), oklch(0.79 0.115 88 / 0.3) 40%, oklch(1 0 0 / 0.05) 70%, oklch(0.62 0.13 165 / 0.5));
+  background: linear-gradient(135deg, oklch(0.62 0.18 25 / 0.7), oklch(0.79 0.115 88 / 0.3) 40%, oklch(1 0 0 / 0.05) 70%, oklch(0.62 0.18 25 / 0.5));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -451,7 +451,7 @@
     oklch(1 0 0 / 0.18) 0%,
     oklch(0.79 0.115 88 / 0.12) 30%,
     oklch(1 0 0 / 0) 55%,
-    oklch(0.62 0.13 165 / 0.18) 100%
+    oklch(0.62 0.18 25 / 0.18) 100%
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -484,7 +484,7 @@
     inset 0 0 0 1px oklch(1 0 0 / 0.05),
     0 2px 0 0 oklch(0 0 0 / 0.45),
     0 18px 40px -10px oklch(0 0 0 / 0.55),
-    0 50px 110px -20px oklch(0.62 0.13 165 / 0.35);
+    0 50px 110px -20px oklch(0.62 0.18 25 / 0.35);
 }
 
 /* Tilt / lift-only variant — keeps content readable, adds depth on hover */
@@ -496,7 +496,7 @@
   transform: translateY(-4px);
   box-shadow:
     0 18px 40px -12px oklch(0 0 0 / 0.55),
-    0 40px 80px -20px oklch(0.62 0.13 165 / 0.35);
+    0 40px 80px -20px oklch(0.62 0.18 25 / 0.35);
 }
 
 /* Iridescent chip / badge with layered gloss */
@@ -507,7 +507,7 @@
     inset 0 1px 0 0 oklch(1 0 0 / 0.35),
     inset 0 -1px 0 0 oklch(0 0 0 / 0.20),
     0 2px 0 0 oklch(0 0 0 / 0.35),
-    0 6px 14px -4px oklch(0.62 0.13 165 / 0.45);
+    0 6px 14px -4px oklch(0.62 0.18 25 / 0.45);
   transition: transform 200ms ease-out, box-shadow 200ms ease-out, filter 200ms ease-out;
 }
 .chip-3d:hover {
@@ -590,7 +590,7 @@
   position: absolute;
   inset: -20%;
   background:
-    radial-gradient(40% 30% at 20% 20%, oklch(0.62 0.13 165 / 0.35), transparent 60%),
+    radial-gradient(40% 30% at 20% 20%, oklch(0.62 0.18 25 / 0.35), transparent 60%),
     radial-gradient(35% 25% at 80% 30%, oklch(0.79 0.115 88 / 0.30), transparent 60%),
     radial-gradient(30% 20% at 60% 80%, oklch(0.72 0.11 120 / 0.25), transparent 60%);
   filter: blur(40px);
@@ -609,10 +609,10 @@
 .light .slab-3d:hover {
   box-shadow:
     inset 0 1px 0 0 oklch(1 0 0 / 1),
-    inset 0 0 0 1px oklch(0.50 0.115 165 / 0.10),
+    inset 0 0 0 1px oklch(0.55 0.18 25 / 0.10),
     0 2px 0 0 oklch(0.2 0.035 170 / 0.08),
     0 22px 48px -12px oklch(0.2 0.035 170 / 0.22),
-    0 50px 110px -20px oklch(0.50 0.115 165 / 0.25);
+    0 50px 110px -20px oklch(0.55 0.18 25 / 0.25);
 }
 
 /* Tactile mechanical button — depth shifts down on click */
@@ -623,7 +623,7 @@
     inset 0 1px 0 0 oklch(1 0 0 / 0.30),
     inset 0 -1px 0 0 oklch(0 0 0 / 0.25),
     0 4px 0 0 oklch(0.30 0.09 168 / 0.95),
-    0 8px 20px -4px oklch(0.62 0.13 165 / 0.45);
+    0 8px 20px -4px oklch(0.62 0.18 25 / 0.45);
   transition: transform 100ms ease-out, box-shadow 200ms ease-out, filter 200ms ease-out;
 }
 .btn-3d:hover { filter: brightness(1.06); }
@@ -633,14 +633,14 @@
     inset 0 1px 0 0 oklch(1 0 0 / 0.20),
     inset 0 -1px 0 0 oklch(0 0 0 / 0.20),
     0 0 0 0 oklch(0.30 0.09 168 / 0.95),
-    0 2px 8px -2px oklch(0.62 0.13 165 / 0.35);
+    0 2px 8px -2px oklch(0.62 0.18 25 / 0.35);
 }
 .light .btn-3d {
   box-shadow:
     inset 0 1px 0 0 oklch(1 0 0 / 0.45),
     inset 0 -1px 0 0 oklch(0 0 0 / 0.12),
     0 4px 0 0 oklch(0.30 0.09 168 / 0.85),
-    0 10px 22px -6px oklch(0.50 0.115 165 / 0.40);
+    0 10px 22px -6px oklch(0.55 0.18 25 / 0.40);
 }
 
 /* Parallax image frame — skewed 3D canvas */
