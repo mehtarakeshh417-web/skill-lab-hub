@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { ProjectFile } from "./projects.schema";
 
 const fileSchema = z.object({
   name: z.string().min(1).max(255),
@@ -106,7 +107,7 @@ export const listTeacherProjects = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { getTeacherForUser } = await import("./learning.server");
-    const { admin, signFiles, studentDirectory, type ProjectFile } = await import("./projects.server");
+    const { admin, signFiles, studentDirectory } = await import("./projects.server");
     const teacher = await getTeacherForUser(context.supabase, context.userId);
     const db = await admin();
 
@@ -152,7 +153,7 @@ export const listStudentProjects = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { getStudentForUser } = await import("./learning.server");
-    const { admin, signFiles, type ProjectFile } = await import("./projects.server");
+    const { admin, signFiles } = await import("./projects.server");
     const student = await getStudentForUser(context.supabase, context.userId);
     const db = await admin();
 
