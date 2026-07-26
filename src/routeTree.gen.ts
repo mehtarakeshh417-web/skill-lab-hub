@@ -42,7 +42,6 @@ import { Route as AdminSalesHierarchyRouteImport } from './routes/admin.sales-hi
 import { Route as AdminPendingSchoolsRouteImport } from './routes/admin.pending-schools'
 import { Route as AdminDirectoryRouteImport } from './routes/admin.directory'
 import { Route as AdminCreateSalesRepRouteImport } from './routes/admin.create-sales-rep'
-import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as ApiPublicSchoolRegistrationsRouteImport } from './routes/api/public/school-registrations'
 import { Route as ApiPublicSalesRepsRouteImport } from './routes/api/public/sales-reps'
 
@@ -211,11 +210,6 @@ const AdminCreateSalesRepRoute = AdminCreateSalesRepRouteImport.update({
   path: '/create-sales-rep',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
-  id: '/audit-logs',
-  path: '/audit-logs',
-  getParentRoute: () => AdminRoute,
-} as any)
 const ApiPublicSchoolRegistrationsRoute =
   ApiPublicSchoolRegistrationsRouteImport.update({
     id: '/api/public/school-registrations',
@@ -242,7 +236,6 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
-  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
@@ -278,7 +271,6 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
-  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
@@ -317,7 +309,6 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/student': typeof StudentRouteWithChildren
   '/teacher': typeof TeacherRouteWithChildren
-  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/create-sales-rep': typeof AdminCreateSalesRepRoute
   '/admin/directory': typeof AdminDirectoryRoute
   '/admin/pending-schools': typeof AdminPendingSchoolsRoute
@@ -357,7 +348,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/student'
     | '/teacher'
-    | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/directory'
     | '/admin/pending-schools'
@@ -393,7 +383,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/student'
     | '/teacher'
-    | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/directory'
     | '/admin/pending-schools'
@@ -431,7 +420,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/student'
     | '/teacher'
-    | '/admin/audit-logs'
     | '/admin/create-sales-rep'
     | '/admin/directory'
     | '/admin/pending-schools'
@@ -709,13 +697,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCreateSalesRepRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/audit-logs': {
-      id: '/admin/audit-logs'
-      path: '/audit-logs'
-      fullPath: '/admin/audit-logs'
-      preLoaderRoute: typeof AdminAuditLogsRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/api/public/school-registrations': {
       id: '/api/public/school-registrations'
       path: '/api/public/school-registrations'
@@ -734,7 +715,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
-  AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminCreateSalesRepRoute: typeof AdminCreateSalesRepRoute
   AdminDirectoryRoute: typeof AdminDirectoryRoute
   AdminPendingSchoolsRoute: typeof AdminPendingSchoolsRoute
@@ -743,7 +723,6 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminCreateSalesRepRoute: AdminCreateSalesRepRoute,
   AdminDirectoryRoute: AdminDirectoryRoute,
   AdminPendingSchoolsRoute: AdminPendingSchoolsRoute,
