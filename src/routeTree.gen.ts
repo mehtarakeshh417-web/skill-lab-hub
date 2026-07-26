@@ -43,6 +43,7 @@ import { Route as AdminPendingSchoolsRouteImport } from './routes/admin.pending-
 import { Route as AdminCreateSalesRepRouteImport } from './routes/admin.create-sales-rep'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as ApiPublicSchoolRegistrationsRouteImport } from './routes/api/public/school-registrations'
+import { Route as ApiPublicSalesRepsRouteImport } from './routes/api/public/sales-reps'
 
 const TeacherRoute = TeacherRouteImport.update({
   id: '/teacher',
@@ -215,6 +216,11 @@ const ApiPublicSchoolRegistrationsRoute =
     path: '/api/public/school-registrations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSalesRepsRoute = ApiPublicSalesRepsRouteImport.update({
+  id: '/api/public/sales-reps',
+  path: '/api/public/sales-reps',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
+  '/api/public/sales-reps': typeof ApiPublicSalesRepsRoute
   '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
 export interface FileRoutesByTo {
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager': typeof ManagerIndexRoute
   '/school': typeof SchoolIndexRoute
+  '/api/public/sales-reps': typeof ApiPublicSalesRepsRoute
   '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
 export interface FileRoutesById {
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/manager/': typeof ManagerIndexRoute
   '/school/': typeof SchoolIndexRoute
+  '/api/public/sales-reps': typeof ApiPublicSalesRepsRoute
   '/api/public/school-registrations': typeof ApiPublicSchoolRegistrationsRoute
 }
 export interface FileRouteTypes {
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/teacher/quizzes'
     | '/manager/'
     | '/school/'
+    | '/api/public/sales-reps'
     | '/api/public/school-registrations'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -393,6 +403,7 @@ export interface FileRouteTypes {
     | '/teacher/quizzes'
     | '/manager'
     | '/school'
+    | '/api/public/sales-reps'
     | '/api/public/school-registrations'
   id:
     | '__root__'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/teacher/quizzes'
     | '/manager/'
     | '/school/'
+    | '/api/public/sales-reps'
     | '/api/public/school-registrations'
   fileRoutesById: FileRoutesById
 }
@@ -448,6 +460,7 @@ export interface RootRouteChildren {
   TeacherRoute: typeof TeacherRouteWithChildren
   LearnSlugRoute: typeof LearnSlugRoute
   SettingsChangePasswordRoute: typeof SettingsChangePasswordRoute
+  ApiPublicSalesRepsRoute: typeof ApiPublicSalesRepsRoute
   ApiPublicSchoolRegistrationsRoute: typeof ApiPublicSchoolRegistrationsRoute
 }
 
@@ -691,6 +704,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSchoolRegistrationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sales-reps': {
+      id: '/api/public/sales-reps'
+      path: '/api/public/sales-reps'
+      fullPath: '/api/public/sales-reps'
+      preLoaderRoute: typeof ApiPublicSalesRepsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -790,6 +810,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherRoute: TeacherRouteWithChildren,
   LearnSlugRoute: LearnSlugRoute,
   SettingsChangePasswordRoute: SettingsChangePasswordRoute,
+  ApiPublicSalesRepsRoute: ApiPublicSalesRepsRoute,
   ApiPublicSchoolRegistrationsRoute: ApiPublicSchoolRegistrationsRoute,
 }
 export const routeTree = rootRouteImport

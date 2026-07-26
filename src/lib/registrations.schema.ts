@@ -15,6 +15,7 @@ export const submitRegistrationSchema = z.object({
   email: z.string().trim().toLowerCase().min(1, "Email is required").email("Enter a valid email address"),
   phone: z.string().trim().min(1, "Phone is required"),
   address: z.string().trim().min(1, "Address is required"),
+  salesRepId: z.string().uuid("Select a sales representative"),
 });
 export type SubmitRegistrationInput = z.infer<typeof submitRegistrationSchema>;
 
