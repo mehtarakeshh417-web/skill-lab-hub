@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { ProjectsWidget } from "@/components/projects-widget";
+import { AssignmentsWidget } from "@/components/assignments-widget";
 import { StatCard } from "@/components/stat-card";
 import {
   BookOpen,
@@ -74,6 +75,10 @@ function StudentDashboard() {
 
       <div className="mt-6">
         <ProjectsWidget role="student" />
+      </div>
+
+      <div className="mt-6">
+        <AssignmentsWidget role="student" />
       </div>
 
       <div id="practice" className="mt-10 scroll-mt-20">

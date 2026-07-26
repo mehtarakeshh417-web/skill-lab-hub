@@ -251,6 +251,319 @@ export type Database = {
         }
         Relationships: []
       }
+      objective_assignments: {
+        Row: {
+          allow_multiple_attempts: boolean
+          assignment_type: string
+          auto_publish: boolean
+          created_at: string
+          description: string | null
+          due_at: string | null
+          id: string
+          max_attempts: number
+          passing_marks: number
+          randomize_per_student: boolean
+          school_id: string
+          show_correct_answers: boolean
+          shuffle_options: boolean
+          shuffle_questions: boolean
+          target_class: string | null
+          target_kind: string
+          target_section: string | null
+          teacher_id: string
+          technology: string | null
+          time_limit_minutes: number | null
+          title: string
+          total_marks: number
+          updated_at: string
+        }
+        Insert: {
+          allow_multiple_attempts?: boolean
+          assignment_type?: string
+          auto_publish?: boolean
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          max_attempts?: number
+          passing_marks?: number
+          randomize_per_student?: boolean
+          school_id: string
+          show_correct_answers?: boolean
+          shuffle_options?: boolean
+          shuffle_questions?: boolean
+          target_class?: string | null
+          target_kind?: string
+          target_section?: string | null
+          teacher_id: string
+          technology?: string | null
+          time_limit_minutes?: number | null
+          title: string
+          total_marks?: number
+          updated_at?: string
+        }
+        Update: {
+          allow_multiple_attempts?: boolean
+          assignment_type?: string
+          auto_publish?: boolean
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          max_attempts?: number
+          passing_marks?: number
+          randomize_per_student?: boolean
+          school_id?: string
+          show_correct_answers?: boolean
+          shuffle_options?: boolean
+          shuffle_questions?: boolean
+          target_class?: string | null
+          target_kind?: string
+          target_section?: string | null
+          teacher_id?: string
+          technology?: string | null
+          time_limit_minutes?: number | null
+          title?: string
+          total_marks?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objective_assignments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objective_assignments_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objective_attempts: {
+        Row: {
+          answers: Json
+          assignment_id: string
+          attempt_no: number
+          auto_score: number | null
+          created_at: string
+          final_score: number | null
+          id: string
+          passed: boolean | null
+          per_question_result: Json
+          question_order: Json
+          remarks: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          started_at: string
+          status: string
+          student_id: string
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          assignment_id: string
+          attempt_no?: number
+          auto_score?: number | null
+          created_at?: string
+          final_score?: number | null
+          id?: string
+          passed?: boolean | null
+          per_question_result?: Json
+          question_order?: Json
+          remarks?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          started_at?: string
+          status?: string
+          student_id: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          assignment_id?: string
+          attempt_no?: number
+          auto_score?: number | null
+          created_at?: string
+          final_score?: number | null
+          id?: string
+          passed?: boolean | null
+          per_question_result?: Json
+          question_order?: Json
+          remarks?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          started_at?: string
+          status?: string
+          student_id?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objective_attempts_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "objective_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objective_attempts_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objective_attempts_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objective_events: {
+        Row: {
+          actor_name: string | null
+          actor_role: string
+          assignment_id: string
+          attempt_id: string | null
+          created_at: string
+          id: string
+          note: string | null
+          status: string
+          student_id: string | null
+        }
+        Insert: {
+          actor_name?: string | null
+          actor_role: string
+          assignment_id: string
+          attempt_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          status: string
+          student_id?: string | null
+        }
+        Update: {
+          actor_name?: string | null
+          actor_role?: string
+          assignment_id?: string
+          attempt_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          status?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objective_events_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "objective_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objective_events_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "objective_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objective_events_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objective_questions: {
+        Row: {
+          assignment_id: string
+          correct_answers: Json
+          created_at: string
+          id: string
+          marks: number
+          options: Json
+          order_index: number
+          question_text: string
+          question_type: string
+        }
+        Insert: {
+          assignment_id: string
+          correct_answers?: Json
+          created_at?: string
+          id?: string
+          marks?: number
+          options?: Json
+          order_index?: number
+          question_text: string
+          question_type: string
+        }
+        Update: {
+          assignment_id?: string
+          correct_answers?: Json
+          created_at?: string
+          id?: string
+          marks?: number
+          options?: Json
+          order_index?: number
+          question_text?: string
+          question_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objective_questions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "objective_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objective_targets: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          student_id: string
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          student_id: string
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objective_targets_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "objective_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objective_targets_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
