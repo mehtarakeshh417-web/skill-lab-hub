@@ -1,4 +1,5 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { getRequestHeader } from "@tanstack/react-start/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
