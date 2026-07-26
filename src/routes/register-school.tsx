@@ -266,6 +266,7 @@ function RegisterSchool() {
           {/* Form Card */}
           <form
             onSubmit={submit}
+            onBlur={handleBlur}
             noValidate
             className="slab-3d relative overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-7 shadow-[0_30px_80px_-30px_hsl(var(--primary)/0.5)] backdrop-blur-2xl sm:p-10"
           >
@@ -501,9 +502,10 @@ function SectionHeading({ step, title, caption }: { step: string; title: string;
 }
 
 function Field({
-  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
+  name, label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
   focused, onFocus, onBlur,
 }: {
+  name: string;
   label: string;
   icon: typeof Building2;
   value: string;
@@ -519,6 +521,7 @@ function Field({
 }) {
   return (
     <BaseField
+      name={name}
       label={label}
       icon={Icon}
       value={value}
@@ -536,8 +539,9 @@ function Field({
 }
 
 function SelectField({
-  label, icon: Icon, value, onChange, placeholder, options, error, hint, disabled,
+  name, label, icon: Icon, value, onChange, placeholder, options, error, hint, disabled,
 }: {
+  name: string;
   label: string;
   icon: typeof Building2;
   value: string;
@@ -550,7 +554,7 @@ function SelectField({
 }) {
   const isActive = value.length > 0;
   return (
-    <label className="group block">
+    <label className="group block" data-field={name}>
       <span className={
         "mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition-colors duration-300 " +
         (isActive ? "text-primary" : "text-muted-foreground")
@@ -569,6 +573,7 @@ function SelectField({
       >
         <Icon className={"relative ml-4 h-5 w-5 shrink-0 transition-colors duration-300 " + (error ? "text-rose-400" : isActive ? "text-primary" : "text-muted-foreground/60")} />
         <select
+          name={name}
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
@@ -596,9 +601,10 @@ function SelectField({
 }
 
 function BaseField({
-  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
+  name, label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
   focused, onFocus, onBlur,
 }: {
+  name: string;
   label: string;
   icon: typeof Building2;
   value: string;
@@ -614,7 +620,7 @@ function BaseField({
 }) {
   const isActive = focused || value.length > 0;
   return (
-    <label className="group block">
+    <label className="group block" data-field={name}>
       <span className={
         "mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition-colors duration-300 " +
         (isActive ? "text-primary" : "text-muted-foreground")
@@ -634,6 +640,7 @@ function BaseField({
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-300 group-focus-within:opacity-100" />
         <Icon className={"relative ml-4 h-5 w-5 shrink-0 transition-colors duration-300 " + (error ? "text-rose-400" : isActive ? "text-primary" : "text-muted-foreground/60")} />
         <input
+          name={name}
           type={type ?? "text"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
