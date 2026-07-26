@@ -647,12 +647,13 @@ function SelectField({
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  options: string[];
+  options: (string | { value: string; label: string })[];
   error?: string;
   hint?: string;
   disabled?: boolean;
 }) {
   const isActive = value.length > 0;
+  const items = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
   return (
     <label className="group block" data-field={name}>
       <span className={
@@ -683,8 +684,8 @@ function SelectField({
           }
         >
           <option value="">{placeholder ?? "Select"}</option>
-          {options.map((o) => (
-            <option key={o} value={o} className="text-foreground">{o}</option>
+          {items.map((o) => (
+            <option key={o.value} value={o.value} className="text-foreground">{o.label}</option>
           ))}
         </select>
         <ChevronDown className="pointer-events-none absolute right-4 h-5 w-5 text-muted-foreground/60" />
