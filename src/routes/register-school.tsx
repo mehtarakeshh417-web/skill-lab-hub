@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { submitSchoolRegistration } from "@/lib/registrations.functions";
 import { addRegistration } from "@/lib/registrations";
+import { INDIA_STATES, citiesForState } from "@/lib/india-locations";
 import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
   ShieldCheck,
@@ -17,6 +18,8 @@ import {
   Loader2,
   AlertCircle,
   Send,
+  ChevronDown,
+  CheckCircle2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/register-school")({
@@ -84,10 +87,16 @@ function RegisterSchool() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [focused, setFocused] = useState<Record<string, boolean>>({});
+  const [submitted, setSubmitted] = useState<{ schoolName: string; schoolCode: string } | null>(null);
 
   const update = (k: keyof typeof empty, v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
     if (errors[k]) setErrors((e) => ({ ...e, [k]: "" }));
+  };
+
+  const updateState = (v: string) => {
+    setForm((f) => ({ ...f, state: v, city: "" }));
+    setErrors((e) => ({ ...e, state: "", city: "" }));
   };
 
   const LABELS: Record<keyof typeof empty, string> = {
@@ -159,8 +168,10 @@ function RegisterSchool() {
       toast.success("Registration submitted", {
         description: `${form.schoolName.trim()} · status: Pending Approval`,
       });
+      setSubmitted({ schoolName: form.schoolName.trim(), schoolCode: form.schoolCode.trim().toUpperCase() });
       setForm(empty);
       setErrors({});
+      if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       toast.error("Registration failed", {
         description: err instanceof Error ? err.message : String(err),
@@ -169,6 +180,45 @@ function RegisterSchool() {
       setSubmitting(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <section className="relative overflow-hidden border-t border-border/60 bg-background py-24">
+        <div className="pointer-events-none absolute -top-32 right-0 h-[420px] w-[420px] rounded-full bg-emerald-500/15 blur-3xl" />
+        <div className="relative mx-auto max-w-2xl px-6">
+          <div className="slab-3d rounded-3xl border border-emerald-500/30 bg-card/70 p-10 text-center shadow-[0_30px_80px_-30px_rgba(16,185,129,0.5)] backdrop-blur-2xl">
+            <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl border border-emerald-500/40 bg-emerald-500/10">
+              <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+            </div>
+            <h3 className="mt-6 font-display text-2xl font-bold tracking-tight sm:text-3xl">
+              Submitted for approval
+            </h3>
+            <p className="mt-3 text-sm text-muted-foreground sm:text-base">
+              Thank you — <span className="font-semibold text-foreground">{submitted.schoolName}</span> ({submitted.schoolCode}) has been
+              submitted successfully and is now <span className="font-semibold text-amber-500">Pending Approval</span>. Our portal
+              team will review your application, and once approved you can sign in with the credentials you created.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link
+                to="/"
+                className="inline-flex h-14 items-center justify-center rounded-2xl border border-border bg-card px-8 text-sm font-semibold transition-all hover:border-primary/50"
+              >
+                Back to home
+              </Link>
+              <button
+                type="button"
+                onClick={() => setSubmitted(null)}
+                style={{ backgroundImage: "linear-gradient(100deg, var(--primary), var(--accent))" }}
+                className="inline-flex h-14 items-center justify-center rounded-2xl px-8 text-sm font-bold text-primary-foreground shadow-[0_16px_40px_-12px_var(--primary)] ring-1 ring-inset ring-white/25 transition-all hover:-translate-y-0.5 active:scale-[0.98]"
+              >
+                Register another school
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="register-school" className="relative overflow-hidden border-t border-border/60 bg-background py-20">
@@ -256,27 +306,25 @@ function RegisterSchool() {
                   onFocus={() => setFocused((f) => ({ ...f, designation: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, designation: false }))}
                 />
-                <Field
+                <SelectField
                   label="State"
                   icon={MapPin}
                   value={form.state}
-                  onChange={(v) => update("state", v)}
-                  placeholder="Maharashtra"
+                  onChange={updateState}
+                  placeholder="Select a state"
+                  options={INDIA_STATES}
                   error={errors.state}
-                  focused={focused.state}
-                  onFocus={() => setFocused((f) => ({ ...f, state: true }))}
-                  onBlur={() => setFocused((f) => ({ ...f, state: false }))}
                 />
-                <Field
+                <SelectField
                   label="City"
                   icon={MapPin}
                   value={form.city}
                   onChange={(v) => update("city", v)}
-                  placeholder="Pune"
+                  placeholder={form.state ? "Select a city" : "Select a state first"}
+                  options={citiesForState(form.state)}
+                  disabled={!form.state}
                   error={errors.city}
-                  focused={focused.city}
-                  onFocus={() => setFocused((f) => ({ ...f, city: true }))}
-                  onBlur={() => setFocused((f) => ({ ...f, city: false }))}
+                  hint={form.state ? undefined : "Choose a state to load its cities."}
                 />
                 <Field
                   label="Area"
@@ -430,6 +478,101 @@ function SectionHeading({ step, title, caption }: { step: string; title: string;
 }
 
 function Field({
+  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
+  focused, onFocus, onBlur,
+}: {
+  label: string;
+  icon: typeof Building2;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  error?: string;
+  hint?: string;
+  maxLength?: number;
+  type?: string;
+  focused?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
+}) {
+  return (
+    <BaseField
+      label={label}
+      icon={Icon}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      error={error}
+      hint={hint}
+      maxLength={maxLength}
+      type={type}
+      focused={focused}
+      onFocus={onFocus}
+      onBlur={onBlur}
+    />
+  );
+}
+
+function SelectField({
+  label, icon: Icon, value, onChange, placeholder, options, error, hint, disabled,
+}: {
+  label: string;
+  icon: typeof Building2;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  options: string[];
+  error?: string;
+  hint?: string;
+  disabled?: boolean;
+}) {
+  const isActive = value.length > 0;
+  return (
+    <label className="group block">
+      <span className={
+        "mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition-colors duration-300 " +
+        (isActive ? "text-primary" : "text-muted-foreground")
+      }>
+        <Icon className={"h-3.5 w-3.5 transition-colors duration-300 " + (isActive ? "text-primary" : "text-muted-foreground/70")} />
+        {label}
+      </span>
+      <div
+        className={
+          "relative flex items-center gap-3 overflow-hidden rounded-2xl border bg-muted/50 transition-all duration-300 dark:bg-background/40 " +
+          (disabled ? "opacity-60 " : "") +
+          (error
+            ? "border-rose-400/60 shadow-[0_0_0_4px_rgba(244,63,94,0.12)]"
+            : "border-border focus-within:border-primary/70 focus-within:bg-background focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_18%,transparent)]")
+        }
+      >
+        <Icon className={"relative ml-4 h-5 w-5 shrink-0 transition-colors duration-300 " + (error ? "text-rose-400" : isActive ? "text-primary" : "text-muted-foreground/60")} />
+        <select
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          className={
+            "relative h-14 w-full appearance-none bg-transparent px-1 pr-10 py-4 text-base outline-none " +
+            (isActive ? "text-foreground" : "text-muted-foreground/60")
+          }
+        >
+          <option value="">{placeholder ?? "Select"}</option>
+          {options.map((o) => (
+            <option key={o} value={o} className="text-foreground">{o}</option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-4 h-5 w-5 text-muted-foreground/60" />
+      </div>
+      <div className="mt-2 min-h-[16px] text-[11px]">
+        {error ? (
+          <span className="inline-flex items-center gap-1 text-rose-400"><AlertCircle className="h-3.5 w-3.5" /> {error}</span>
+        ) : hint ? (
+          <span className="text-muted-foreground/80">{hint}</span>
+        ) : null}
+      </div>
+    </label>
+  );
+}
+
+function BaseField({
   label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
   focused, onFocus, onBlur,
 }: {
