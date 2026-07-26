@@ -29,7 +29,6 @@ import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TeacherQuizzesRouteImport } from './routes/teacher.quizzes'
 import { Route as TeacherProjectsRouteImport } from './routes/teacher.projects'
-import { Route as TeacherAssignmentsRouteImport } from './routes/teacher.assignments'
 import { Route as StudentQuizzesRouteImport } from './routes/student.quizzes'
 import { Route as StudentProjectsRouteImport } from './routes/student.projects'
 import { Route as StudentAssignmentsRouteImport } from './routes/student.assignments'
@@ -151,11 +150,6 @@ const TeacherQuizzesRoute = TeacherQuizzesRouteImport.update({
 const TeacherProjectsRoute = TeacherProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
-  getParentRoute: () => TeacherRoute,
-} as any)
-const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
-  id: '/assignments',
-  path: '/assignments',
   getParentRoute: () => TeacherRoute,
 } as any)
 const StudentQuizzesRoute = StudentQuizzesRouteImport.update({
@@ -304,7 +298,6 @@ export interface FileRoutesByFullPath {
   '/student/assignments': typeof StudentAssignmentsRoute
   '/student/projects': typeof StudentProjectsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
-  '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/projects': typeof TeacherProjectsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/admin/': typeof AdminIndexRoute
@@ -344,7 +337,6 @@ export interface FileRoutesByTo {
   '/student/assignments': typeof StudentAssignmentsRoute
   '/student/projects': typeof StudentProjectsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
-  '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/projects': typeof TeacherProjectsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/admin': typeof AdminIndexRoute
@@ -390,7 +382,6 @@ export interface FileRoutesById {
   '/student/assignments': typeof StudentAssignmentsRoute
   '/student/projects': typeof StudentProjectsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
-  '/teacher/assignments': typeof TeacherAssignmentsRoute
   '/teacher/projects': typeof TeacherProjectsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/admin/': typeof AdminIndexRoute
@@ -437,7 +428,6 @@ export interface FileRouteTypes {
     | '/student/assignments'
     | '/student/projects'
     | '/student/quizzes'
-    | '/teacher/assignments'
     | '/teacher/projects'
     | '/teacher/quizzes'
     | '/admin/'
@@ -477,7 +467,6 @@ export interface FileRouteTypes {
     | '/student/assignments'
     | '/student/projects'
     | '/student/quizzes'
-    | '/teacher/assignments'
     | '/teacher/projects'
     | '/teacher/quizzes'
     | '/admin'
@@ -522,7 +511,6 @@ export interface FileRouteTypes {
     | '/student/assignments'
     | '/student/projects'
     | '/student/quizzes'
-    | '/teacher/assignments'
     | '/teacher/projects'
     | '/teacher/quizzes'
     | '/admin/'
@@ -694,13 +682,6 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/teacher/projects'
       preLoaderRoute: typeof TeacherProjectsRouteImport
-      parentRoute: typeof TeacherRoute
-    }
-    '/teacher/assignments': {
-      id: '/teacher/assignments'
-      path: '/assignments'
-      fullPath: '/teacher/assignments'
-      preLoaderRoute: typeof TeacherAssignmentsRouteImport
       parentRoute: typeof TeacherRoute
     }
     '/student/quizzes': {
@@ -940,14 +921,12 @@ const StudentRouteWithChildren =
   StudentRoute._addFileChildren(StudentRouteChildren)
 
 interface TeacherRouteChildren {
-  TeacherAssignmentsRoute: typeof TeacherAssignmentsRoute
   TeacherProjectsRoute: typeof TeacherProjectsRoute
   TeacherQuizzesRoute: typeof TeacherQuizzesRoute
   TeacherIndexRoute: typeof TeacherIndexRoute
 }
 
 const TeacherRouteChildren: TeacherRouteChildren = {
-  TeacherAssignmentsRoute: TeacherAssignmentsRoute,
   TeacherProjectsRoute: TeacherProjectsRoute,
   TeacherQuizzesRoute: TeacherQuizzesRoute,
   TeacherIndexRoute: TeacherIndexRoute,
