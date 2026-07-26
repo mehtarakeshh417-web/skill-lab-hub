@@ -287,6 +287,7 @@ function RegisterSchool() {
               <SectionHeading step="01" title="Institution details" caption="Identify the school applying for the portal." />
               <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
+                  name="schoolName"
                   label="Institutional School Name"
                   icon={Building2}
                   value={form.schoolName}
@@ -298,6 +299,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, schoolName: false }))}
                 />
                 <Field
+                  name="schoolCode"
                   label="Requested Unique School Code"
                   icon={Layers}
                   value={form.schoolCode}
@@ -309,6 +311,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, schoolCode: false }))}
                 />
                 <Field
+                  name="principalName"
                   label="Principal Name"
                   icon={UserSquare2}
                   value={form.principalName}
@@ -320,6 +323,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, principalName: false }))}
                 />
                 <Field
+                  name="designation"
                   label="Contact Designation"
                   icon={Briefcase}
                   value={form.designation}
@@ -331,6 +335,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, designation: false }))}
                 />
                 <SelectField
+                  name="state"
                   label="State"
                   icon={MapPin}
                   value={form.state}
@@ -340,6 +345,7 @@ function RegisterSchool() {
                   error={errors.state}
                 />
                 <SelectField
+                  name="city"
                   label="City"
                   icon={MapPin}
                   value={form.city}
@@ -351,6 +357,7 @@ function RegisterSchool() {
                   hint={form.state ? undefined : "Choose a state to load its cities."}
                 />
                 <Field
+                  name="area"
                   label="Area"
                   icon={MapPin}
                   value={form.area}
@@ -366,6 +373,7 @@ function RegisterSchool() {
               <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
               <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
+                  name="username"
                   label="Login Username"
                   icon={UserSquare2}
                   value={form.username}
@@ -378,6 +386,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, username: false }))}
                 />
                 <Field
+                  name="password"
                   label="Login Password"
                   icon={ShieldCheck}
                   value={form.password}
@@ -394,6 +403,7 @@ function RegisterSchool() {
               <SectionHeading step="03" title="Contact & location" caption="How our onboarding team reaches your institution." />
               <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
+                  name="email"
                   label="Contact Email"
                   icon={Send}
                   value={form.email}
@@ -405,6 +415,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, email: false }))}
                 />
                 <Field
+                  name="phone"
                   label="Phone Number"
                   icon={Briefcase}
                   value={form.phone}
@@ -417,7 +428,8 @@ function RegisterSchool() {
                 />
                 <div className="sm:col-span-2">
                   <Field
-                    label="Address"
+                    name="address"
+                  label="Address"
                     icon={MapPin}
                     value={form.address}
                     onChange={(v) => update("address", v)}
@@ -443,6 +455,7 @@ function RegisterSchool() {
                     >
                       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 transition-opacity duration-300 group-focus-within:opacity-100" />
                       <textarea
+                        name="notes"
                         value={form.notes}
                         onChange={(e) => update("notes", e.target.value)}
                         rows={4}
