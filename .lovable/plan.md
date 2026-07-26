@@ -1,38 +1,36 @@
 ## Goal
 
-Keep the existing manual question builder exactly as it is, and add a second way to fill it: an **"Generate with AI"** panel inside the teacher's Create Assignment dialog. The teacher picks technology, number of questions, assignment type, and difficulty — AI writes the questions, which drop straight into the existing editor so they can still be reviewed, edited, or deleted before saving.
+Swap the generic Lucide placeholder icons used for technologies (Scratch, HTML, Python, Java, MySQL, Paint, Editor, Spreadsheet, Presentation, Scratch Jr) with the real, official brand logos, and reuse them consistently everywhere technologies appear.
 
-## About the API key
+## Logo sources (verified reachable)
 
-The portal already has AI built in (the same gateway used by the Learning module), so no new key is needed and nothing gets hardcoded. I'll use the existing built-in AI credentials. If you'd still prefer your own Google key be used, say so and I'll store it securely instead of putting it in the code.
+Official brand marks come from the Simple Icons project (the maintained, official-source SVG set, CC0 licensed). Confirmed available: `python`, `html5`, `openjdk` (the official OpenJDK/Java mark), `mysql`, `scratch`, `libreofficewriter`, `libreofficecalc`, `libreofficeimpress`, `gimp`.
 
-## What the teacher sees
+Mapping:
 
-Inside the Create Assignment dialog, above the question editor:
+| Technology | Logo |
+|---|---|
+| Scratch / Scratch Junior | official Scratch cat mark |
+| HTML | HTML5 shield |
+| Python | Python two-snake mark |
+| Java | OpenJDK / Duke mark |
+| MySQL | MySQL dolphin |
+| Paint | GIMP (open-source paint mark) |
+| Editor | LibreOffice Writer |
+| Spreadsheet | LibreOffice Calc |
+| Presentation | LibreOffice Impress |
+| General CS / Other | keep current Lucide fallback |
 
-```text
-┌─ Generate with AI ──────────────────────────────┐
-│ Technology  [Python ▾]   Questions [10 ▾]       │
-│ Type        [MCQ ▾]      Difficulty [Medium ▾]  │
-│ Topic focus (optional)  [loops and lists      ] │
-│                         [ ✨ Generate questions ]│
-└─────────────────────────────────────────────────┘
-```
+Microsoft Paint/Word/Excel/PowerPoint marks are deliberately avoided — those are trademarked product logos we cannot ship; the open-source equivalents are the correct, legally safe stand-ins for generic "Editor / Spreadsheet / Presentation / Paint" tools.
 
-- Technology defaults to the technology already chosen for the assignment; type defaults to the chosen assignment type (MCQ / True-False / Fill in the Blanks / Mixed).
-- Question count: 5 / 10 / 15 / 20 / 25 (or a number input, 1–50).
-- Difficulty: Beginner / Easy / Medium / Hard / Advanced.
-- Optional free-text "topic focus" so the teacher can narrow the syllabus area.
-- While generating: spinner + disabled button, plus a clear error toast if AI is rate-limited or credits run out.
-- Results either **replace** or **append** to the current question list (a small toggle), then render in the normal editor — fully editable.
-- For Mixed, the AI is instructed to spread questions across all three question types.
+## Implementation
 
-## Technical section
+1. **Download the SVGs into the repo** at `src/assets/tech/*.svg` so nothing depends on a third-party CDN at runtime.
+2. **New file `src/lib/tech-logos.tsx`** — a single registry mapping every technology name (including all `ASSIGNMENT_TECHNOLOGIES` values and the homepage `techs` names) to its logo, official brand colour, and gradient. Exports a `<TechLogo name="Python" className="..." />` component with a Lucide fallback for unmapped names.
+3. **Homepage `src/routes/index.tsx`** — replace `t.icon` in the Technologies grid and the `LogoMarquee` sparkle placeholders with `<TechLogo>`, keeping the existing card layout, hover lift, and gradient glow.
+4. **In-app surfaces** — use the same `<TechLogo>` in the technology chips/selects on teacher assignments, teacher/student projects, and the learning track cards, so the whole portal shows one consistent set of marks.
+5. Logos render on the existing gradient tile with correct contrast in both light and dark themes.
 
-1. **`src/lib/ai-assignments.server.ts`** (new) — calls the AI gateway (`https://ai.gateway.lovable.dev/v1/chat/completions`, `LOVABLE_API_KEY` read inside the handler) with a strict system prompt: return only JSON matching the portal's question shape (`questionText`, `questionType`, `options`, `correctAnswers`, `marks`). Includes normalization: True/False forced to `["True","False"]` options, MCQ forced to 4 options with the correct answer present in the option list, fill-in-the-blank stripped of options, marks defaulted to 1. Anything that fails validation is dropped rather than saved malformed.
-2. **`src/lib/ai-assignments.functions.ts`** (new) — `generateObjectiveQuestions` server function, `.middleware([requireSupabaseAuth])` so only signed-in teachers can call it, input validated with Zod (technology, count 1–50, type, difficulty, optional topic), output validated against the existing `questionSchema` from `objective-assignments.schema.ts`.
-3. **`src/components/ai-question-generator.tsx`** (new) — the panel UI, styled with the current Emerald Prestige tokens (glass card, `rounded-2xl`, gradient action button). Emits `QuestionInput[]` to its parent.
-4. **`src/routes/teacher.assignments.tsx`** — insert the panel into `CreateAssignmentDialog` and wire it to the existing `setQuestions` state. No change to `createObjectiveAssignment`, scoring, attempts, roster targeting, or any other existing logic.
-5. Audit trail: generation is a draft-time action, so nothing is logged until the teacher actually saves the assignment (existing create logging is untouched).
+## Constraints
 
-Nothing about the manual flow, database schema, student attempt runner, or auto-scoring engine changes.
+Purely visual: no change to `ASSIGNMENT_TECHNOLOGIES` values, schemas, queries, state, or routing. Technology names stay exactly as stored today, so existing assignments/projects keep matching.
