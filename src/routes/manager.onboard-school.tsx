@@ -34,8 +34,10 @@ function OnboardSchool() {
     schoolName: "",
     schoolCode: "",
     principalName: "",
-    region: "",
     designation: "Principal",
+    state: "",
+    city: "",
+    area: "",
     notes: "",
     username: "",
     password: "",
@@ -66,7 +68,34 @@ function OnboardSchool() {
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const parsed = schoolOnboardingSchema.safeParse(form);
+    const LABELS: Record<string, string> = {
+      schoolName: "School name",
+      schoolCode: "School code",
+      principalName: "Principal / Head",
+      designation: "Designation",
+      state: "State",
+      city: "City",
+      area: "Area",
+      notes: "Notes",
+      username: "Username",
+      password: "Password",
+      email: "Contact email",
+      phone: "Phone number",
+      address: "Address",
+      salesRepId: "Sales representative",
+    };
+    const missing = Object.keys(LABELS).filter((k) => !String((form as Record<string, string>)[k] ?? "").trim());
+    if (missing.length) {
+      toast.error(
+        missing.length === 1 ? `${LABELS[missing[0]]} is missing` : `${missing.length} required fields are missing`,
+        { description: missing.map((k) => LABELS[k]).join(", ") },
+      );
+      return;
+    }
+    const parsed = schoolOnboardingSchema.safeParse({
+      ...form,
+      region: [form.city.trim(), form.state.trim()].filter(Boolean).join(" / "),
+    });
     if (!parsed.success) {
       toast.error("Please complete the required fields", {
         description: parsed.error.issues[0]?.message,
@@ -106,25 +135,31 @@ function OnboardSchool() {
             <Field label="School code *">
               <Input value={form.schoolCode} onChange={update("schoolCode")} placeholder="SCH-BLR-001" />
             </Field>
-            <Field label="Principal / Head">
+            <Field label="Principal / Head *">
               <Input value={form.principalName} onChange={update("principalName")} placeholder="Dr. A. Sharma" />
             </Field>
-            <Field label="Region">
-              <Input value={form.region} onChange={update("region")} placeholder="Karnataka / Bengaluru" />
+            <Field label="State *">
+              <Input value={form.state} onChange={update("state")} placeholder="Karnataka" />
             </Field>
-            <Field label="Designation">
+            <Field label="City *">
+              <Input value={form.city} onChange={update("city")} placeholder="Bengaluru" />
+            </Field>
+            <Field label="Area *">
+              <Input value={form.area} onChange={update("area")} placeholder="Indiranagar" />
+            </Field>
+            <Field label="Designation *">
               <Input value={form.designation} onChange={update("designation")} placeholder="Principal" />
             </Field>
-            <Field label="Contact email">
+            <Field label="Contact email *">
               <Input type="email" value={form.email} onChange={update("email")} placeholder="school@example.com" required />
             </Field>
             <Field label="Phone number *">
               <Input value={form.phone} onChange={update("phone")} placeholder="9876543210" required />
             </Field>
-            <Field label="Address" className="md:col-span-2">
+            <Field label="Address *" className="md:col-span-2">
               <Textarea rows={2} value={form.address} onChange={update("address")} placeholder="Campus address, landmark, pin code…" />
             </Field>
-            <Field label="Notes" className="md:col-span-2">
+            <Field label="Notes *" className="md:col-span-2">
               <Textarea rows={3} value={form.notes} onChange={update("notes")} placeholder="Grades, tracks, licenses…" />
             </Field>
             <Field label="Sales representative *" className="md:col-span-2">
