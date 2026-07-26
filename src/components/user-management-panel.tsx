@@ -178,17 +178,19 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
                         <div className="flex items-center justify-end gap-1">
                           <Button size="sm" variant="outline" onClick={() => { setPwTarget(u); setPwValue(""); }} title="Reset password"><KeyRound className="h-3.5 w-3.5" /></Button>
                           <Button size="sm" variant="outline" onClick={() => { setUnameTarget(u); setUnameValue(u.username); }} title="Change username"><UserCog className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline" onClick={() => onSetActive(u, !u.isActive)} title={u.isActive ? "Deactivate" : "Activate"}><Power className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="outline" onClick={() => setActiveTarget({ user: u, nextActive: !u.isActive })} title={u.isActive ? "Deactivate account" : "Activate account"}><Power className="h-3.5 w-3.5" /></Button>
                           {actor === "admin" && (
-                            <Button size="sm" variant="outline" onClick={() => onResetSec(u)} title="Reset security setup"><RefreshCcw className="h-3.5 w-3.5" /></Button>
+                            <Button size="sm" variant="outline" onClick={() => setSecTarget(u)} title="Reset security setup"><RefreshCcw className="h-3.5 w-3.5" /></Button>
                           )}
-                          <Button size="sm" variant="outline" className="text-rose-600" onClick={() => onDelete(u)} title="Delete"><Trash2 className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="outline" className="text-rose-600" onClick={() => setDeleteTarget(u)} title="Delete account"><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
                   {rows.length === 0 && (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">No users match.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                      No users match your search or filters. Try a different name, or clear the filters to see everyone.
+                    </TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
