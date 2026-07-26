@@ -303,7 +303,7 @@ function AuthPage() {
               <div className="h-px flex-1 bg-border" />
             </div>
             <Button asChild variant="soft" size="lg" className="mt-4 h-12 w-full">
-              <Link to="/">Register your school</Link>
+              <Link to="/register-school">Register your school</Link>
             </Button>
           </div>
 
