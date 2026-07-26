@@ -17,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { friendlyError } from "@/lib/messages";
 import { toast } from "sonner";
 import { Loader2, KeyRound, UserCog, Power, ShieldOff, Trash2, RefreshCcw, Search } from "lucide-react";
 
@@ -40,6 +42,9 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
   const [unameTarget, setUnameTarget] = useState<ManagedUser | null>(null);
   const [unameValue, setUnameValue] = useState("");
   const [busy, setBusy] = useState(false);
+  const [activeTarget, setActiveTarget] = useState<{ user: ManagedUser; nextActive: boolean } | null>(null);
+  const [secTarget, setSecTarget] = useState<ManagedUser | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
 
   const roles = actor === "admin"
     ? ["all", "admin", "portal_manager", "sales_rep", "school", "teacher", "student"]
@@ -48,39 +53,72 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
   async function refresh() {
     setLoading(true);
     try { setRows(await load({ data: { roleFilter, search } }) as ManagedUser[]); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed to load"); }
+    catch (e) { toast.error("We couldn't load the user list", { description: friendlyError(e, "Please refresh the page and try again.") }); }
     finally { setLoading(false); }
   }
   useEffect(() => { refresh(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [roleFilter]);
 
-  async function onSetActive(u: ManagedUser, active: boolean) {
-    if (!confirm(`${active ? "Activate" : "Deactivate"} ${u.username}?`)) return;
-    try { await setActive({ data: { userId: u.userId, active } }); toast.success("Updated."); refresh(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  async function confirmSetActive() {
+    if (!activeTarget) return;
+    const { user: u, nextActive } = activeTarget;
+    setBusy(true);
+    try {
+      await setActive({ data: { userId: u.userId, active: nextActive } });
+      toast.success(
+        nextActive ? `${u.username} can sign in again` : `${u.username} has been deactivated`,
+        { description: nextActive ? "Their account is active with the same username and password." : "They can no longer sign in until you reactivate the account." },
+      );
+      setActiveTarget(null);
+      refresh();
+    } catch (e) {
+      toast.error(nextActive ? "We couldn't activate this account" : "We couldn't deactivate this account", { description: friendlyError(e) });
+    } finally { setBusy(false); }
   }
-  async function onResetSec(u: ManagedUser) {
-    if (!confirm(`Reset security setup for ${u.username}? They'll be asked again on next login.`)) return;
-    try { await resetSec({ data: { userId: u.userId } }); toast.success("Security reset."); refresh(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  async function confirmResetSecurity() {
+    if (!secTarget) return;
+    setBusy(true);
+    try {
+      await resetSec({ data: { userId: secTarget.userId } });
+      toast.success("Security setup reset", { description: `${secTarget.username} will be asked to set a new PIN and security question at their next sign-in.` });
+      setSecTarget(null);
+      refresh();
+    } catch (e) {
+      toast.error("We couldn't reset the security setup", { description: friendlyError(e) });
+    } finally { setBusy(false); }
   }
-  async function onDelete(u: ManagedUser) {
-    if (!confirm(`Permanently delete ${u.username}? This cannot be undone.`)) return;
-    try { await del({ data: { userId: u.userId } }); toast.success("Deleted."); refresh(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setBusy(true);
+    try {
+      await del({ data: { userId: deleteTarget.userId } });
+      toast.success(`${deleteTarget.username} has been deleted`, { description: "Their login and profile have been removed from the portal." });
+      setDeleteTarget(null);
+      refresh();
+    } catch (e) {
+      toast.error("We couldn't delete this account", { description: friendlyError(e) });
+    } finally { setBusy(false); }
   }
 
   async function submitPw() {
     if (!pwTarget) return;
     setBusy(true);
-    try { await resetPw({ data: { userId: pwTarget.userId, newPassword: pwValue } }); toast.success("Password updated."); setPwTarget(null); setPwValue(""); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    try {
+      await resetPw({ data: { userId: pwTarget.userId, newPassword: pwValue } });
+      toast.success(`Password updated for ${pwTarget.username}`, { description: "Share the new password securely — they can sign in with it right away." });
+      setPwTarget(null); setPwValue("");
+    }
+    catch (e) { toast.error("We couldn't update the password", { description: friendlyError(e) }); }
     finally { setBusy(false); }
   }
   async function submitUname() {
     if (!unameTarget) return;
     setBusy(true);
-    try { await chgUsername({ data: { userId: unameTarget.userId, newUsername: unameValue } }); toast.success("Username updated."); setUnameTarget(null); setUnameValue(""); refresh(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    try {
+      await chgUsername({ data: { userId: unameTarget.userId, newUsername: unameValue } });
+      toast.success("Username updated", { description: `This account now signs in as “${unameValue}”.` });
+      setUnameTarget(null); setUnameValue(""); refresh();
+    }
+    catch (e) { toast.error("We couldn't update the username", { description: friendlyError(e, "That username may already be taken. Please try another one.") }); }
     finally { setBusy(false); }
   }
 
@@ -140,17 +178,19 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
                         <div className="flex items-center justify-end gap-1">
                           <Button size="sm" variant="outline" onClick={() => { setPwTarget(u); setPwValue(""); }} title="Reset password"><KeyRound className="h-3.5 w-3.5" /></Button>
                           <Button size="sm" variant="outline" onClick={() => { setUnameTarget(u); setUnameValue(u.username); }} title="Change username"><UserCog className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline" onClick={() => onSetActive(u, !u.isActive)} title={u.isActive ? "Deactivate" : "Activate"}><Power className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="outline" onClick={() => setActiveTarget({ user: u, nextActive: !u.isActive })} title={u.isActive ? "Deactivate account" : "Activate account"}><Power className="h-3.5 w-3.5" /></Button>
                           {actor === "admin" && (
-                            <Button size="sm" variant="outline" onClick={() => onResetSec(u)} title="Reset security setup"><RefreshCcw className="h-3.5 w-3.5" /></Button>
+                            <Button size="sm" variant="outline" onClick={() => setSecTarget(u)} title="Reset security setup"><RefreshCcw className="h-3.5 w-3.5" /></Button>
                           )}
-                          <Button size="sm" variant="outline" className="text-rose-600" onClick={() => onDelete(u)} title="Delete"><Trash2 className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="outline" className="text-rose-600" onClick={() => setDeleteTarget(u)} title="Delete account"><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
                   {rows.length === 0 && (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">No users match.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                      No users match your search or filters. Try a different name, or clear the filters to see everyone.
+                    </TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -167,7 +207,10 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
             <Input type="password" value={pwValue} onChange={(e) => setPwValue(e.target.value)} placeholder="Min 6 characters" />
             <p className="text-xs text-muted-foreground">The user can sign in with this password immediately. They should change it after logging in.</p>
           </div>
-          <DialogFooter><Button onClick={submitPw} disabled={busy || pwValue.length < 6}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}</Button></DialogFooter>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPwTarget(null)} disabled={busy}>Cancel</Button>
+            <Button onClick={submitPw} disabled={busy || pwValue.length < 6}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -179,12 +222,81 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
             <Input value={unameValue} onChange={(e) => setUnameValue(e.target.value.trim().toLowerCase())} />
             <p className="text-xs text-muted-foreground">Must be unique. The user will sign in with this new username immediately.</p>
           </div>
-          <DialogFooter><Button onClick={submitUname} disabled={busy || unameValue.length < 3}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update username"}</Button></DialogFooter>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUnameTarget(null)} disabled={busy}>Cancel</Button>
+            <Button onClick={submitUname} disabled={busy || unameValue.length < 3}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update username"}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      <ConfirmDialog
+        open={Boolean(activeTarget) && activeTarget?.nextActive === false}
+        onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
+        tone="warning"
+        icon={Power}
+        busy={busy}
+        title="Deactivate this account?"
+        description={<>You're about to deactivate <strong>{activeTarget?.user.username}</strong>. Their account stays in the portal, but they won't be able to use it until you turn it back on.</>}
+        impact={[
+          "They will be signed out and can no longer log in.",
+          "Their records, classes and history are kept safely — nothing is deleted.",
+          "You can reactivate this account at any time from this page.",
+        ]}
+        confirmLabel="Deactivate account"
+        cancelLabel="Cancel"
+        onConfirm={confirmSetActive}
+      />
+
+      <ConfirmDialog
+        open={Boolean(activeTarget) && activeTarget?.nextActive === true}
+        onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
+        tone="neutral"
+        icon={Power}
+        busy={busy}
+        title="Reactivate this account?"
+        description={<><strong>{activeTarget?.user.username}</strong> will be able to sign in again immediately using their existing username and password.</>}
+        confirmLabel="Reactivate account"
+        cancelLabel="Cancel"
+        onConfirm={confirmSetActive}
+      />
+
+      <ConfirmDialog
+        open={Boolean(secTarget)}
+        onOpenChange={(o) => { if (!o) setSecTarget(null); }}
+        tone="warning"
+        icon={RefreshCcw}
+        busy={busy}
+        title="Reset security setup?"
+        description={<>This clears the recovery PIN and security question for <strong>{secTarget?.username}</strong>.</>}
+        impact={[
+          "They will be asked to create a new PIN and security question the next time they sign in.",
+          "Their password stays the same.",
+        ]}
+        confirmLabel="Reset security setup"
+        cancelLabel="Cancel"
+        onConfirm={confirmResetSecurity}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        tone="danger"
+        icon={Trash2}
+        busy={busy}
+        title="Delete this account permanently?"
+        description={<>This permanently removes <strong>{deleteTarget?.username}</strong> from the portal. This action cannot be undone.</>}
+        impact={[
+          "Their login is deleted and they lose access immediately.",
+          "Their profile is removed from all directories and reports.",
+          "If you only want to pause access, deactivate the account instead.",
+        ]}
+        confirmLabel="Delete permanently"
+        cancelLabel="Keep account"
+        onConfirm={confirmDelete}
+      />
+
       {actor === "admin" && (
-        <div className="text-xs text-muted-foreground flex items-center gap-1"><ShieldOff className="h-3 w-3" /> Admins can never modify their own account.</div>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldOff className="h-3 w-3" /> For your safety, you can't change or remove your own admin account here.</div>
       )}
     </div>
   );

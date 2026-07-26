@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { friendlyError, countLabel } from "@/lib/messages";
 import { adminResetUserPassword, adminChangeUsername, adminSetUserActive } from "@/lib/security.functions";
 import { deleteSchoolWithDependents, deleteDirectoryPerson } from "@/lib/directory.functions";
 import type { PersonRow, SchoolRow } from "@/lib/directory.server";
@@ -81,6 +83,9 @@ export function DirectoryWorkspace({
   const [unameValue, setUnameValue] = useState("");
   const [deleteSchool, setDeleteSchool] = useState<SchoolRow | null>(null);
   const [confirmText, setConfirmText] = useState("");
+  const [activeTarget, setActiveTarget] = useState<{ userId: string; label: string; nextActive: boolean } | null>(null);
+  const [personTarget, setPersonTarget] = useState<{ kind: "teacher" | "student" | "sales_rep"; row: PersonRow } | null>(null);
+  const [bulkTarget, setBulkTarget] = useState<string[] | null>(null);
 
   const resetPw = useServerFn(adminResetUserPassword);
   const chgUname = useServerFn(adminChangeUsername);
@@ -157,15 +162,20 @@ export function DirectoryWorkspace({
     else exportXlsx(people, cols, name, [["Rows exported", people.length]]);
   }
 
-  async function onToggleActive(userId: string | null, active: boolean) {
-    if (!userId) return;
+  async function confirmToggleActive() {
+    if (!activeTarget) return;
+    const { userId, label, nextActive } = activeTarget;
     setBusy(true);
     try {
-      await setActive({ data: { userId, active } });
-      toast.success(active ? "Account activated." : "Account deactivated.");
+      await setActive({ data: { userId, active: nextActive } });
+      toast.success(
+        nextActive ? `${label} can sign in again` : `${label} has been deactivated`,
+        { description: nextActive ? "The account is active with the same username and password." : "This account can no longer sign in until you reactivate it." },
+      );
+      setActiveTarget(null);
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Action failed.");
+      toast.error(nextActive ? "We couldn't activate this account" : "We couldn't deactivate this account", { description: friendlyError(e) });
     } finally { setBusy(false); }
   }
 
@@ -174,10 +184,10 @@ export function DirectoryWorkspace({
     setBusy(true);
     try {
       await resetPw({ data: { userId: pwTarget.userId, newPassword: pwValue } });
-      toast.success(`Password updated for ${pwTarget.label}.`);
+      toast.success(`Password updated for ${pwTarget.label}`, { description: "Share the new password securely — they can sign in with it right away." });
       setPwTarget(null); setPwValue("");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not update password.");
+      toast.error("We couldn't update the password", { description: friendlyError(e) });
     } finally { setBusy(false); }
   }
 
@@ -186,11 +196,11 @@ export function DirectoryWorkspace({
     setBusy(true);
     try {
       await chgUname({ data: { userId: unameTarget.userId, newUsername: unameValue } });
-      toast.success("Username updated.");
+      toast.success("Username updated", { description: `This account now signs in as “${unameValue.trim()}”.` });
       setUnameTarget(null); setUnameValue("");
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not update username.");
+      toast.error("We couldn't update the username", { description: friendlyError(e, "That username may already be taken. Please try another one.") });
     } finally { setBusy(false); }
   }
 
@@ -199,38 +209,50 @@ export function DirectoryWorkspace({
     setBusy(true);
     try {
       const res = await delSchool({ data: { schoolId: deleteSchool.id } }) as { teachersDeleted: number; studentsDeleted: number };
-      toast.success(`${deleteSchool.name} removed with ${res.teachersDeleted} teachers and ${res.studentsDeleted} students.`);
+      toast.success(`${deleteSchool.name} has been deleted`, {
+        description: `${countLabel(res.teachersDeleted, "teacher account")} and ${countLabel(res.studentsDeleted, "student account")} were removed with it.`,
+      });
       setDeleteSchool(null); setConfirmText("");
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not delete school.");
+      toast.error("We couldn't delete this school", { description: friendlyError(e) });
     } finally { setBusy(false); }
   }
 
-  async function onDeletePerson(kind: "teacher" | "student" | "sales_rep", row: PersonRow) {
-    if (!confirm(`Permanently delete ${row.fullName}? Their login will be removed.`)) return;
+  async function confirmDeletePerson() {
+    if (!personTarget) return;
     setBusy(true);
     try {
-      await delPerson({ data: { kind, id: row.id } });
-      toast.success("Account deleted.");
+      await delPerson({ data: { kind: personTarget.kind, id: personTarget.row.id } });
+      toast.success(`${personTarget.row.fullName} has been deleted`, { description: "Their login and profile have been removed from the portal." });
+      setPersonTarget(null);
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not delete account.");
+      toast.error("We couldn't delete this account", { description: friendlyError(e) });
     } finally { setBusy(false); }
   }
 
-  async function bulkDeactivate(userIds: Array<string | null>) {
+  function requestBulkDeactivate(userIds: Array<string | null>) {
     const ids = userIds.filter(Boolean) as string[];
+    if (!ids.length) {
+      toast.warning("Nothing to deactivate", { description: "The accounts you selected don't have a portal login yet." });
+      return;
+    }
+    setBulkTarget(ids);
+  }
+
+  async function confirmBulkDeactivate() {
+    const ids = bulkTarget ?? [];
     if (!ids.length) return;
-    if (!confirm(`Deactivate ${ids.length} selected account(s)?`)) return;
     setBusy(true);
     try {
       for (const id of ids) await setActive({ data: { userId: id, active: false } });
-      toast.success(`${ids.length} account(s) deactivated.`);
+      toast.success(`${countLabel(ids.length, "account")} deactivated`, { description: "They can no longer sign in until you reactivate them." });
+      setBulkTarget(null);
       setSelected([]);
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Bulk action failed.");
+      toast.error("We couldn't finish deactivating every account", { description: friendlyError(e, "Some accounts may have been updated. Refresh to see the latest status.") });
     } finally { setBusy(false); }
   }
 
@@ -319,7 +341,7 @@ export function DirectoryWorkspace({
               size="sm"
               className="rounded-xl"
               disabled={busy}
-              onClick={() => bulkDeactivate(
+              onClick={() => requestBulkDeactivate(
                 tab === "schools"
                   ? schools.filter((s) => selected.includes(s.id)).map((s) => s.userId)
                   : people.filter((p) => selected.includes(p.id)).map((p) => p.userId),
@@ -332,7 +354,7 @@ export function DirectoryWorkspace({
         )}
 
         <TabsContent value="schools" className="mt-4 space-y-3">
-          {loading ? <LoadingRows /> : schools.length === 0 ? <EmptyRows label="No schools match these filters." /> : schools.map((s) => (
+          {loading ? <LoadingRows /> : schools.length === 0 ? <EmptyRows label="No schools match your current search or filters. Try clearing the filters to see every school." /> : schools.map((s) => (
             <div key={s.id} className="rounded-3xl border border-border/60 bg-card/70 p-6 shadow-elegant backdrop-blur-xl transition-shadow hover:shadow-glow">
               <div className="flex flex-wrap items-start gap-4">
                 <Checkbox checked={selected.includes(s.id)} onCheckedChange={() => toggleSelect(s.id)} className="mt-2" />
@@ -359,7 +381,14 @@ export function DirectoryWorkspace({
                   <Button size="sm" variant="outline" className="rounded-xl" disabled={!s.userId} onClick={() => { setUnameTarget({ userId: s.userId!, label: s.name }); setUnameValue(s.username); }}>
                     <UserCog className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" variant="outline" className="rounded-xl" disabled={busy || !s.userId} onClick={() => onToggleActive(s.userId, s.status !== "active")}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    disabled={busy || !s.userId}
+                    title={s.status === "active" ? "Deactivate school login" : "Reactivate school login"}
+                    onClick={() => s.userId && setActiveTarget({ userId: s.userId, label: s.name, nextActive: s.status !== "active" })}
+                  >
                     <Power className="h-4 w-4" />
                   </Button>
                   {isAdmin && (
@@ -399,7 +428,7 @@ export function DirectoryWorkspace({
 
         {(["teachers", "students", "salesReps"] as Tab[]).map((key) => (
           <TabsContent key={key} value={key} className="mt-4 space-y-3">
-            {loading ? <LoadingRows /> : people.length === 0 ? <EmptyRows label={`No ${TAB_META[key].label.toLowerCase()} match these filters.`} /> : people.map((p) => (
+            {loading ? <LoadingRows /> : people.length === 0 ? <EmptyRows label={`No ${TAB_META[key].label.toLowerCase()} match your current search or filters. Try clearing the filters to see everyone.`} /> : people.map((p) => (
               <div key={p.id} className="rounded-3xl border border-border/60 bg-card/70 p-6 shadow-elegant backdrop-blur-xl transition-shadow hover:shadow-glow">
                 <div className="flex flex-wrap items-center gap-4">
                   <Checkbox checked={selected.includes(p.id)} onCheckedChange={() => toggleSelect(p.id)} />
@@ -429,11 +458,18 @@ export function DirectoryWorkspace({
                     <Button size="sm" variant="outline" className="rounded-xl" onClick={() => { setUnameTarget({ userId: p.userId, label: p.fullName }); setUnameValue(p.username); }}>
                       <UserCog className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" className="rounded-xl" disabled={busy} onClick={() => onToggleActive(p.userId, p.status !== "active")}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl"
+                      disabled={busy}
+                      title={p.status === "active" ? "Deactivate account" : "Reactivate account"}
+                      onClick={() => setActiveTarget({ userId: p.userId, label: p.fullName, nextActive: p.status !== "active" })}
+                    >
                       <Power className="h-4 w-4" />
                     </Button>
                     {isAdmin && (
-                      <Button size="sm" variant="destructive" className="rounded-xl" disabled={busy} onClick={() => onDeletePerson(personKind, p)}>
+                      <Button size="sm" variant="destructive" className="rounded-xl" disabled={busy} title="Delete account" onClick={() => setPersonTarget({ kind: personKind, row: p })}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
@@ -457,7 +493,7 @@ export function DirectoryWorkspace({
             <Input value={pwValue} onChange={(e) => setPwValue(e.target.value)} placeholder="Minimum 6 characters" className="rounded-xl" />
             <div className="flex gap-2">
               <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={() => setPwValue(randomPassword())}>Generate</Button>
-              <Button type="button" variant="ghost" size="sm" className="rounded-xl" disabled={!pwValue} onClick={() => { navigator.clipboard?.writeText(pwValue); toast.success("Copied."); }}>Copy</Button>
+              <Button type="button" variant="ghost" size="sm" className="rounded-xl" disabled={!pwValue} onClick={() => { navigator.clipboard?.writeText(pwValue); toast.success("Password copied to your clipboard"); }}>Copy</Button>
             </div>
           </div>
           <DialogFooter>
@@ -495,21 +531,87 @@ export function DirectoryWorkspace({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive"><ShieldAlert className="h-5 w-5" /> Delete school permanently</DialogTitle>
             <DialogDescription>
-              Deleting <strong>{deleteSchool?.name}</strong> also removes {deleteSchool?.teacherCount ?? 0} teacher account(s) and {deleteSchool?.studentCount ?? 0} student account(s) — records and logins. This cannot be undone.
+              Deleting <strong>{deleteSchool?.name}</strong> also removes {countLabel(deleteSchool?.teacherCount ?? 0, "teacher account")} and {countLabel(deleteSchool?.studentCount ?? 0, "student account")}, including their logins and records. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <Label>Type <span className="font-mono">{deleteSchool?.schoolCode}</span> to confirm</Label>
+            <Label>To confirm, type the school code <span className="font-mono">{deleteSchool?.schoolCode}</span> below</Label>
             <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} className="rounded-xl" />
           </div>
           <DialogFooter>
-            <Button variant="outline" className="rounded-xl" onClick={() => setDeleteSchool(null)}>Cancel</Button>
+            <Button variant="outline" className="rounded-xl" disabled={busy} onClick={() => setDeleteSchool(null)}>Cancel</Button>
             <Button variant="destructive" className="rounded-xl" disabled={busy || confirmText.trim().toUpperCase() !== (deleteSchool?.schoolCode ?? "")} onClick={submitSchoolDelete}>
-              {busy && <Loader2 className="h-4 w-4 animate-spin" />} Delete everything
+              {busy && <Loader2 className="h-4 w-4 animate-spin" />} Delete school and accounts
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(activeTarget) && activeTarget?.nextActive === false}
+        onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
+        tone="warning"
+        icon={Power}
+        busy={busy}
+        title="Deactivate this account?"
+        description={<>You're about to deactivate <strong>{activeTarget?.label}</strong>. The account stays in the portal, but it can't be used until you turn it back on.</>}
+        impact={[
+          "They will be signed out and can no longer log in.",
+          "All records, classes and history are kept safely — nothing is deleted.",
+          "You can reactivate this account at any time from this directory.",
+        ]}
+        confirmLabel="Deactivate account"
+        cancelLabel="Cancel"
+        onConfirm={confirmToggleActive}
+      />
+
+      <ConfirmDialog
+        open={Boolean(activeTarget) && activeTarget?.nextActive === true}
+        onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
+        tone="neutral"
+        icon={Power}
+        busy={busy}
+        title="Reactivate this account?"
+        description={<><strong>{activeTarget?.label}</strong> will be able to sign in again immediately with their existing username and password.</>}
+        confirmLabel="Reactivate account"
+        cancelLabel="Cancel"
+        onConfirm={confirmToggleActive}
+      />
+
+      <ConfirmDialog
+        open={Boolean(bulkTarget)}
+        onOpenChange={(o) => { if (!o) setBulkTarget(null); }}
+        tone="warning"
+        icon={Power}
+        busy={busy}
+        title={`Deactivate ${countLabel(bulkTarget?.length ?? 0, "account")}?`}
+        description="These accounts will be paused together. Nothing is deleted, and you can reactivate any of them later."
+        impact={[
+          "Everyone selected will be signed out and unable to log in.",
+          "Their records and history stay exactly as they are.",
+        ]}
+        confirmLabel="Deactivate selected"
+        cancelLabel="Cancel"
+        onConfirm={confirmBulkDeactivate}
+      />
+
+      <ConfirmDialog
+        open={Boolean(personTarget)}
+        onOpenChange={(o) => { if (!o) setPersonTarget(null); }}
+        tone="danger"
+        icon={Trash2}
+        busy={busy}
+        title="Delete this account permanently?"
+        description={<>This permanently removes <strong>{personTarget?.row.fullName}</strong> from the portal. This action cannot be undone.</>}
+        impact={[
+          "Their login is deleted and they lose access immediately.",
+          "Their profile disappears from directories, rosters and reports.",
+          "If you only want to pause access, deactivate the account instead.",
+        ]}
+        confirmLabel="Delete permanently"
+        cancelLabel="Keep account"
+        onConfirm={confirmDeletePerson}
+      />
     </div>
   );
 }

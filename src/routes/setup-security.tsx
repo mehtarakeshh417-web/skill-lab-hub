@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/messages";
 import { useEffect, useState } from "react";
 import { useAuth, ROLE_HOME } from "@/lib/auth";
 import { useServerFn } from "@tanstack/react-start";
@@ -40,15 +41,15 @@ function SetupPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!/^\d{4,8}$/.test(pin)) return toast.error("PIN must be 4–8 digits.");
-    if (pin !== confirmPin) return toast.error("PINs do not match.");
-    if (answer.trim().length < 2) return toast.error("Enter your security answer.");
+    if (!/^\d{4,8}$/.test(pin)) return toast.error("Choose a PIN between 4 and 8 digits", { description: "Use numbers only — you'll need this PIN to recover your account." });
+    if (pin !== confirmPin) return toast.error("Those PINs don't match", { description: "Enter the same PIN in both fields." });
+    if (answer.trim().length < 2) return toast.error("Please answer your security question", { description: "Your answer helps us confirm it's really you." });
     setBusy(true);
     try {
       await complete({ data: { pin, question, answer } });
-      toast.success("Security setup complete.");
+      toast.success("Your account is now secured", { description: "You can use your PIN or security answer to recover your account." });
       if (role) navigate({ to: ROLE_HOME[role], replace: true });
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    } catch (e) { toast.error("We couldn't save your security details", { description: friendlyError(e) }); }
     finally { setBusy(false); }
   }
 

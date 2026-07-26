@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/messages";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ function TeacherQuizzesPage() {
     try {
       const [q, s] = await Promise.all([load(), loadStudents()]);
       setQuizzes(q as QuizRow[]); setStudents(s as StudentRow[]);
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    } catch (e) { toast.error("We couldn't load your quizzes", { description: friendlyError(e) }); }
     finally { setLoading(false); }
   }
   useEffect(() => { refresh(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
@@ -159,7 +160,7 @@ function CreateQuizDialog({ students, onCreated }: { students: StudentRow[]; onC
   }
 
   async function runAi() {
-    if (!aiTopic.trim()) { toast.error("Enter a topic"); return; }
+    if (!aiTopic.trim()) { toast.error("Please enter a topic", { description: "Tell us what the quiz should be about, for example \"Photosynthesis\"." }); return; }
     setAiBusy(true);
     try {
       const r = await doAi({ data: { topic: aiTopic, subject, gradeLevel, count: Number(aiCount) || 5, types: ["mcq", "true_false", "fill_blank"] } }) as { questions: Draft[] };
@@ -173,18 +174,18 @@ function CreateQuizDialog({ students, onCreated }: { students: StudentRow[]; onC
       setQuestions(normalized);
       if (!title) setTitle(aiTopic);
       toast.success(`Generated ${normalized.length} questions`);
-    } catch (e) { toast.error(e instanceof Error ? e.message : "AI failed"); }
+    } catch (e) { toast.error("We couldn't generate the questions", { description: friendlyError(e, "Please try again in a moment, or add the questions manually.") }); }
     finally { setAiBusy(false); }
   }
 
   function toggle(id: string) { setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); }
 
   async function submit() {
-    if (!title.trim()) { toast.error("Title required"); return; }
+    if (!title.trim()) { toast.error("Please add a quiz title", { description: "Students will see this title on their dashboard." }); return; }
     const bad = questions.find((q) => !q.questionText.trim() || !q.correctAnswer.trim() || (q.questionType === "mcq" && q.options.some((o) => !o.trim())));
-    if (bad) { toast.error("Fill every question, its options, and the correct answer"); return; }
-    if (audienceMode === "class" && !targetClass) { toast.error("Choose a class"); return; }
-    if (audienceMode === "students" && selected.size === 0) { toast.error("Pick students"); return; }
+    if (bad) { toast.error("Some questions are incomplete", { description: "Each question needs its text, all options and the correct answer." }); return; }
+    if (audienceMode === "class" && !targetClass) { toast.error("Please choose a class", { description: "Select which class should receive this quiz." }); return; }
+    if (audienceMode === "students" && selected.size === 0) { toast.error("Please select at least one student", { description: "Choose who should receive this quiz." }); return; }
     setSaving(true);
     try {
       const r = await doCreate({ data: {
@@ -206,7 +207,7 @@ function CreateQuizDialog({ students, onCreated }: { students: StudentRow[]; onC
       setOpen(false);
       setTitle(""); setSubject(""); setGradeLevel(""); setDescription(""); setQuestions([blankQ("mcq")]); setSelected(new Set());
       onCreated();
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    } catch (e) { toast.error("We couldn't assign this quiz", { description: friendlyError(e) }); }
     finally { setSaving(false); }
   }
 

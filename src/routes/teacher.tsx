@@ -97,6 +97,8 @@ function TeacherWorkspace() {
   useEffect(() => writeLS(K_SUBS, subs), [subs]);
 
   // Hydrate one mock submission per task on first publish if none exists
+  const [tab, setTab] = useState("tasks");
+
   const seedSubsForTask = useCallback((task: Task) => {
     setSubs((prev) => {
       if (prev.some((s) => s.taskId === task.id)) return prev;
@@ -120,8 +122,8 @@ function TeacherWorkspace() {
   return (
     <AppShell requireRole="teacher" title="Teacher Workspace">
       <div className="space-y-6">
-        <HeaderStats tasks={tasks} subs={subs} studentCount={myStudents.length} />
-        <Tabs defaultValue="tasks" className="space-y-6">
+        <HeaderStats tasks={tasks} subs={subs} studentCount={myStudents.length} onOpen={setTab} />
+        <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 gap-1 backdrop-blur bg-card/60 border border-border/60">
             <TabsTrigger value="tasks"><ClipboardList className="h-4 w-4 mr-1.5" />Tasks</TabsTrigger>
             <TabsTrigger value="inbox"><Inbox className="h-4 w-4 mr-1.5" />Evaluation</TabsTrigger>
@@ -185,30 +187,38 @@ function TeacherWorkspace() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Header analytics
 // ─────────────────────────────────────────────────────────────────────────────
-function HeaderStats({ tasks, subs, studentCount }: { tasks: Task[]; subs: Submission[]; studentCount: number }) {
+function HeaderStats({ tasks, subs, studentCount, onOpen }: { tasks: Task[]; subs: Submission[]; studentCount: number; onOpen: (tab: string) => void }) {
   const now = Date.now();
   const total = subs.length;
   const pending = subs.filter((s) => s.status === "submitted").length;
   const evaluated = subs.filter((s) => s.status === "evaluated").length;
   const overdue = tasks.filter((t) => new Date(t.due).getTime() < now).length;
   const stats = [
-    { label: "Active Tasks", value: tasks.length, icon: ClipboardList, tone: "from-indigo-500/20 to-indigo-500/5 text-indigo-300" },
-    { label: "Pending Review", value: pending, icon: Inbox, tone: "from-amber-500/20 to-amber-500/5 text-amber-300" },
-    { label: "Evaluated", value: evaluated, icon: CheckCircle2, tone: "from-emerald-500/20 to-emerald-500/5 text-emerald-300" },
-    { label: "Overdue", value: overdue, icon: AlertTriangle, tone: "from-rose-500/20 to-rose-500/5 text-rose-300" },
-    { label: "My Students", value: studentCount, icon: Users, tone: "from-sky-500/20 to-sky-500/5 text-sky-300" },
-    { label: "Total Subs", value: total, icon: BookOpen, tone: "from-slate-500/20 to-slate-500/5 text-slate-300" },
+    { label: "Active Tasks", value: tasks.length, icon: ClipboardList, tone: "from-indigo-500/20 to-indigo-500/5 text-indigo-300", tab: "tasks", hint: "Open tasks" },
+    { label: "Pending Review", value: pending, icon: Inbox, tone: "from-amber-500/20 to-amber-500/5 text-amber-300", tab: "inbox", hint: "Open evaluation inbox" },
+    { label: "Evaluated", value: evaluated, icon: CheckCircle2, tone: "from-emerald-500/20 to-emerald-500/5 text-emerald-300", tab: "inbox", hint: "Open evaluation inbox" },
+    { label: "Overdue", value: overdue, icon: AlertTriangle, tone: "from-rose-500/20 to-rose-500/5 text-rose-300", tab: "tasks", hint: "Open tasks" },
+    { label: "My Students", value: studentCount, icon: Users, tone: "from-sky-500/20 to-sky-500/5 text-sky-300", tab: "students", hint: "Open student roster" },
+    { label: "Total Subs", value: total, icon: BookOpen, tone: "from-slate-500/20 to-slate-500/5 text-slate-300", tab: "inbox", hint: "Open evaluation inbox" },
   ];
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       {stats.map((s) => (
-        <div key={s.label} className={`rounded-xl border border-border/60 bg-gradient-to-br ${s.tone} backdrop-blur p-4`}>
+        <button
+          key={s.label}
+          type="button"
+          onClick={() => onOpen(s.tab)}
+          title={s.hint}
+          aria-label={`${s.label}: ${s.value}. ${s.hint}`}
+          className={`group rounded-xl border border-border/60 bg-gradient-to-br ${s.tone} p-4 text-left backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+        >
           <div className="flex items-center justify-between">
             <s.icon className="h-4 w-4 opacity-80" />
             <span className="text-2xl font-display font-semibold tabular-nums">{s.value}</span>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
-        </div>
+          <div className="mt-1 text-[11px] font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">{s.hint}</div>
+        </button>
       ))}
     </div>
   );
@@ -242,15 +252,15 @@ function TaskAuthoring({
   const reset = () => { setTitle(""); setInstructions(""); setMaxMarks(100); setSecs([]); setStus([]); };
 
   const publish = () => {
-    if (!title.trim()) return toast.error("Title is required");
-    if (!instructions.trim()) return toast.error("Instructions are required");
-    if (maxMarks <= 0) return toast.error("Max marks must be positive");
+    if (!title.trim()) return toast.error("Please add a title", { description: "Students will see this title on their dashboard." });
+    if (!instructions.trim()) return toast.error("Please add instructions", { description: "Explain what students need to do to complete this task." });
+    if (maxMarks <= 0) return toast.error("Enter the maximum marks", { description: "Maximum marks must be greater than zero." });
     const audience: TaskAudience =
       mode === "class" ? { mode, classKey } :
       mode === "sections" ? { mode, sections: secs } :
       { mode, students: stus };
-    if (mode === "sections" && secs.length === 0) return toast.error("Select at least one section");
-    if (mode === "students" && stus.length === 0) return toast.error("Select at least one student");
+    if (mode === "sections" && secs.length === 0) return toast.error("Please select at least one section", { description: "Choose which sections should receive this task." });
+    if (mode === "students" && stus.length === 0) return toast.error("Please select at least one student", { description: "Choose who should receive this task." });
     const task: Task = {
       id: `T${Date.now().toString(36)}`,
       type, title: title.trim(), instructions: instructions.trim(),
@@ -498,7 +508,7 @@ function StudentRoster({
       classSection: `${s.cls}-${s.section}`,
       meta: { admissionId: s.roll, grade: s.cls, section: s.section, createdBy: teacherUsername },
     });
-    if (!res.ok) { toast.error(res.reason || "Could not add"); return false; }
+    if (!res.ok) { toast.error("We couldn't add this student", { description: res.reason || "Please check the details and try again." }); return false; }
     toast.success(`Added ${s.name} · login: ${s.loginId.toLowerCase()} / ${s.loginId.toLowerCase()}123`);
     return true;
   };
@@ -641,7 +651,7 @@ function ManualStudentDialog({ onSubmit }: { onSubmit: (s: { name: string; cls: 
       </div>
       <DialogFooter>
         <Button onClick={() => {
-          if (!name || !loginId) { toast.error("Name and Login ID are required"); return; }
+          if (!name || !loginId) { toast.error("Name and Login ID are required", { description: "Both fields are needed to create the account." }); return; }
           onSubmit({ name, cls, section, roll: roll || `R${Math.floor(Math.random()*90+10)}`, loginId });
         }}>Create Student</Button>
       </DialogFooter>
@@ -676,7 +686,7 @@ function TeacherProfilePanel({ defaults }: {
   const [mapCls, setMapCls] = useState("Class 6");
   const [mapSec, setMapSec] = useState("A");
 
-  const save = () => { writeLS(K_PROFILE, stored); toast.success("Teacher profile saved & dashboard initialized"); };
+  const save = () => { writeLS(K_PROFILE, stored); toast.success("Your profile has been saved", { description: "Your dashboard is ready to use." }); };
 
   return (
     <Card className="backdrop-blur bg-card/60 border-border/60">

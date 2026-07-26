@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/messages";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { startForgotPassword, resetPasswordWithSecret } from "@/lib/security.functions";
@@ -39,19 +40,19 @@ function ForgotPage() {
       if (!r.hasPin && !r.question) throw new Error("This account hasn't completed security setup yet. Ask an admin to reset it.");
       setQuestion(r.question);
       setStep("choose");
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Lookup failed"); }
+    } catch (e) { toast.error("We couldn't find that account", { description: friendlyError(e, "Check the username and try again.") }); }
     finally { setBusy(false); }
   }
 
   async function onReset(e: React.FormEvent) {
     e.preventDefault();
-    if (newPassword !== confirm) { toast.error("Passwords do not match."); return; }
+    if (newPassword !== confirm) { toast.error("Those passwords don't match", { description: "Re-enter the same password in both fields." }); return; }
     setBusy(true);
     try {
       await reset({ data: { identifier, method, secret, newPassword } });
-      toast.success("Password updated. Please sign in.");
+      toast.success("Your password has been updated", { description: "Sign in with your new password to continue." });
       navigate({ to: "/auth" });
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Reset failed"); }
+    } catch (e) { toast.error("We couldn't reset your password", { description: friendlyError(e) }); }
     finally { setBusy(false); }
   }
 

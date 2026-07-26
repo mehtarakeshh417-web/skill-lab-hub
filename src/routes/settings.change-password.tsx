@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { friendlyError } from "@/lib/messages";
 import { AppShell } from "@/components/app-shell";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -29,13 +30,13 @@ function Page() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (next !== confirm) return toast.error("Passwords do not match.");
+    if (next !== confirm) return toast.error("Those passwords don't match", { description: "Re-enter the same new password in both fields." });
     setBusy(true);
     try {
       await change({ data: { currentPassword: current, newPassword: next } });
-      toast.success("Password changed.");
+      toast.success("Your password has been changed", { description: "Use your new password the next time you sign in." });
       navigate({ to: "/" });
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    } catch (e) { toast.error("We couldn't change your password", { description: friendlyError(e) }); }
     finally { setBusy(false); }
   }
 

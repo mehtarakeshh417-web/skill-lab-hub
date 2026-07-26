@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
@@ -282,15 +283,17 @@ function SchoolWorkspace() {
 
       {/* Stat ribbon */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Class configurations" value={classes.length} icon={School2} trend="Mapped grades" />
-        <StatCard label="Section counts" value={totalSections} icon={Layers} trend={`Across ${classes.length} classes`} />
+        <StatCard label="Class configurations" value={classes.length} icon={School2} trend="Mapped grades" onClick={() => setTab("structure")} hint="Manage classes & sections" />
+        <StatCard label="Section counts" value={totalSections} icon={Layers} trend={`Across ${classes.length} classes`} onClick={() => setTab("structure")} hint="Manage classes & sections" />
         <StatCard
           label="Active assigned teachers"
           value={assignedTeacherCount}
           icon={GraduationCap}
           trend={`${teachers.length} on roster`}
+          onClick={() => setTab("teachers")}
+          hint="Open teacher allocation"
         />
-        <StatCard label="Enrolled students" value={students.length} icon={Users} trend="Live registry" />
+        <StatCard label="Enrolled students" value={students.length} icon={Users} trend="Live registry" onClick={() => setTab("monitor")} hint="Open performance monitor" />
       </div>
 
       {/* Tabs */}
@@ -532,12 +535,13 @@ function StructurePanel({
   teachers: MockAccount[];
 }) {
   const [newClass, setNewClass] = useState("");
+  const [classToRemove, setClassToRemove] = useState<string | null>(null);
 
   const addClass = () => {
     const grade = newClass.trim();
     if (!grade) return;
     if (classes.some((c) => c.grade.toLowerCase() === grade.toLowerCase())) {
-      toast.error("Class already exists");
+      toast.error("That class already exists", { description: "Choose a different grade or edit the existing class." });
       return;
     }
     setClasses((arr) => [
@@ -572,9 +576,13 @@ function StructurePanel({
     );
   };
 
-  const removeClass = (classId: string) => {
-    if (!window.confirm("Remove this class and all its sections?")) return;
-    setClasses((arr) => arr.filter((c) => c.id !== classId));
+  const removeClass = (classId: string) => setClassToRemove(classId);
+
+  const confirmRemoveClass = () => {
+    if (!classToRemove) return;
+    setClasses((arr) => arr.filter((c) => c.id !== classToRemove));
+    setClassToRemove(null);
+    toast.success("Class removed", { description: "The class and its sections are no longer part of your setup." });
   };
 
   const updateTeacher = (classId: string, sectionId: string, username: string) => {
@@ -767,6 +775,22 @@ function StructurePanel({
           ))}
         </div>
       </section>
+
+      <ConfirmDialog
+        open={Boolean(classToRemove)}
+        onOpenChange={(o) => { if (!o) setClassToRemove(null); }}
+        tone="danger"
+        title="Remove this class?"
+        description="This class and every section inside it will be removed from your school setup."
+        impact={[
+          "All sections under this class will be removed.",
+          "Teachers assigned to those sections will become unassigned.",
+          "Students stay on your roster — you can move them to another class.",
+        ]}
+        confirmLabel="Remove class"
+        cancelLabel="Keep class"
+        onConfirm={confirmRemoveClass}
+      />
     </div>
   );
 }
