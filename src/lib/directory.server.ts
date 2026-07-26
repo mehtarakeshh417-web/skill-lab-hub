@@ -16,7 +16,7 @@ export type DirectoryFilters = {
 
 export type SchoolRow = {
   id: string;
-  userId: string;
+  userId: string | null;
   schoolCode: string;
   name: string;
   username: string;
