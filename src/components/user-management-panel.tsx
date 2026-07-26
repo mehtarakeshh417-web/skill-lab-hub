@@ -211,25 +211,67 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><UserCog className="h-5 w-5 text-primary" /> User Management</CardTitle>
+          <CardTitle className="flex flex-wrap items-center justify-between gap-3">
+            <span className="flex items-center gap-2"><UserCog className="h-5 w-5 text-primary" /> User Management</span>
+            <span className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={exportList} disabled={visibleRows.length === 0}>
+                <FileSpreadsheet className="h-4 w-4" /> Export
+              </Button>
+              <Button variant="outline" size="sm" onClick={refresh}><RefreshCcw className="h-4 w-4" /> Refresh</Button>
+            </span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             <div>
               <Label>Role</Label>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{roles.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                <SelectContent>{roles.map((r) => <SelectItem key={r} value={r}>{ROLE_LABELS[r] ?? r}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="md:col-span-3">
+            <div>
+              <Label>Status</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="blocked">Blocked</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Security setup</Label>
+              <Select value={setupFilter} onValueChange={setSetupFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="complete">Complete</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label>Search</Label>
               <div className="flex gap-2">
-                <Input placeholder="Username or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+                <Input placeholder="Name, username or email" value={search} onChange={(e) => setSearch(e.target.value)} />
                 <Button onClick={refresh}><Search className="h-4 w-4" /></Button>
               </div>
             </div>
           </div>
+          {selected.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3">
+              <Users2 className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">{selected.length} selected</span>
+              <div className="ml-auto flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setBulkAction("block")}>Block</Button>
+                <Button size="sm" variant="outline" onClick={() => setBulkAction("unblock")}>Unblock</Button>
+                <Button size="sm" variant="outline" className="text-rose-600" onClick={() => setBulkAction("delete")}>Delete</Button>
+                <Button size="sm" variant="ghost" onClick={() => setSelected([])}>Clear</Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
