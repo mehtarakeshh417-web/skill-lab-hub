@@ -73,10 +73,6 @@ export type AuditEntry = {
 /** Best-effort capture of client IP + browser from the active request. */
 export function requestClientInfo(): { ipAddress: string | null; userAgent: string | null } {
   try {
-    // Imported lazily so this module stays usable outside a request scope.
-    const {
-      getRequestHeader,
-    } = require("@tanstack/react-start/server") as typeof import("@tanstack/react-start/server");
     const fwd = getRequestHeader("x-forwarded-for") ?? "";
     const ip =
       fwd.split(",")[0]?.trim() ||
