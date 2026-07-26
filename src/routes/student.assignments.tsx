@@ -231,7 +231,11 @@ function AssignmentCard({ row, onOpen, onStart }: { row: Row; onOpen: () => void
           <div className="min-w-0">
             <CardTitle className="flex flex-wrap items-center gap-2 text-lg">
               {row.title}
-              {row.technology && <Badge variant="outline">{row.technology}</Badge>}
+              {row.technology && (
+                <Badge variant="outline" className="gap-1.5">
+                  <TechLogo name={row.technology} tone="brand" className="h-3.5 w-3.5" /> {row.technology}
+                </Badge>
+              )}
             </CardTitle>
             <div className="mt-1 text-xs text-muted-foreground">
               By {row.teacherName} · {row.questionCount} questions · {row.totalMarks} marks
