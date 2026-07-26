@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { submitRegistrationSchema } from "@/lib/registrations.schema";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+} as const;
+
 type ErrorPayload = {
   ok: false;
   error: string;
@@ -9,24 +16,17 @@ type ErrorPayload = {
 
 function errorResponse(error: string, status: number, field?: string) {
   const payload: ErrorPayload = { ok: false, error, ...(field ? { field } : {}) };
-  return Response.json(payload, { status });
+  return Response.json(payload, { status, headers: { ...CORS_HEADERS } });
 }
 
 export const Route = createFileRoute("/api/public/school-registrations")({
   server: {
     handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: { ...CORS_HEADERS } }),
       POST: async ({ request }) => {
         const contentType = request.headers.get("content-type") ?? "";
         if (!contentType.toLowerCase().includes("application/json")) {
           return errorResponse("The registration request must be JSON.", 415);
-        }
-
-        const origin = request.headers.get("origin");
-        if (origin) {
-          const requestOrigin = new URL(request.url).origin;
-          if (origin !== requestOrigin) {
-            return errorResponse("This registration request came from an invalid origin.", 403);
-          }
         }
 
         let body: unknown;
@@ -46,7 +46,7 @@ export const Route = createFileRoute("/api/public/school-registrations")({
         try {
           const { submitPublicRegistration } = await import("@/lib/registrations.server");
           await submitPublicRegistration(parsed.data);
-          return Response.json({ ok: true, status: "pending" }, { status: 201 });
+          return Response.json({ ok: true, status: "pending" }, { status: 201, headers: { ...CORS_HEADERS } });
         } catch (error) {
           const message = error instanceof Error ? error.message : "Registration could not be submitted.";
           const tagged = /^\[([a-zA-Z]+)\]\s*(.*)$/.exec(message.trim());
