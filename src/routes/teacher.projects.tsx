@@ -196,7 +196,11 @@ function ProjectCard({
           <div className="min-w-0">
             <CardTitle className="flex flex-wrap items-center gap-2 text-xl">
               {project.title}
-              {project.technology && <Badge variant="secondary" className="rounded-full">{project.technology}</Badge>}
+              {project.technology && (
+                <Badge variant="secondary" className="gap-1.5 rounded-full">
+                  <TechLogo name={project.technology} tone="brand" className="h-3.5 w-3.5" /> {project.technology}
+                </Badge>
+              )}
             </CardTitle>
             <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
               <span>{project.target_kind === "class" ? `${project.target_class ?? "All classes"}${project.target_section ? " · Section " + project.target_section : ""}` : "Selected students"}</span>
@@ -540,7 +544,13 @@ function CreateProjectDialog({ roster, onCreated }: { roster: Student[]; onCreat
               <Select value={technology} onValueChange={(v) => { setTechnology(v); setTemplateKey("custom"); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {PROJECT_TECHNOLOGIES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {PROJECT_TECHNOLOGIES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      <span className="flex items-center gap-2">
+                        <TechLogo name={t} tone="brand" className="h-4 w-4 shrink-0" /> {t}
+                      </span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -272,7 +272,11 @@ function AssignmentCard({
               <Badge variant="secondary" className="capitalize">
                 {ASSIGNMENT_TYPES.find((t) => t.value === a.assignment_type)?.label}
               </Badge>
-              {a.technology && <Badge variant="outline">{a.technology}</Badge>}
+              {a.technology && (
+                <Badge variant="outline" className="gap-1.5">
+                  <TechLogo name={a.technology} tone="brand" className="h-3.5 w-3.5" /> {a.technology}
+                </Badge>
+              )}
               {overdue && <Badge className="border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-300">Overdue</Badge>}
             </CardTitle>
             <div className="mt-2 text-xs text-muted-foreground">
@@ -653,7 +657,13 @@ function CreateAssignmentDialog({ roster, onCreated }: { roster: StudentRow[]; o
                 <Select value={technology} onValueChange={setTechnology}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {ASSIGNMENT_TECHNOLOGIES.map((t) => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
+                    {ASSIGNMENT_TECHNOLOGIES.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        <span className="flex items-center gap-2">
+                          <TechLogo name={t} tone="brand" className="h-4 w-4 shrink-0" /> {t}
+                        </span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
