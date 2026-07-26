@@ -116,16 +116,20 @@ export type Database = {
           actor_role: string | null
           actor_user_id: string | null
           actor_username: string | null
+          audit_ref: number
           created_at: string
           entity_id: string | null
           entity_label: string | null
           entity_type: string | null
           id: string
           ip_address: string | null
+          module: string | null
           new_value: Json | null
           previous_value: Json | null
           remarks: string | null
           status: string
+          target_role: string | null
+          target_user_id: string | null
           user_agent: string | null
         }
         Insert: {
@@ -133,16 +137,20 @@ export type Database = {
           actor_role?: string | null
           actor_user_id?: string | null
           actor_username?: string | null
+          audit_ref?: number
           created_at?: string
           entity_id?: string | null
           entity_label?: string | null
           entity_type?: string | null
           id?: string
           ip_address?: string | null
+          module?: string | null
           new_value?: Json | null
           previous_value?: Json | null
           remarks?: string | null
           status?: string
+          target_role?: string | null
+          target_user_id?: string | null
           user_agent?: string | null
         }
         Update: {
@@ -150,16 +158,20 @@ export type Database = {
           actor_role?: string | null
           actor_user_id?: string | null
           actor_username?: string | null
+          audit_ref?: number
           created_at?: string
           entity_id?: string | null
           entity_label?: string | null
           entity_type?: string | null
           id?: string
           ip_address?: string | null
+          module?: string | null
           new_value?: Json | null
           previous_value?: Json | null
           remarks?: string | null
           status?: string
+          target_role?: string | null
+          target_user_id?: string | null
           user_agent?: string | null
         }
         Relationships: []
