@@ -17,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { friendlyError } from "@/lib/messages";
 import { toast } from "sonner";
 import { Loader2, KeyRound, UserCog, Power, ShieldOff, Trash2, RefreshCcw, Search } from "lucide-react";
 
@@ -40,6 +42,9 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
   const [unameTarget, setUnameTarget] = useState<ManagedUser | null>(null);
   const [unameValue, setUnameValue] = useState("");
   const [busy, setBusy] = useState(false);
+  const [activeTarget, setActiveTarget] = useState<{ user: ManagedUser; nextActive: boolean } | null>(null);
+  const [secTarget, setSecTarget] = useState<ManagedUser | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
 
   const roles = actor === "admin"
     ? ["all", "admin", "portal_manager", "sales_rep", "school", "teacher", "student"]
@@ -48,39 +53,72 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
   async function refresh() {
     setLoading(true);
     try { setRows(await load({ data: { roleFilter, search } }) as ManagedUser[]); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed to load"); }
+    catch (e) { toast.error("We couldn't load the user list", { description: friendlyError(e, "Please refresh the page and try again.") }); }
     finally { setLoading(false); }
   }
   useEffect(() => { refresh(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [roleFilter]);
 
-  async function onSetActive(u: ManagedUser, active: boolean) {
-    if (!confirm(`${active ? "Activate" : "Deactivate"} ${u.username}?`)) return;
-    try { await setActive({ data: { userId: u.userId, active } }); toast.success("Updated."); refresh(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  async function confirmSetActive() {
+    if (!activeTarget) return;
+    const { user: u, nextActive } = activeTarget;
+    setBusy(true);
+    try {
+      await setActive({ data: { userId: u.userId, active: nextActive } });
+      toast.success(
+        nextActive ? `${u.username} can sign in again` : `${u.username} has been deactivated`,
+        { description: nextActive ? "Their account is active with the same username and password." : "They can no longer sign in until you reactivate the account." },
+      );
+      setActiveTarget(null);
+      refresh();
+    } catch (e) {
+      toast.error(nextActive ? "We couldn't activate this account" : "We couldn't deactivate this account", { description: friendlyError(e) });
+    } finally { setBusy(false); }
   }
-  async function onResetSec(u: ManagedUser) {
-    if (!confirm(`Reset security setup for ${u.username}? They'll be asked again on next login.`)) return;
-    try { await resetSec({ data: { userId: u.userId } }); toast.success("Security reset."); refresh(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  async function confirmResetSecurity() {
+    if (!secTarget) return;
+    setBusy(true);
+    try {
+      await resetSec({ data: { userId: secTarget.userId } });
+      toast.success("Security setup reset", { description: `${secTarget.username} will be asked to set a new PIN and security question at their next sign-in.` });
+      setSecTarget(null);
+      refresh();
+    } catch (e) {
+      toast.error("We couldn't reset the security setup", { description: friendlyError(e) });
+    } finally { setBusy(false); }
   }
-  async function onDelete(u: ManagedUser) {
-    if (!confirm(`Permanently delete ${u.username}? This cannot be undone.`)) return;
-    try { await del({ data: { userId: u.userId } }); toast.success("Deleted."); refresh(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setBusy(true);
+    try {
+      await del({ data: { userId: deleteTarget.userId } });
+      toast.success(`${deleteTarget.username} has been deleted`, { description: "Their login and profile have been removed from the portal." });
+      setDeleteTarget(null);
+      refresh();
+    } catch (e) {
+      toast.error("We couldn't delete this account", { description: friendlyError(e) });
+    } finally { setBusy(false); }
   }
 
   async function submitPw() {
     if (!pwTarget) return;
     setBusy(true);
-    try { await resetPw({ data: { userId: pwTarget.userId, newPassword: pwValue } }); toast.success("Password updated."); setPwTarget(null); setPwValue(""); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    try {
+      await resetPw({ data: { userId: pwTarget.userId, newPassword: pwValue } });
+      toast.success(`Password updated for ${pwTarget.username}`, { description: "Share the new password securely — they can sign in with it right away." });
+      setPwTarget(null); setPwValue("");
+    }
+    catch (e) { toast.error("We couldn't update the password", { description: friendlyError(e) }); }
     finally { setBusy(false); }
   }
   async function submitUname() {
     if (!unameTarget) return;
     setBusy(true);
-    try { await chgUsername({ data: { userId: unameTarget.userId, newUsername: unameValue } }); toast.success("Username updated."); setUnameTarget(null); setUnameValue(""); refresh(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    try {
+      await chgUsername({ data: { userId: unameTarget.userId, newUsername: unameValue } });
+      toast.success("Username updated", { description: `This account now signs in as “${unameValue}”.` });
+      setUnameTarget(null); setUnameValue(""); refresh();
+    }
+    catch (e) { toast.error("We couldn't update the username", { description: friendlyError(e, "That username may already be taken. Please try another one.") }); }
     finally { setBusy(false); }
   }
 
