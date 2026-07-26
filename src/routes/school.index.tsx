@@ -282,15 +282,17 @@ function SchoolWorkspace() {
 
       {/* Stat ribbon */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Class configurations" value={classes.length} icon={School2} trend="Mapped grades" />
-        <StatCard label="Section counts" value={totalSections} icon={Layers} trend={`Across ${classes.length} classes`} />
+        <StatCard label="Class configurations" value={classes.length} icon={School2} trend="Mapped grades" onClick={() => setTab("structure")} hint="Manage classes & sections" />
+        <StatCard label="Section counts" value={totalSections} icon={Layers} trend={`Across ${classes.length} classes`} onClick={() => setTab("structure")} hint="Manage classes & sections" />
         <StatCard
           label="Active assigned teachers"
           value={assignedTeacherCount}
           icon={GraduationCap}
           trend={`${teachers.length} on roster`}
+          onClick={() => setTab("teachers")}
+          hint="Open teacher allocation"
         />
-        <StatCard label="Enrolled students" value={students.length} icon={Users} trend="Live registry" />
+        <StatCard label="Enrolled students" value={students.length} icon={Users} trend="Live registry" onClick={() => setTab("monitor")} hint="Open performance monitor" />
       </div>
 
       {/* Tabs */}
@@ -572,9 +574,13 @@ function StructurePanel({
     );
   };
 
-  const removeClass = (classId: string) => {
-    if (!window.confirm("Remove this class and all its sections?")) return;
-    setClasses((arr) => arr.filter((c) => c.id !== classId));
+  const removeClass = (classId: string) => setClassToRemove(classId);
+
+  const confirmRemoveClass = () => {
+    if (!classToRemove) return;
+    setClasses((arr) => arr.filter((c) => c.id !== classToRemove));
+    setClassToRemove(null);
+    toast.success("Class removed", { description: "The class and its sections are no longer part of your setup." });
   };
 
   const updateTeacher = (classId: string, sectionId: string, username: string) => {
