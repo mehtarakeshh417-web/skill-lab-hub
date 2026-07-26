@@ -25,7 +25,6 @@ import {
   Globe,
   Users,
   Cpu,
-  Play,
 } from "lucide-react";
 import auroraImg from "@/assets/aurora.jpg";
 
