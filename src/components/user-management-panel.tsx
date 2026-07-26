@@ -460,6 +460,31 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
       {actor === "admin" && (
         <div className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldOff className="h-3 w-3" /> For your safety, you can't change or remove your own admin account here.</div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(bulkAction)}
+        onOpenChange={(o) => { if (!o) setBulkAction(null); }}
+        tone={bulkAction === "delete" ? "danger" : "warning"}
+        icon={bulkAction === "delete" ? Trash2 : Power}
+        busy={busy}
+        title={
+          bulkAction === "delete"
+            ? `Delete ${selected.length} account${selected.length === 1 ? "" : "s"} permanently?`
+            : bulkAction === "block"
+              ? `Block ${selected.length} account${selected.length === 1 ? "" : "s"}?`
+              : `Unblock ${selected.length} account${selected.length === 1 ? "" : "s"}?`
+        }
+        description={
+          bulkAction === "delete"
+            ? <>The selected people will lose access immediately and their profiles will be removed. This cannot be undone.</>
+            : bulkAction === "block"
+              ? <>The selected people will be signed out and won't be able to log in until you unblock them.</>
+              : <>The selected people will be able to sign in again with their existing username and password.</>
+        }
+        confirmLabel={bulkAction === "delete" ? "Delete permanently" : bulkAction === "block" ? "Block accounts" : "Unblock accounts"}
+        cancelLabel="Cancel"
+        onConfirm={runBulk}
+      />
     </div>
   );
 }
