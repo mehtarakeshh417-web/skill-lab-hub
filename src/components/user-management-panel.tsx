@@ -7,6 +7,7 @@ import {
   adminSetUserActive,
   adminResetSecurity,
   adminDeleteUser,
+  adminUpdateUserProfile,
   type ManagedUser,
 } from "@/lib/security.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +21,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { friendlyError } from "@/lib/messages";
 import { toast } from "sonner";
-import { Loader2, KeyRound, UserCog, Power, ShieldOff, Trash2, RefreshCcw, Search } from "lucide-react";
+import { exportXlsx, type ExportColumn } from "@/lib/export-report";
+import { Loader2, KeyRound, UserCog, Power, ShieldOff, Trash2, RefreshCcw, Search, Pencil, FileSpreadsheet, Users2 } from "lucide-react";
+
+const ROLE_LABELS: Record<string, string> = {
+  all: "All roles",
+  admin: "Administrator",
+  portal_manager: "Portal manager",
+  sales_rep: "Sales representative",
+  school: "School",
+  teacher: "Teacher",
+  student: "Student",
+};
 
 type Actor = "admin" | "manager";
 
@@ -31,10 +43,13 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
   const setActive = useServerFn(adminSetUserActive);
   const resetSec = useServerFn(adminResetSecurity);
   const del = useServerFn(adminDeleteUser);
+  const updProfile = useServerFn(adminUpdateUserProfile);
 
   const [rows, setRows] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [setupFilter, setSetupFilter] = useState("all");
   const [search, setSearch] = useState("");
 
   const [pwTarget, setPwTarget] = useState<ManagedUser | null>(null);
@@ -45,6 +60,11 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
   const [activeTarget, setActiveTarget] = useState<{ user: ManagedUser; nextActive: boolean } | null>(null);
   const [secTarget, setSecTarget] = useState<ManagedUser | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
+  const [editTarget, setEditTarget] = useState<ManagedUser | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkAction, setBulkAction] = useState<"block" | "unblock" | "delete" | null>(null);
 
   const roles = actor === "admin"
     ? ["all", "admin", "portal_manager", "sales_rep", "school", "teacher", "student"]
@@ -57,6 +77,71 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
     finally { setLoading(false); }
   }
   useEffect(() => { refresh(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [roleFilter]);
+
+  const visibleRows = rows.filter((u) => {
+    if (statusFilter === "active" && !u.isActive) return false;
+    if (statusFilter === "blocked" && u.isActive) return false;
+    if (setupFilter === "pending" && !u.mustSetupSecurity) return false;
+    if (setupFilter === "complete" && u.mustSetupSecurity) return false;
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return [u.username, u.email, u.fullName ?? ""].some((v) => v.toLowerCase().includes(q));
+  });
+  const allSelected = visibleRows.length > 0 && visibleRows.every((u) => selected.includes(u.userId));
+
+  function toggleAll() {
+    setSelected(allSelected ? [] : visibleRows.map((u) => u.userId));
+  }
+  function toggleOne(id: string) {
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  function exportList() {
+    const cols: ExportColumn<ManagedUser>[] = [
+      { header: "Name", value: (r) => r.fullName ?? "" },
+      { header: "Username", value: (r) => r.username },
+      { header: "Email", value: (r) => r.email },
+      { header: "Role", value: (r) => ROLE_LABELS[r.role] ?? r.role },
+      { header: "Status", value: (r) => (r.isActive ? "Active" : "Blocked") },
+      { header: "Security setup", value: (r) => (r.mustSetupSecurity ? "Pending" : "Complete") },
+      { header: "Created", value: (r) => new Date(r.createdAt).toLocaleDateString() },
+    ];
+    exportXlsx(visibleRows, cols, `avartan-users-${new Date().toISOString().slice(0, 10)}`);
+  }
+
+  async function runBulk() {
+    if (!bulkAction) return;
+    const targets = rows.filter((u) => selected.includes(u.userId));
+    setBusy(true);
+    let done = 0;
+    let failed = 0;
+    for (const u of targets) {
+      try {
+        if (bulkAction === "delete") await del({ data: { userId: u.userId } });
+        else await setActive({ data: { userId: u.userId, active: bulkAction === "unblock" } });
+        done += 1;
+      } catch { failed += 1; }
+    }
+    setBusy(false);
+    setBulkAction(null);
+    setSelected([]);
+    if (done) toast.success(`${done} account${done === 1 ? "" : "s"} updated`);
+    if (failed) toast.error(`${failed} account${failed === 1 ? "" : "s"} could not be updated`, { description: "Some accounts may be protected. Please try them individually." });
+    refresh();
+  }
+
+  async function submitProfile() {
+    if (!editTarget) return;
+    setBusy(true);
+    try {
+      await updProfile({ data: { userId: editTarget.userId, fullName: editName, email: editEmail } });
+      toast.success("Profile updated", { description: `${editName} has been saved.` });
+      setEditTarget(null);
+      refresh();
+    } catch (e) {
+      toast.error("We couldn't save these details", { description: friendlyError(e) });
+    } finally { setBusy(false); }
+  }
 
   async function confirmSetActive() {
     if (!activeTarget) return;
