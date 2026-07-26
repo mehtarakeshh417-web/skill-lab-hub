@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { submitSchoolRegistration } from "@/lib/registrations.functions";
 import { addRegistration } from "@/lib/registrations";
-import { ThemeToggle } from "@/lib/theme";
 import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
   ShieldCheck,
