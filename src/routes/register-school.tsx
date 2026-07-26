@@ -494,6 +494,101 @@ function Field({
   onFocus?: () => void;
   onBlur?: () => void;
 }) {
+  return (
+    <BaseField
+      label={label}
+      icon={Icon}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      error={error}
+      hint={hint}
+      maxLength={maxLength}
+      type={type}
+      focused={focused}
+      onFocus={onFocus}
+      onBlur={onBlur}
+    />
+  );
+}
+
+function SelectField({
+  label, icon: Icon, value, onChange, placeholder, options, error, hint, disabled,
+}: {
+  label: string;
+  icon: typeof Building2;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  options: string[];
+  error?: string;
+  hint?: string;
+  disabled?: boolean;
+}) {
+  const isActive = value.length > 0;
+  return (
+    <label className="group block">
+      <span className={
+        "mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition-colors duration-300 " +
+        (isActive ? "text-primary" : "text-muted-foreground")
+      }>
+        <Icon className={"h-3.5 w-3.5 transition-colors duration-300 " + (isActive ? "text-primary" : "text-muted-foreground/70")} />
+        {label}
+      </span>
+      <div
+        className={
+          "relative flex items-center gap-3 overflow-hidden rounded-2xl border bg-muted/50 transition-all duration-300 dark:bg-background/40 " +
+          (disabled ? "opacity-60 " : "") +
+          (error
+            ? "border-rose-400/60 shadow-[0_0_0_4px_rgba(244,63,94,0.12)]"
+            : "border-border focus-within:border-primary/70 focus-within:bg-background focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_18%,transparent)]")
+        }
+      >
+        <Icon className={"relative ml-4 h-5 w-5 shrink-0 transition-colors duration-300 " + (error ? "text-rose-400" : isActive ? "text-primary" : "text-muted-foreground/60")} />
+        <select
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          className={
+            "relative h-14 w-full appearance-none bg-transparent px-1 pr-10 py-4 text-base outline-none " +
+            (isActive ? "text-foreground" : "text-muted-foreground/60")
+          }
+        >
+          <option value="">{placeholder ?? "Select"}</option>
+          {options.map((o) => (
+            <option key={o} value={o} className="text-foreground">{o}</option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-4 h-5 w-5 text-muted-foreground/60" />
+      </div>
+      <div className="mt-2 min-h-[16px] text-[11px]">
+        {error ? (
+          <span className="inline-flex items-center gap-1 text-rose-400"><AlertCircle className="h-3.5 w-3.5" /> {error}</span>
+        ) : hint ? (
+          <span className="text-muted-foreground/80">{hint}</span>
+        ) : null}
+      </div>
+    </label>
+  );
+}
+
+function BaseField({
+  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
+  focused, onFocus, onBlur,
+}: {
+  label: string;
+  icon: typeof Building2;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  error?: string;
+  hint?: string;
+  maxLength?: number;
+  type?: string;
+  focused?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
+}) {
   const isActive = focused || value.length > 0;
   return (
     <label className="group block">
