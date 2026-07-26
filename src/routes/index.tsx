@@ -25,7 +25,6 @@ import {
   Globe,
   Users,
   Cpu,
-  Play,
 } from "lucide-react";
 import auroraImg from "@/assets/aurora.jpg";
 
@@ -168,11 +167,6 @@ function Hero() {
                 <Link to="/auth">
                   Open the portal <ArrowRight className="h-5 w-5" />
                 </Link>
-              </Button>
-              <Button variant="outline" size="xl" asChild className="group">
-                <a href="#technologies">
-                  <Play className="h-4 w-4 transition-transform group-hover:scale-110" /> Watch demo
-                </a>
               </Button>
             </div>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground lg:justify-start">
