@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { friendlyError, countLabel } from "@/lib/messages";
 import { adminResetUserPassword, adminChangeUsername, adminSetUserActive } from "@/lib/security.functions";
 import { deleteSchoolWithDependents, deleteDirectoryPerson } from "@/lib/directory.functions";
 import type { PersonRow, SchoolRow } from "@/lib/directory.server";
@@ -81,6 +83,9 @@ export function DirectoryWorkspace({
   const [unameValue, setUnameValue] = useState("");
   const [deleteSchool, setDeleteSchool] = useState<SchoolRow | null>(null);
   const [confirmText, setConfirmText] = useState("");
+  const [activeTarget, setActiveTarget] = useState<{ userId: string; label: string; nextActive: boolean } | null>(null);
+  const [personTarget, setPersonTarget] = useState<{ kind: "teacher" | "student" | "sales_rep"; row: PersonRow } | null>(null);
+  const [bulkTarget, setBulkTarget] = useState<string[] | null>(null);
 
   const resetPw = useServerFn(adminResetUserPassword);
   const chgUname = useServerFn(adminChangeUsername);
@@ -157,15 +162,20 @@ export function DirectoryWorkspace({
     else exportXlsx(people, cols, name, [["Rows exported", people.length]]);
   }
 
-  async function onToggleActive(userId: string | null, active: boolean) {
-    if (!userId) return;
+  async function confirmToggleActive() {
+    if (!activeTarget) return;
+    const { userId, label, nextActive } = activeTarget;
     setBusy(true);
     try {
-      await setActive({ data: { userId, active } });
-      toast.success(active ? "Account activated." : "Account deactivated.");
+      await setActive({ data: { userId, active: nextActive } });
+      toast.success(
+        nextActive ? `${label} can sign in again` : `${label} has been deactivated`,
+        { description: nextActive ? "The account is active with the same username and password." : "This account can no longer sign in until you reactivate it." },
+      );
+      setActiveTarget(null);
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Action failed.");
+      toast.error(nextActive ? "We couldn't activate this account" : "We couldn't deactivate this account", { description: friendlyError(e) });
     } finally { setBusy(false); }
   }
 
@@ -174,10 +184,10 @@ export function DirectoryWorkspace({
     setBusy(true);
     try {
       await resetPw({ data: { userId: pwTarget.userId, newPassword: pwValue } });
-      toast.success(`Password updated for ${pwTarget.label}.`);
+      toast.success(`Password updated for ${pwTarget.label}`, { description: "Share the new password securely — they can sign in with it right away." });
       setPwTarget(null); setPwValue("");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not update password.");
+      toast.error("We couldn't update the password", { description: friendlyError(e) });
     } finally { setBusy(false); }
   }
 
@@ -186,11 +196,11 @@ export function DirectoryWorkspace({
     setBusy(true);
     try {
       await chgUname({ data: { userId: unameTarget.userId, newUsername: unameValue } });
-      toast.success("Username updated.");
+      toast.success("Username updated", { description: `This account now signs in as “${unameValue.trim()}”.` });
       setUnameTarget(null); setUnameValue("");
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not update username.");
+      toast.error("We couldn't update the username", { description: friendlyError(e, "That username may already be taken. Please try another one.") });
     } finally { setBusy(false); }
   }
 
@@ -199,38 +209,50 @@ export function DirectoryWorkspace({
     setBusy(true);
     try {
       const res = await delSchool({ data: { schoolId: deleteSchool.id } }) as { teachersDeleted: number; studentsDeleted: number };
-      toast.success(`${deleteSchool.name} removed with ${res.teachersDeleted} teachers and ${res.studentsDeleted} students.`);
+      toast.success(`${deleteSchool.name} has been deleted`, {
+        description: `${countLabel(res.teachersDeleted, "teacher account")} and ${countLabel(res.studentsDeleted, "student account")} were removed with it.`,
+      });
       setDeleteSchool(null); setConfirmText("");
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not delete school.");
+      toast.error("We couldn't delete this school", { description: friendlyError(e) });
     } finally { setBusy(false); }
   }
 
-  async function onDeletePerson(kind: "teacher" | "student" | "sales_rep", row: PersonRow) {
-    if (!confirm(`Permanently delete ${row.fullName}? Their login will be removed.`)) return;
+  async function confirmDeletePerson() {
+    if (!personTarget) return;
     setBusy(true);
     try {
-      await delPerson({ data: { kind, id: row.id } });
-      toast.success("Account deleted.");
+      await delPerson({ data: { kind: personTarget.kind, id: personTarget.row.id } });
+      toast.success(`${personTarget.row.fullName} has been deleted`, { description: "Their login and profile have been removed from the portal." });
+      setPersonTarget(null);
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not delete account.");
+      toast.error("We couldn't delete this account", { description: friendlyError(e) });
     } finally { setBusy(false); }
   }
 
-  async function bulkDeactivate(userIds: Array<string | null>) {
+  function requestBulkDeactivate(userIds: Array<string | null>) {
     const ids = userIds.filter(Boolean) as string[];
+    if (!ids.length) {
+      toast.warning("Nothing to deactivate", { description: "The accounts you selected don't have a portal login yet." });
+      return;
+    }
+    setBulkTarget(ids);
+  }
+
+  async function confirmBulkDeactivate() {
+    const ids = bulkTarget ?? [];
     if (!ids.length) return;
-    if (!confirm(`Deactivate ${ids.length} selected account(s)?`)) return;
     setBusy(true);
     try {
       for (const id of ids) await setActive({ data: { userId: id, active: false } });
-      toast.success(`${ids.length} account(s) deactivated.`);
+      toast.success(`${countLabel(ids.length, "account")} deactivated`, { description: "They can no longer sign in until you reactivate them." });
+      setBulkTarget(null);
       setSelected([]);
       onRefresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Bulk action failed.");
+      toast.error("We couldn't finish deactivating every account", { description: friendlyError(e, "Some accounts may have been updated. Refresh to see the latest status.") });
     } finally { setBusy(false); }
   }
 
