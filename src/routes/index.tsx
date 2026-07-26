@@ -286,8 +286,8 @@ function LogoMarquee() {
           <div className="relative flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
             <div className="flex w-max animate-marquee gap-12 whitespace-nowrap py-2">
               {[...items, ...items].map((it, i) => (
-                <div key={i} className="flex items-center gap-2 font-display text-lg font-semibold text-muted-foreground/70">
-                  <Sparkles className="h-4 w-4 text-primary/70" /> {it}
+                <div key={i} className="flex items-center gap-2.5 font-display text-lg font-semibold text-muted-foreground/80">
+                  <TechLogo name={it} tone="brand" className="h-5 w-5 shrink-0" /> {it}
                 </div>
               ))}
             </div>
