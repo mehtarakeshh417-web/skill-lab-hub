@@ -95,3 +95,11 @@ export function generatePassword(len = 14): string {
   }
   return out;
 }
+
+/** Server errors may be tagged as "[fieldName] message" so the UI can attach them to a field. */
+export function parseFieldError(message: string): { field?: string; message: string } {
+  const m = /^\[([a-zA-Z]+)\]\s*(.*)$/.exec(message.trim());
+  if (!m) return { message };
+  return { field: m[1], message: m[2] };
+}
+

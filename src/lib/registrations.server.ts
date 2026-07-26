@@ -106,9 +106,9 @@ async function assertUsernameAvailable(username: string, excludingRegistrationId
       .ilike("username", username)
       .neq("status", "rejected"),
   ]);
-  if (profile.data || school.data || salesRep.data) throw new Error("Username already exists.");
+  if (profile.data || school.data || salesRep.data) throw new Error("[username] This username is already taken. Choose another.");
   const conflictingReg = (reg.data ?? []).find((r) => r.id !== excludingRegistrationId);
-  if (conflictingReg) throw new Error("A pending or approved registration already uses this username.");
+  if (conflictingReg) throw new Error("[username] A pending or approved registration already uses this username.");
 }
 
 export async function submitPublicRegistration(input: SubmitRegistrationInput) {
@@ -125,7 +125,7 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
     .select("id")
     .ilike("school_code", schoolCode)
     .maybeSingle();
-  if (codeCheck.data) throw new Error("That school code is already active. Please choose another.");
+  if (codeCheck.data) throw new Error("[schoolCode] That school code is already active. Please choose another.");
 
   const pendingCode = await supabaseAdmin
     .from("school_registrations")
@@ -133,7 +133,7 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
     .ilike("school_code", schoolCode)
     .eq("status", "pending")
     .maybeSingle();
-  if (pendingCode.data) throw new Error("A pending registration is already using this school code.");
+  if (pendingCode.data) throw new Error("[schoolCode] A pending registration is already using this school code.");
 
   const encrypted = encryptSecret(input.password);
   const insert = await supabaseAdmin

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { submitSchoolRegistration } from "@/lib/registrations.functions";
-import { addRegistration } from "@/lib/registrations";
+import { parseFieldError } from "@/lib/registrations";
 import { INDIA_STATES, citiesForState } from "@/lib/india-locations";
 import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
@@ -115,13 +115,38 @@ function RegisterSchool() {
     address: "Address",
   };
 
+  const validateValue = (k: keyof typeof empty, raw: string): string => {
+    const v = String(raw ?? "").trim();
+    if (!v) return `${LABELS[k]} is missing — this field is required.`;
+    if (k === "email" && !/^\S+@\S+\.\S+$/.test(v)) return "Enter a valid email address.";
+    return "";
+  };
+
   const validate = (): Record<string, string> => {
     const e: Record<string, string> = {};
     (Object.keys(empty) as (keyof typeof empty)[]).forEach((k) => {
-      if (!String(form[k] ?? "").trim()) e[k] = `${LABELS[k]} is missing — this field is required.`;
+      const msg = validateValue(k, form[k]);
+      if (msg) e[k] = msg;
     });
-    if (!e.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = "Enter a valid email address.";
     return e;
+  };
+
+  const focusField = (key: string) => {
+    if (typeof document === "undefined") return;
+    const el = document.querySelector<HTMLElement>(
+      `[data-field="${key}"] input, [data-field="${key}"] select, [data-field="${key}"] textarea`,
+    );
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.focus({ preventScroll: true });
+  };
+
+  // Re-validate a single field when the user leaves it (focusout bubbles to the form).
+  const handleBlur = (ev: React.FocusEvent<HTMLFormElement>) => {
+    const name = (ev.target as HTMLElement & { name?: string }).name as keyof typeof empty | undefined;
+    if (!name || !(name in empty)) return;
+    const msg = validateValue(name, form[name]);
+    setErrors((e) => ({ ...e, [name]: msg }));
   };
 
   const submit = async (ev: React.FormEvent) => {
@@ -134,6 +159,7 @@ function RegisterSchool() {
         missing.length === 1 ? `${missing[0]} is missing` : `${missing.length} required fields are missing`,
         { description: missing.join(", ") },
       );
+      focusField(Object.keys(e)[0]);
       return;
     }
     setSubmitting(true);
@@ -156,15 +182,6 @@ function RegisterSchool() {
           address: form.address.trim(),
         },
       });
-      // Also mirror into local session list for the sidebar preview.
-      addRegistration({
-        schoolName: form.schoolName.trim(),
-        schoolCode: form.schoolCode.trim().toUpperCase(),
-        principalName: form.principalName.trim(),
-        region: [form.area.trim(), form.city.trim(), form.state.trim()].filter(Boolean).join(", "),
-        designation: form.designation.trim(),
-        notes: form.notes.trim(),
-      });
       toast.success("Registration submitted", {
         description: `${form.schoolName.trim()} · status: Pending Approval`,
       });
@@ -173,9 +190,15 @@ function RegisterSchool() {
       setErrors({});
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      toast.error("Registration failed", {
-        description: err instanceof Error ? err.message : String(err),
-      });
+      const raw = err instanceof Error ? err.message : String(err);
+      const { field, message } = parseFieldError(raw);
+      if (field && field in empty) {
+        setErrors((e) => ({ ...e, [field]: message }));
+        focusField(field);
+        toast.error(`${LABELS[field as keyof typeof empty]} needs attention`, { description: message });
+      } else {
+        toast.error("Registration failed", { description: message });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -243,6 +266,7 @@ function RegisterSchool() {
           {/* Form Card */}
           <form
             onSubmit={submit}
+            onBlur={handleBlur}
             noValidate
             className="slab-3d relative overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-7 shadow-[0_30px_80px_-30px_hsl(var(--primary)/0.5)] backdrop-blur-2xl sm:p-10"
           >
@@ -263,6 +287,7 @@ function RegisterSchool() {
               <SectionHeading step="01" title="Institution details" caption="Identify the school applying for the portal." />
               <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
+                  name="schoolName"
                   label="Institutional School Name"
                   icon={Building2}
                   value={form.schoolName}
@@ -274,6 +299,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, schoolName: false }))}
                 />
                 <Field
+                  name="schoolCode"
                   label="Requested Unique School Code"
                   icon={Layers}
                   value={form.schoolCode}
@@ -285,6 +311,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, schoolCode: false }))}
                 />
                 <Field
+                  name="principalName"
                   label="Principal Name"
                   icon={UserSquare2}
                   value={form.principalName}
@@ -296,6 +323,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, principalName: false }))}
                 />
                 <Field
+                  name="designation"
                   label="Contact Designation"
                   icon={Briefcase}
                   value={form.designation}
@@ -307,6 +335,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, designation: false }))}
                 />
                 <SelectField
+                  name="state"
                   label="State"
                   icon={MapPin}
                   value={form.state}
@@ -316,6 +345,7 @@ function RegisterSchool() {
                   error={errors.state}
                 />
                 <SelectField
+                  name="city"
                   label="City"
                   icon={MapPin}
                   value={form.city}
@@ -327,6 +357,7 @@ function RegisterSchool() {
                   hint={form.state ? undefined : "Choose a state to load its cities."}
                 />
                 <Field
+                  name="area"
                   label="Area"
                   icon={MapPin}
                   value={form.area}
@@ -342,6 +373,7 @@ function RegisterSchool() {
               <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
               <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
+                  name="username"
                   label="Login Username"
                   icon={UserSquare2}
                   value={form.username}
@@ -354,6 +386,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, username: false }))}
                 />
                 <Field
+                  name="password"
                   label="Login Password"
                   icon={ShieldCheck}
                   value={form.password}
@@ -370,6 +403,7 @@ function RegisterSchool() {
               <SectionHeading step="03" title="Contact & location" caption="How our onboarding team reaches your institution." />
               <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
+                  name="email"
                   label="Contact Email"
                   icon={Send}
                   value={form.email}
@@ -381,6 +415,7 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, email: false }))}
                 />
                 <Field
+                  name="phone"
                   label="Phone Number"
                   icon={Briefcase}
                   value={form.phone}
@@ -393,7 +428,8 @@ function RegisterSchool() {
                 />
                 <div className="sm:col-span-2">
                   <Field
-                    label="Address"
+                    name="address"
+                  label="Address"
                     icon={MapPin}
                     value={form.address}
                     onChange={(v) => update("address", v)}
@@ -405,7 +441,7 @@ function RegisterSchool() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block">
+                  <label className="block" data-field="notes">
                     <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Submission Notes
                     </span>
@@ -419,6 +455,7 @@ function RegisterSchool() {
                     >
                       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 transition-opacity duration-300 group-focus-within:opacity-100" />
                       <textarea
+                        name="notes"
                         value={form.notes}
                         onChange={(e) => update("notes", e.target.value)}
                         rows={4}
@@ -478,9 +515,10 @@ function SectionHeading({ step, title, caption }: { step: string; title: string;
 }
 
 function Field({
-  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
+  name, label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
   focused, onFocus, onBlur,
 }: {
+  name: string;
   label: string;
   icon: typeof Building2;
   value: string;
@@ -496,6 +534,7 @@ function Field({
 }) {
   return (
     <BaseField
+      name={name}
       label={label}
       icon={Icon}
       value={value}
@@ -513,8 +552,9 @@ function Field({
 }
 
 function SelectField({
-  label, icon: Icon, value, onChange, placeholder, options, error, hint, disabled,
+  name, label, icon: Icon, value, onChange, placeholder, options, error, hint, disabled,
 }: {
+  name: string;
   label: string;
   icon: typeof Building2;
   value: string;
@@ -527,7 +567,7 @@ function SelectField({
 }) {
   const isActive = value.length > 0;
   return (
-    <label className="group block">
+    <label className="group block" data-field={name}>
       <span className={
         "mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition-colors duration-300 " +
         (isActive ? "text-primary" : "text-muted-foreground")
@@ -546,6 +586,7 @@ function SelectField({
       >
         <Icon className={"relative ml-4 h-5 w-5 shrink-0 transition-colors duration-300 " + (error ? "text-rose-400" : isActive ? "text-primary" : "text-muted-foreground/60")} />
         <select
+          name={name}
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
@@ -573,9 +614,10 @@ function SelectField({
 }
 
 function BaseField({
-  label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
+  name, label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
   focused, onFocus, onBlur,
 }: {
+  name: string;
   label: string;
   icon: typeof Building2;
   value: string;
@@ -591,7 +633,7 @@ function BaseField({
 }) {
   const isActive = focused || value.length > 0;
   return (
-    <label className="group block">
+    <label className="group block" data-field={name}>
       <span className={
         "mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition-colors duration-300 " +
         (isActive ? "text-primary" : "text-muted-foreground")
@@ -611,6 +653,7 @@ function BaseField({
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-300 group-focus-within:opacity-100" />
         <Icon className={"relative ml-4 h-5 w-5 shrink-0 transition-colors duration-300 " + (error ? "text-rose-400" : isActive ? "text-primary" : "text-muted-foreground/60")} />
         <input
+          name={name}
           type={type ?? "text"}
           value={value}
           onChange={(e) => onChange(e.target.value)}

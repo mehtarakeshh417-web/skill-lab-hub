@@ -1,45 +1,36 @@
-# Realistic Office-Look-Alike Editors for the Coding Lab
+## What I verified
 
-## Reality check (confirmed)
+- The database table that stores registrations currently has **0 rows** — nothing submitted has ever been saved.
+- The server log shows the exact failure when the form is submitted:
+  `Error: Invalid server function ID: src_lib_registrations-functions_ts--submitSchoolRegistration_createServerFn_handler`
+  So the button *is* wired to a submit handler, validation *does* run, but the call to the backend never reaches its handler — the registration function isn't resolvable in the server function registry, so submission always throws and the user just sees a failure toast.
+- The form-level validation already exists and renders inline messages per field; the missing part is field-level re-validation and correct error surfacing when the backend rejects (duplicate username/school code, etc.).
 
-Real Microsoft Office editors **cannot** be embedded in this app:
+## Plan
 
-- **Office for the Web** (Word/Excel/PowerPoint online) requires the WOPI protocol + a Microsoft 365 tenant + per-user Microsoft sign-in. Microsoft sends `X-Frame-Options: SAMEORIGIN` and CSP `frame-ancestors 'self'`, so any `<iframe src="office.com/...">` is refused by the browser.
-- **Microsoft Paint** has no web version — Win32 desktop only.
-- Google Docs/Sheets/Slides editors are also iframe-blocked; only read-only "published" views embed.
+1. **Repair the backend submission path (root cause)**
+   - Reproduce the submit against the running app and confirm the "Invalid server function ID" error is the only blocker.
+   - Restructure `src/lib/registrations.functions.ts` so the public submit function is registered reliably: keep the file a strict thin wrapper (imports + exported `createServerFn` declarations only) and stop the public submit path from being pulled in through a chain that gets stripped from the client build. If needed, move the public submit into its own dedicated functions module so its ID is stable and always present in the server manifest.
+   - Re-verify with a real submission that a row lands in the registrations table with status `pending`.
 
-So the goal is the closest-looking free alternative for each slot.
+2. **Server-side validation and error clarity**
+   - Keep the existing Zod schema (all fields mandatory, email format).
+   - Return field-attributable errors for the known business rejections: username already taken, school code already active, school code already pending. These currently surface only as a generic toast.
 
-## What changes
+3. **Client validation polish (logic only, no layout/UI change)**
+   - Re-validate a field on blur, so an error clears/appears as the user fixes it (currently errors only clear on typing after a failed submit).
+   - On backend rejection, map the returned field key onto the existing inline error slot under that field (the markup for it already exists) plus keep the toast.
+   - Scroll/focus the first invalid field on failed submit instead of only toasting.
 
-Only `src/components/coding-lab/editors.tsx` (and a tiny helper file for Univer). No business logic, no route or state changes.
+4. **Success path**
+   - Keep the existing "Submitted for approval — Pending Approval" confirmation screen.
+   - Remove the mirror write into the in-memory mock store (`addRegistration`), which duplicates the real record and can make the reviewer list misleading; the real record already flows to the Admin/Manager pending panel.
 
-| Slot | Action |
-|---|---|
-| **Paint** | Keep JS Paint (`https://jspaint.app/`) — already a pixel-perfect MS Paint clone. |
-| **Word** | Keep Zoho Writer iframe — the only real Word-like editor that permits embedding without per-user auth. |
-| **Excel** | Replace current slot with **Univer Sheets** — self-hosted npm package, Excel-grade ribbon, formulas, multi-sheet tabs, no iframe. |
-| **PowerPoint** | Replace with **OnlyOffice Presentation demo** iframe (`https://onlinedocs.onlyoffice.com/`) — closest visual match to real PowerPoint ribbon. Show a small note that it's powered by OnlyOffice demo. |
+5. **Verification**
+   - Submit a complete valid form in a real browser session, confirm the row exists in the database with `pending` status and that it appears in the Admin/Manager pending approvals list.
+   - Submit an incomplete form and confirm submission is blocked with inline messages next to each missing field.
+   - Submit a duplicate username/school code and confirm the error appears against the right field.
 
-## Implementation details (technical)
+## Notes
 
-1. **Install Univer**:
-   - `bun add @univerjs/presets @univerjs/preset-sheets-core`
-   - Import the preset's CSS in the editor component only (dynamic import to avoid SSR issues — Univer is browser-only, wrap in `useEffect` + a `client-only` guard).
-   - Mount into a `<div ref>` sized to fill the editor container. Pre-seed one workbook with a "Students" sheet and sample rows so it feels usable immediately.
-   - Add a "Reset workbook" button that disposes the Univer instance and re-creates it.
-
-2. **OnlyOffice PowerPoint slot**:
-   - Simple `<iframe src="https://onlinedocs.onlyoffice.com/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" />` at 100% width/height inside the same premium 3D card frame the other editors use.
-   - Add a small caption: "Powered by OnlyOffice — public demo. Files are not saved to your account."
-   - Include a graceful fallback message if the iframe fails to load (detect via `onerror` / a timeout ping).
-
-3. **Preserve existing shell**: All four editors keep the same wrapping card, header, and toolbar affordances already in `editors.tsx`. Only the inner editor bodies change.
-
-4. **SSR safety**: Univer touches `window` at import time — load it via `React.lazy` + a client-only wrapper so TanStack Start's SSR/prerender doesn't crash.
-
-## Out of scope
-
-- No changes to Word, Paint, SQL, or HTML editors.
-- No auth, no file persistence to backend (both Univer edits and OnlyOffice sessions stay ephemeral, same as current editors).
-- No UI redesign beyond fitting the new editors into the existing 3D card frame.
+No changes to the visual design, spacing, layout, section order, or field arrangement of the Register School page — only submission wiring, validation behavior, and error placement inside the already-existing error slots.
