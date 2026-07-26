@@ -207,7 +207,10 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
             <Input type="password" value={pwValue} onChange={(e) => setPwValue(e.target.value)} placeholder="Min 6 characters" />
             <p className="text-xs text-muted-foreground">The user can sign in with this password immediately. They should change it after logging in.</p>
           </div>
-          <DialogFooter><Button onClick={submitPw} disabled={busy || pwValue.length < 6}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}</Button></DialogFooter>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPwTarget(null)} disabled={busy}>Cancel</Button>
+            <Button onClick={submitPw} disabled={busy || pwValue.length < 6}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -219,12 +222,81 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
             <Input value={unameValue} onChange={(e) => setUnameValue(e.target.value.trim().toLowerCase())} />
             <p className="text-xs text-muted-foreground">Must be unique. The user will sign in with this new username immediately.</p>
           </div>
-          <DialogFooter><Button onClick={submitUname} disabled={busy || unameValue.length < 3}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update username"}</Button></DialogFooter>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUnameTarget(null)} disabled={busy}>Cancel</Button>
+            <Button onClick={submitUname} disabled={busy || unameValue.length < 3}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update username"}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      <ConfirmDialog
+        open={Boolean(activeTarget) && activeTarget?.nextActive === false}
+        onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
+        tone="warning"
+        icon={Power}
+        busy={busy}
+        title="Deactivate this account?"
+        description={<>You're about to deactivate <strong>{activeTarget?.user.username}</strong>. Their account stays in the portal, but they won't be able to use it until you turn it back on.</>}
+        impact={[
+          "They will be signed out and can no longer log in.",
+          "Their records, classes and history are kept safely — nothing is deleted.",
+          "You can reactivate this account at any time from this page.",
+        ]}
+        confirmLabel="Deactivate account"
+        cancelLabel="Cancel"
+        onConfirm={confirmSetActive}
+      />
+
+      <ConfirmDialog
+        open={Boolean(activeTarget) && activeTarget?.nextActive === true}
+        onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
+        tone="neutral"
+        icon={Power}
+        busy={busy}
+        title="Reactivate this account?"
+        description={<><strong>{activeTarget?.user.username}</strong> will be able to sign in again immediately using their existing username and password.</>}
+        confirmLabel="Reactivate account"
+        cancelLabel="Cancel"
+        onConfirm={confirmSetActive}
+      />
+
+      <ConfirmDialog
+        open={Boolean(secTarget)}
+        onOpenChange={(o) => { if (!o) setSecTarget(null); }}
+        tone="warning"
+        icon={RefreshCcw}
+        busy={busy}
+        title="Reset security setup?"
+        description={<>This clears the recovery PIN and security question for <strong>{secTarget?.username}</strong>.</>}
+        impact={[
+          "They will be asked to create a new PIN and security question the next time they sign in.",
+          "Their password stays the same.",
+        ]}
+        confirmLabel="Reset security setup"
+        cancelLabel="Cancel"
+        onConfirm={confirmResetSecurity}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        tone="danger"
+        icon={Trash2}
+        busy={busy}
+        title="Delete this account permanently?"
+        description={<>This permanently removes <strong>{deleteTarget?.username}</strong> from the portal. This action cannot be undone.</>}
+        impact={[
+          "Their login is deleted and they lose access immediately.",
+          "Their profile is removed from all directories and reports.",
+          "If you only want to pause access, deactivate the account instead.",
+        ]}
+        confirmLabel="Delete permanently"
+        cancelLabel="Keep account"
+        onConfirm={confirmDelete}
+      />
+
       {actor === "admin" && (
-        <div className="text-xs text-muted-foreground flex items-center gap-1"><ShieldOff className="h-3 w-3" /> Admins can never modify their own account.</div>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldOff className="h-3 w-3" /> For your safety, you can't change or remove your own admin account here.</div>
       )}
     </div>
   );
