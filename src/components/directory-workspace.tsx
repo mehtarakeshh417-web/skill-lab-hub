@@ -354,7 +354,7 @@ export function DirectoryWorkspace({
         )}
 
         <TabsContent value="schools" className="mt-4 space-y-3">
-          {loading ? <LoadingRows /> : schools.length === 0 ? <EmptyRows label="No schools match these filters." /> : schools.map((s) => (
+          {loading ? <LoadingRows /> : schools.length === 0 ? <EmptyRows label="No schools match your current search or filters. Try clearing the filters to see every school." /> : schools.map((s) => (
             <div key={s.id} className="rounded-3xl border border-border/60 bg-card/70 p-6 shadow-elegant backdrop-blur-xl transition-shadow hover:shadow-glow">
               <div className="flex flex-wrap items-start gap-4">
                 <Checkbox checked={selected.includes(s.id)} onCheckedChange={() => toggleSelect(s.id)} className="mt-2" />
@@ -428,7 +428,7 @@ export function DirectoryWorkspace({
 
         {(["teachers", "students", "salesReps"] as Tab[]).map((key) => (
           <TabsContent key={key} value={key} className="mt-4 space-y-3">
-            {loading ? <LoadingRows /> : people.length === 0 ? <EmptyRows label={`No ${TAB_META[key].label.toLowerCase()} match these filters.`} /> : people.map((p) => (
+            {loading ? <LoadingRows /> : people.length === 0 ? <EmptyRows label={`No ${TAB_META[key].label.toLowerCase()} match your current search or filters. Try clearing the filters to see everyone.`} /> : people.map((p) => (
               <div key={p.id} className="rounded-3xl border border-border/60 bg-card/70 p-6 shadow-elegant backdrop-blur-xl transition-shadow hover:shadow-glow">
                 <div className="flex flex-wrap items-center gap-4">
                   <Checkbox checked={selected.includes(p.id)} onCheckedChange={() => toggleSelect(p.id)} />
@@ -493,7 +493,7 @@ export function DirectoryWorkspace({
             <Input value={pwValue} onChange={(e) => setPwValue(e.target.value)} placeholder="Minimum 6 characters" className="rounded-xl" />
             <div className="flex gap-2">
               <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={() => setPwValue(randomPassword())}>Generate</Button>
-              <Button type="button" variant="ghost" size="sm" className="rounded-xl" disabled={!pwValue} onClick={() => { navigator.clipboard?.writeText(pwValue); toast.success("Copied."); }}>Copy</Button>
+              <Button type="button" variant="ghost" size="sm" className="rounded-xl" disabled={!pwValue} onClick={() => { navigator.clipboard?.writeText(pwValue); toast.success("Password copied to your clipboard"); }}>Copy</Button>
             </div>
           </div>
           <DialogFooter>
