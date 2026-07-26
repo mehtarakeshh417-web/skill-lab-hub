@@ -69,12 +69,12 @@ function AdminDashboard() {
   return (
     <AppShell requireRole="admin" title="Platform Overview">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-        <StatCard label="Schools" value={totals?.schools ?? 0} icon={School2} trend="Live" />
-        <StatCard label="Teachers" value={totals?.teachers ?? 0} icon={GraduationCap} />
-        <StatCard label="Students" value={totals?.students ?? 0} icon={Users} />
-        <StatCard label="Sales reps" value={totals?.salesReps ?? 0} icon={Briefcase} />
-        <StatCard label="Pending approvals" value={totals?.pendingRegistrations ?? 0} icon={ClipboardList} trend={`${totals?.rejectedRegistrations ?? 0} rejected`} />
-        <StatCard label="Deactivated" value={totals?.inactiveAccounts ?? 0} icon={ShieldAlert} />
+        <StatCard label="Schools" value={totals?.schools ?? 0} icon={School2} trend="Live" to="/admin/directory" search={{ tab: "schools" }} hint="Open school directory" />
+        <StatCard label="Teachers" value={totals?.teachers ?? 0} icon={GraduationCap} to="/admin/directory" search={{ tab: "teachers" }} hint="Open teacher directory" />
+        <StatCard label="Students" value={totals?.students ?? 0} icon={Users} to="/admin/directory" search={{ tab: "students" }} hint="Open student directory" />
+        <StatCard label="Sales reps" value={totals?.salesReps ?? 0} icon={Briefcase} to="/admin/directory" search={{ tab: "salesReps" }} hint="Open sales team" />
+        <StatCard label="Pending approvals" value={totals?.pendingRegistrations ?? 0} icon={ClipboardList} trend={`${totals?.rejectedRegistrations ?? 0} rejected`} to="/admin/pending-schools" hint="Review registrations" />
+        <StatCard label="Deactivated" value={totals?.inactiveAccounts ?? 0} icon={ShieldAlert} to="/admin/directory" search={{ tab: "schools", status: "inactive" }} hint="See paused accounts" />
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -86,9 +86,9 @@ function AdminDashboard() {
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <HealthTile label="Accounts pending security setup" value={totals?.pendingSecurity ?? 0} />
-        <HealthTile label="Schools with zero students" value={totals?.schoolsWithoutStudents ?? 0} />
-        <HealthTile label="Deactivated accounts" value={totals?.inactiveAccounts ?? 0} />
+        <HealthTile label="Accounts pending security setup" value={totals?.pendingSecurity ?? 0} to="/admin/users" hint="Manage these users" />
+        <HealthTile label="Schools with zero students" value={totals?.schoolsWithoutStudents ?? 0} to="/admin/directory" search={{ tab: "schools" }} hint="Review those schools" />
+        <HealthTile label="Deactivated accounts" value={totals?.inactiveAccounts ?? 0} to="/admin/directory" search={{ tab: "schools", status: "inactive" }} hint="See paused accounts" />
       </div>
 
       <div className="mt-6 rounded-3xl border border-border/60 bg-card/70 p-6 shadow-elegant backdrop-blur-xl lg:p-8">
@@ -123,12 +123,17 @@ function AdminDashboard() {
         </div>
         {recentSchools.length === 0 ? (
           <div className="mt-6 rounded-2xl border border-dashed border-border/70 px-6 py-12 text-center text-sm text-muted-foreground">
-            No schools onboarded yet. Approved registrations appear here instantly.
+            No schools have been onboarded yet. As soon as you approve a registration, the school will appear here.
           </div>
         ) : (
           <div className="mt-6 grid gap-3 lg:grid-cols-2">
             {recentSchools.map((s) => (
-              <div key={s.id} className="rounded-2xl border border-border/50 bg-background/50 p-5">
+              <Link
+                key={s.id}
+                to="/admin/directory"
+                search={{ tab: "schools", status: "all" }}
+                className="group rounded-2xl border border-border/50 bg-background/50 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="font-semibold">{s.name}</div>
@@ -143,7 +148,10 @@ function AdminDashboard() {
                   <span>{s.email || "—"}</span>
                   <span className="text-muted-foreground">{s.phone || "—"}</span>
                 </div>
-              </div>
+                <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-80 group-hover:opacity-100">
+                  Open in directory <ArrowRight className="h-3.5 w-3.5" />
+                </div>
+              </Link>
             ))}
           </div>
         )}
@@ -167,11 +175,18 @@ function QuickAction({ to, icon: Icon, label, hint }: { to: string; icon: typeof
   );
 }
 
-function HealthTile({ label, value }: { label: string; value: number }) {
+function HealthTile({ label, value, to, search, hint }: { label: string; value: number; to: string; search?: Record<string, string>; hint: string }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/60 px-6 py-5 backdrop-blur-xl">
+    <Link
+      to={to}
+      search={search}
+      className="group rounded-2xl border border-border/60 bg-card/60 px-6 py-5 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
+    >
       <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
       <div className="mt-2 font-display text-2xl font-bold">{value}</div>
-    </div>
+      <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-80 group-hover:opacity-100">
+        {hint} <ArrowRight className="h-3.5 w-3.5" />
+      </div>
+    </Link>
   );
 }
