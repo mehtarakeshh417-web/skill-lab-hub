@@ -185,17 +185,18 @@ function RegisterSchool() {
             <div className="pointer-events-none absolute -inset-px rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-50" />
 
             <div className="relative">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="font-display text-xl font-bold tracking-tight">Institutional Registration</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">All fields are mandatory unless marked optional. Your data is encrypted and visible only to authorized portal administrators.</p>
+                  <p className="mt-1 max-w-md text-xs text-muted-foreground">All fields are mandatory unless marked optional. Your data is encrypted and visible only to authorized portal administrators.</p>
                 </div>
-                <span className="chip-3d inline-flex items-center gap-1.5 self-start rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-400">
+                <span className="inline-flex shrink-0 items-center gap-1.5 self-start whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-500/10 px-3.5 py-2 text-[11px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400">
                   <ClipboardList className="h-3.5 w-3.5" /> Approval Required
                 </span>
               </div>
 
-              <div className="mt-8 grid gap-5 sm:grid-cols-2">
+              <SectionHeading step="01" title="Institution details" caption="Identify the school applying for the portal." />
+              <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
                   label="Institutional School Name"
                   icon={Building2}
@@ -253,6 +254,10 @@ function RegisterSchool() {
                   onFocus={() => setFocused((f) => ({ ...f, designation: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, designation: false }))}
                 />
+              </div>
+
+              <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
+              <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
                   label="Login Username"
                   icon={UserSquare2}
@@ -277,6 +282,10 @@ function RegisterSchool() {
                   onFocus={() => setFocused((f) => ({ ...f, password: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, password: false }))}
                 />
+              </div>
+
+              <SectionHeading step="03" title="Contact & location" caption="How our onboarding team reaches your institution." />
+              <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
                   label="Contact Email"
                   icon={Send}
@@ -319,10 +328,10 @@ function RegisterSchool() {
                     </span>
                     <div
                       className={
-                        "group relative overflow-hidden rounded-2xl border bg-background/40 shadow-inner transition-all duration-300 focus-within:shadow-[0_0_0_4px_hsl(var(--primary)/0.15)] " +
+                        "group relative overflow-hidden rounded-2xl border bg-muted/50 transition-all duration-300 dark:bg-background/40 " +
                         (errors.notes
                           ? "border-rose-400/60 shadow-[0_0_0_4px_rgba(244,63,94,0.12)]"
-                          : "border-border/60 focus-within:border-primary/60")
+                          : "border-border focus-within:border-primary/70 focus-within:bg-background focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_18%,transparent)]")
                       }
                     >
                       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 transition-opacity duration-300 group-focus-within:opacity-100" />
@@ -347,25 +356,19 @@ function RegisterSchool() {
                 </div>
               </div>
 
-              <div className="mt-8 flex flex-col gap-4 border-t border-border/60 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <p className="max-w-xl text-xs text-muted-foreground leading-relaxed">
+              <div className="mt-10 flex flex-col gap-5 border-t border-border/60 pt-7 sm:flex-row sm:items-center sm:justify-between">
+                <p className="max-w-md text-xs text-muted-foreground leading-relaxed">
                   By submitting, you authorize Avartan to contact your institution regarding onboarding. Your application enters the
-                  review queue as <span className="font-semibold text-amber-400">Pending Approval</span> and will typically be processed within one business day.
+                  review queue as <span className="font-semibold text-amber-500 dark:text-amber-400">Pending Approval</span> and will typically be processed within one business day.
                 </p>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn-3d group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-2xl px-8 text-base font-bold text-primary-foreground transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-70"
+                  style={{ backgroundImage: "linear-gradient(100deg, var(--primary), var(--accent))" }}
+                  className="inline-flex h-16 w-full shrink-0 items-center justify-center gap-2.5 rounded-2xl px-10 text-base font-bold tracking-tight text-primary-foreground shadow-[0_16px_40px_-12px_var(--primary)] ring-1 ring-inset ring-white/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-14px_var(--primary)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
-                  <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary via-primary-glow to-primary opacity-95 transition-opacity duration-300 group-hover:opacity-100" />
-                  <span className="absolute inset-0 rounded-2xl shadow-[0_18px_50px_-10px_hsl(var(--primary)/0.85)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_-10px_hsl(var(--primary))]" />
-                  <span className="absolute inset-0 -translate-x-full overflow-hidden rounded-2xl">
-                    <span className="absolute inset-y-0 w-1/3 -skew-x-12 bg-white/30 transition-transform duration-700 group-hover:translate-x-[400%]" />
-                  </span>
-                  <span className="relative inline-flex items-center gap-2">
-                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                    {submitting ? "Submitting Application…" : "Submit Registration"}
-                  </span>
+                  {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                  {submitting ? "Submitting Application…" : "Submit Registration"}
                 </button>
               </div>
             </div>
@@ -374,6 +377,21 @@ function RegisterSchool() {
         </div>
       </div>
     </section>
+  );
+}
+
+function SectionHeading({ step, title, caption }: { step: string; title: string; caption: string }) {
+  return (
+    <div className="mt-10 flex items-center gap-4 first:mt-8">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 font-display text-sm font-bold text-primary">
+        {step}
+      </span>
+      <div className="min-w-0">
+        <h4 className="font-display text-sm font-bold uppercase tracking-[0.14em]">{title}</h4>
+        <p className="text-xs text-muted-foreground">{caption}</p>
+      </div>
+      <span className="ml-2 hidden h-px flex-1 bg-gradient-to-r from-border to-transparent sm:block" />
+    </div>
   );
 }
 
@@ -406,10 +424,10 @@ function Field({
       </span>
       <div
         className={
-          "relative flex items-center gap-3 overflow-hidden rounded-2xl border bg-background/40 shadow-inner transition-all duration-300 " +
+          "relative flex items-center gap-3 overflow-hidden rounded-2xl border bg-muted/50 transition-all duration-300 dark:bg-background/40 " +
           (error
             ? "border-rose-400/60 shadow-[0_0_0_4px_rgba(244,63,94,0.12)]"
-            : "border-border/60 focus-within:border-primary/60 focus-within:shadow-[0_0_0_4px_hsl(var(--primary)/0.15)] focus-within:bg-background/60")
+            : "border-border focus-within:border-primary/70 focus-within:bg-background focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_18%,transparent)]")
         }
       >
         <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 transition-opacity duration-300 group-focus-within:opacity-100" />
