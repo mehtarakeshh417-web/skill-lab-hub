@@ -383,7 +383,7 @@
   content: "";
   position: absolute;
   inset: -50%;
-  background: conic-gradient(from 0deg, oklch(0.62 0.13 165) 0deg, oklch(0.79 0.115 88) 90deg, transparent 180deg, oklch(0.62 0.13 165) 270deg, oklch(0.79 0.115 88) 360deg);
+  background: conic-gradient(from 0deg, oklch(0.62 0.18 25) 0deg, oklch(0.79 0.115 88) 90deg, transparent 180deg, oklch(0.62 0.18 25) 270deg, oklch(0.79 0.115 88) 360deg);
   animation: spin-slow 6s linear infinite;
   pointer-events: none;
 }
