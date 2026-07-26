@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { submitSchoolRegistration } from "@/lib/registrations.functions";
 import { addRegistration } from "@/lib/registrations";
-import { ThemeToggle } from "@/lib/theme";
 import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
   ShieldCheck,
@@ -36,7 +35,7 @@ export const Route = createFileRoute("/register-school")({
 
 function RegisterSchoolPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="light min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2.5">
@@ -46,7 +45,6 @@ function RegisterSchoolPage() {
             </div>
           </Link>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link
               to="/"
               className="btn-3d inline-flex h-11 items-center gap-2 rounded-full border border-border/60 bg-card/60 px-5 text-sm font-semibold backdrop-blur-xl transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_28px_-8px_hsl(var(--primary)/0.7)]"
