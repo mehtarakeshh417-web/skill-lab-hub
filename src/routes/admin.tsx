@@ -39,7 +39,6 @@ function AdminDashboard() {
 
   const totals = data?.totals;
   const schools = data?.schools ?? [];
-  const recentSchools = schools.slice(0, 6);
 
   function downloadPortalReport() {
     const cols: ExportColumn<SchoolRow>[] = [
