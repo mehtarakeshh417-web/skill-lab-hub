@@ -8,7 +8,7 @@ import { getDirectory } from "@/lib/directory.functions";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/admin/directory")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { tab?: string; status?: string } => ({
     tab: typeof search.tab === "string" ? search.tab : "schools",
     status: typeof search.status === "string" ? search.status : "all",
   }),

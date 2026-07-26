@@ -58,7 +58,7 @@ function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 p-6">
       <Card className="w-full max-w-xl border-white/10 bg-white/[0.04] backdrop-blur-xl">
         <CardHeader>
           <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-300/80">

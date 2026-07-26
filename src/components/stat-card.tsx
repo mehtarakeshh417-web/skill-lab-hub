@@ -1,6 +1,34 @@
 import { type LucideIcon, ArrowUpRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+
+/** Purely visual count-up. Falls back to the raw value for non-numeric input. */
+function AnimatedValue({ value }: { value: string | number }) {
+  const numeric = typeof value === "number" ? value : Number(String(value).replace(/[, ]/g, ""));
+  const animatable = Number.isFinite(numeric) && Math.abs(numeric) > 0 && Math.abs(numeric) < 1_000_000;
+  const [display, setDisplay] = useState(animatable ? 0 : numeric);
+  const frame = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!animatable) return;
+    const duration = 700;
+    const start = performance.now();
+    const step = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(numeric * eased));
+      if (p < 1) frame.current = requestAnimationFrame(step);
+    };
+    frame.current = requestAnimationFrame(step);
+    return () => {
+      if (frame.current) cancelAnimationFrame(frame.current);
+    };
+  }, [numeric, animatable]);
+
+  if (!animatable) return <>{value}</>;
+  return <>{display.toLocaleString()}</>;
+}
 
 export function StatCard({
   label,
@@ -39,7 +67,9 @@ export function StatCard({
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <div className="relative mt-4 font-display text-4xl font-bold tracking-tight text-gradient">{value}</div>
+      <div className="relative mt-4 font-display text-4xl font-bold tracking-tight text-gradient tabular-nums">
+        <AnimatedValue value={value} />
+      </div>
       {trend && <div className="relative mt-1 text-xs font-semibold text-success">{trend}</div>}
       {interactive && (
         <div className="relative mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-80 transition-opacity group-hover:opacity-100">

@@ -52,7 +52,7 @@ export const ATTEMPT_STATUS_META: Record<
   },
   auto_scored: {
     label: "Auto-scored",
-    className: "bg-violet-500/10 text-violet-600 dark:text-violet-300 border-violet-500/30",
+    className: "bg-teal-500/10 text-teal-600 dark:text-teal-300 border-teal-500/30",
   },
   published: {
     label: "Published",

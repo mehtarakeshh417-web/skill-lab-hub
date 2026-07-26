@@ -66,7 +66,7 @@ export function EditorWrapper({
       />
 
       {/* Title bar */}
-      <header className="relative flex items-center justify-between gap-3 border-b border-white/10 bg-gradient-to-r from-slate-900/90 via-indigo-950/70 to-slate-900/90 px-4 py-3 backdrop-blur-xl">
+      <header className="relative flex items-center justify-between gap-3 border-b border-white/10 bg-gradient-to-r from-slate-900/90 via-emerald-950/70 to-slate-900/90 px-4 py-3 backdrop-blur-xl">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex shrink-0 items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80 shadow-[0_0_8px_rgba(244,63,94,0.7)]" />
@@ -79,7 +79,7 @@ export function EditorWrapper({
                 {title}
               </h3>
               {badge && (
-                <span className="rounded-full border border-indigo-400/30 bg-indigo-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200">
+                <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
                   {badge}
                 </span>
               )}
@@ -93,7 +93,7 @@ export function EditorWrapper({
           <button
             type="button"
             onClick={() => setReloadKey((k) => k + 1)}
-            className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-slate-300 transition-all hover:scale-105 hover:border-indigo-400/40 hover:bg-indigo-500/15 hover:text-indigo-200"
+            className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-slate-300 transition-all hover:scale-105 hover:border-emerald-400/40 hover:bg-emerald-500/15 hover:text-emerald-200"
             title="Reload editor"
           >
             <RotateCw className="h-3.5 w-3.5" />
@@ -103,7 +103,7 @@ export function EditorWrapper({
               href={url}
               target="_blank"
               rel="noreferrer"
-              className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-slate-300 transition-all hover:scale-105 hover:border-indigo-400/40 hover:bg-indigo-500/15 hover:text-indigo-200"
+              className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-slate-300 transition-all hover:scale-105 hover:border-emerald-400/40 hover:bg-emerald-500/15 hover:text-emerald-200"
               title="Open in new tab"
             >
               <ExternalLink className="h-3.5 w-3.5" />
@@ -112,7 +112,7 @@ export function EditorWrapper({
           <button
             type="button"
             onClick={() => setFullscreen((f) => !f)}
-            className="rounded-lg border border-indigo-400/30 bg-indigo-500/15 p-1.5 text-indigo-200 transition-all hover:scale-105 hover:border-indigo-300/60 hover:bg-indigo-500/30"
+            className="rounded-lg border border-emerald-400/30 bg-emerald-500/15 p-1.5 text-emerald-200 transition-all hover:scale-105 hover:border-emerald-300/60 hover:bg-emerald-500/30"
             title={fullscreen ? "Exit full screen" : "Enter full screen"}
           >
             {fullscreen ? (

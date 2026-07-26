@@ -21,7 +21,9 @@ import {
 import { CheckCircle2, Clock3, Hourglass, Loader2, PlayCircle, Timer, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/student/assignments")({
-  validateSearch: (s: Record<string, unknown>) => ({ focus: typeof s.focus === "string" ? s.focus : undefined }),
+  validateSearch: (s: Record<string, unknown>): { focus?: string } => ({
+    focus: typeof s.focus === "string" ? s.focus : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "My Assignments · Student · Avartan Skill Lab" },

@@ -17,7 +17,7 @@ import { STATUS_META, SUBMISSION_TYPES, type ProjectStatus } from "@/lib/project
 import { Award, CheckCircle2, Clock3, FileCheck2, FolderKanban, Loader2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/student/projects")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { focus?: string } => ({
     focus: typeof search.focus === "string" ? search.focus : undefined,
   }),
   head: () => ({
@@ -183,7 +183,7 @@ function StudentProjectsPage() {
 
 function MiniStat({ icon: Icon, label, value, tone }: { icon: typeof FolderKanban; label: string; value: number; tone: string }) {
   const tones: Record<string, string> = {
-    indigo: "text-indigo-600 dark:text-indigo-300 bg-indigo-500/10",
+    indigo: "text-emerald-600 dark:text-emerald-300 bg-emerald-500/10",
     amber: "text-amber-600 dark:text-amber-300 bg-amber-500/10",
     sky: "text-sky-600 dark:text-sky-300 bg-sky-500/10",
     emerald: "text-emerald-600 dark:text-emerald-300 bg-emerald-500/10",

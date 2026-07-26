@@ -56,7 +56,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         className={cn(
           "absolute inset-y-1 left-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br shadow-[0_4px_14px_-2px_rgba(0,0,0,0.45)] transition-all duration-500 ease-out",
           isDark
-            ? "translate-x-0 from-indigo-500 to-violet-500"
+            ? "translate-x-0 from-emerald-500 to-teal-500"
             : "translate-x-[26px] from-amber-300 to-orange-400",
         )}
       >

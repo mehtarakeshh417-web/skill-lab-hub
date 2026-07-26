@@ -57,10 +57,10 @@ function ForgotPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-6">
       <Card className="w-full max-w-lg border-white/10 bg-white/[0.04] backdrop-blur-xl">
         <CardHeader>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-indigo-300/80">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-300/80">
             <KeyRound className="h-3.5 w-3.5" /> Account Recovery
           </div>
           <CardTitle className="font-display text-2xl text-white">Forgot Password</CardTitle>
@@ -88,7 +88,7 @@ function ForgotPage() {
                   onClick={() => { setMethod("pin"); setStep("reset"); }}
                   className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/10 transition"
                 >
-                  <KeyRound className="h-5 w-5 text-indigo-300" />
+                  <KeyRound className="h-5 w-5 text-emerald-300" />
                   <div>
                     <div className="text-white font-medium">Use Security PIN</div>
                     <div className="text-xs text-slate-400">4–8 digit PIN you set during first login.</div>

@@ -239,28 +239,28 @@ function SchoolWorkspace() {
   return (
     <div className="space-y-6">
       {/* Premium image-led hero banner */}
-      <header className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-indigo-950/30">
+      <header className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-950/30">
         <img
           src={IMG.heroBanner}
           alt="School kids collaborating in a digital coding lab"
           className="absolute inset-0 h-full w-full object-cover"
           loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-indigo-950/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-emerald-950/40" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(99,102,241,0.35),transparent_60%)]" />
         <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 p-6 sm:flex sm:flex-wrap sm:justify-between sm:p-8">
           <div className="flex min-w-0 items-center gap-4">
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-sky-500 text-white shadow-[0_0_30px_rgba(99,102,241,0.55)] ring-1 ring-white/30">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-emerald-500 to-sky-500 text-white shadow-[0_0_30px_rgba(99,102,241,0.55)] ring-1 ring-white/30">
               <School2 className="h-7 w-7" />
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-200/90">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-200/90">
                 {schoolCode} · Institution Console
               </div>
               <h2 className="truncate font-display text-2xl font-bold tracking-tight text-white drop-shadow sm:text-3xl">
                 {schoolName}
               </h2>
-              <p className="mt-1 hidden text-xs text-indigo-100/80 sm:block">
+              <p className="mt-1 hidden text-xs text-emerald-100/80 sm:block">
                 Steer every classroom, teacher, and lab from one elite command surface.
               </p>
             </div>
@@ -307,7 +307,7 @@ function SchoolWorkspace() {
               className={cn(
                 "flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all sm:text-sm",
                 active
-                  ? "bg-gradient-to-br from-indigo-500 to-sky-500 text-primary-foreground shadow-glow"
+                  ? "bg-gradient-to-br from-emerald-500 to-sky-500 text-primary-foreground shadow-glow"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
             >
@@ -374,7 +374,7 @@ function TeacherPanel({
   });
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-indigo-950/10 backdrop-blur-xl">
+    <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-emerald-950/10 backdrop-blur-xl">
       <div className="relative overflow-hidden border-b border-border/60">
         <img
           src={IMG.teachers}
@@ -384,7 +384,7 @@ function TeacherPanel({
         <div className="absolute inset-0 bg-gradient-to-r from-card via-card/85 to-card/30" />
         <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 sm:flex sm:justify-between sm:p-6">
           <div className="min-w-0">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">Faculty</div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Faculty</div>
             <h3 className="truncate font-display text-lg font-bold">Teacher roster &amp; allocation</h3>
             <p className="text-xs text-muted-foreground">Create teachers for your school and assign them to sections.</p>
           </div>
@@ -415,7 +415,7 @@ function TeacherPanel({
           {filtered.map((t) => (
             <li key={t.username} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4 transition-colors hover:bg-accent/40 sm:flex sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-sky-500/20 font-display text-sm font-bold text-indigo-500">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-sky-500/20 font-display text-sm font-bold text-emerald-500">
                   {t.fullName.slice(0, 1)}
                 </div>
                 <div className="min-w-0">
@@ -425,7 +425,7 @@ function TeacherPanel({
                   </div>
                   <div className="mt-1.5 flex flex-wrap gap-1">
                     {inferExpertise(t.username).map((tag) => (
-                      <span key={tag} className="rounded-md border border-indigo-500/20 bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-500">
+                      <span key={tag} className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-500">
                         {tag}
                       </span>
                     ))}
@@ -495,8 +495,8 @@ function AssignDrawer({
                     <button
                       onClick={() => onAssign(c.id, s.id)}
                       className={cn(
-                        "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-background p-3 text-left transition-all hover:-translate-y-0.5 hover:border-indigo-500/40 hover:bg-indigo-500/5",
-                        owned && "border-indigo-500/50 bg-indigo-500/10"
+                        "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-background p-3 text-left transition-all hover:-translate-y-0.5 hover:border-emerald-500/40 hover:bg-emerald-500/5",
+                        owned && "border-emerald-500/50 bg-emerald-500/10"
                       )}
                     >
                       <div className="min-w-0">
@@ -505,7 +505,7 @@ function AssignDrawer({
                           {s.teacherUsername ? `Currently led by @${s.teacherUsername}` : "Unassigned"}
                         </div>
                       </div>
-                      {owned && <Sparkles className="h-4 w-4 shrink-0 text-indigo-500" />}
+                      {owned && <Sparkles className="h-4 w-4 shrink-0 text-emerald-500" />}
                     </button>
                   </li>
                 );
@@ -603,10 +603,10 @@ function StructurePanel({
   return (
     <div className="grid gap-6 lg:grid-cols-5">
       {/* Setup terminal — God-level premium card */}
-      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-8 shadow-2xl shadow-indigo-950/20 ring-1 ring-white/5 backdrop-blur-xl lg:col-span-3">
+      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-8 shadow-2xl shadow-emerald-950/20 ring-1 ring-white/5 backdrop-blur-xl lg:col-span-3">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-500/30 via-violet-500/20 to-transparent blur-3xl"
+          className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-gradient-to-br from-emerald-500/30 via-teal-500/20 to-transparent blur-3xl"
         />
         <div
           aria-hidden
@@ -614,9 +614,9 @@ function StructurePanel({
         />
 
         {/* Header with kids-coding micro hero */}
-        <div className="relative mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-indigo-500/10 via-card to-sky-500/5 p-5">
+        <div className="relative mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-emerald-500/10 via-card to-sky-500/5 p-5">
           <div className="min-w-0">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">
               Structural setup
             </div>
             <h3 className="truncate font-display text-xl font-bold tracking-tight">
@@ -648,7 +648,7 @@ function StructurePanel({
           </div>
           <Button
             onClick={addClass}
-            className="h-14 shrink-0 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 px-8 text-base font-semibold text-white shadow-lg shadow-indigo-500/40 transition-all hover:shadow-2xl hover:shadow-indigo-500/60 hover:-translate-y-0.5 active:scale-95"
+            className="h-14 shrink-0 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 px-8 text-base font-semibold text-white shadow-lg shadow-emerald-500/40 transition-all hover:shadow-2xl hover:shadow-emerald-500/60 hover:-translate-y-0.5 active:scale-95"
           >
             <Plus className="h-5 w-5" /> Class
           </Button>
@@ -658,11 +658,11 @@ function StructurePanel({
           {classes.map((c) => (
             <li
               key={c.id}
-              className="group rounded-2xl border border-border/60 bg-gradient-to-br from-background/80 via-background/40 to-background/20 p-5 shadow-lg shadow-black/5 ring-1 ring-white/5 backdrop-blur-md transition-all hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/10"
+              className="group rounded-2xl border border-border/60 bg-gradient-to-br from-background/80 via-background/40 to-background/20 p-5 shadow-lg shadow-black/5 ring-1 ring-white/5 backdrop-blur-md transition-all hover:border-emerald-500/40 hover:shadow-xl hover:shadow-emerald-500/10"
             >
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 font-display text-sm font-bold text-white shadow-md shadow-indigo-500/40">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-sky-500 font-display text-sm font-bold text-white shadow-md shadow-emerald-500/40">
                     {c.grade.replace(/\D/g, "") || "•"}
                   </div>
                   <div className="min-w-0">
@@ -693,17 +693,17 @@ function StructurePanel({
                 {c.sections.map((s) => (
                   <li
                     key={s.id}
-                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm backdrop-blur-md transition-all hover:border-indigo-500/30 hover:bg-card"
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border/50 bg-card/80 px-4 py-3 shadow-sm backdrop-blur-md transition-all hover:border-emerald-500/30 hover:bg-card"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-indigo-500 shadow-[0_0_10px_currentColor]" />
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_10px_currentColor]" />
                       <span className="truncate text-sm font-semibold">{s.name}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <select
                         value={s.teacherUsername ?? ""}
                         onChange={(e) => updateTeacher(c.id, s.id, e.target.value)}
-                        className="h-10 max-w-[180px] rounded-xl border border-border/70 bg-background/60 px-3 text-xs font-medium backdrop-blur-md outline-none transition-all focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.18)]"
+                        className="h-10 max-w-[180px] rounded-xl border border-border/70 bg-background/60 px-3 text-xs font-medium backdrop-blur-md outline-none transition-all focus:border-emerald-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.18)]"
                       >
                         <option value="">Unassigned</option>
                         {teachers.map((t) => (
@@ -729,7 +729,7 @@ function StructurePanel({
       </section>
 
       {/* Tree view — premium */}
-      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-6 shadow-2xl shadow-indigo-950/20 ring-1 ring-white/5 backdrop-blur-xl lg:col-span-2">
+      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-6 shadow-2xl shadow-emerald-950/20 ring-1 ring-white/5 backdrop-blur-xl lg:col-span-2">
         <div className="relative mb-4 h-28 overflow-hidden rounded-2xl ring-1 ring-white/10">
           <img
             src={IMG.treeKids}
@@ -748,7 +748,7 @@ function StructurePanel({
           {classes.map((c) => (
             <div key={c.id}>
               <div className="flex items-center gap-2">
-                <span className="text-indigo-500">▸</span>
+                <span className="text-emerald-500">▸</span>
                 <span className="font-sans font-semibold">{c.grade}</span>
               </div>
               <ul className="ml-3 mt-1 space-y-1 border-l border-border pl-3">
@@ -881,22 +881,22 @@ function MonitorPanel({
 
   return (
     <section className="space-y-5">
-      <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl shadow-indigo-950/20">
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl shadow-emerald-950/20">
         <img
           src={IMG.monitor}
           alt="Students collaborating around computers"
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-indigo-900/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-emerald-900/30" />
         <div className="relative flex items-center justify-between gap-4 p-6">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-200">Performance</div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200">Performance</div>
             <h3 className="font-display text-xl font-bold text-white drop-shadow">Lifecycle &amp; outcomes</h3>
-            <p className="mt-1 max-w-md text-xs text-indigo-100/80">
+            <p className="mt-1 max-w-md text-xs text-emerald-100/80">
               Track every learner&apos;s completion rate, marks distribution, and outstanding work across classes.
             </p>
           </div>
-          <TrendingUp className="hidden h-12 w-12 text-indigo-300/80 drop-shadow sm:block" />
+          <TrendingUp className="hidden h-12 w-12 text-emerald-300/80 drop-shadow sm:block" />
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
@@ -915,7 +915,7 @@ function MonitorPanel({
             <select
               value={classFilter}
               onChange={(e) => setClassFilter(e.target.value)}
-              className="h-9 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-indigo-500"
+              className="h-9 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-emerald-500"
             >
               <option value="all">All classes</option>
               {allSections.map((s) => (
@@ -970,7 +970,7 @@ function MonitorPanel({
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-28 overflow-hidden rounded-full bg-secondary">
                           <div
-                            className="h-full bg-gradient-to-r from-indigo-500 to-sky-500"
+                            className="h-full bg-gradient-to-r from-emerald-500 to-sky-500"
                             style={{ width: `${(r.done / r.total) * 100}%` }}
                           />
                         </div>
