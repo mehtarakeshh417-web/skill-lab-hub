@@ -283,29 +283,43 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
+                  <TableHead className="w-10">
+                    <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all users" className="h-4 w-4 accent-primary" />
+                  </TableHead>
                   <TableHead>User</TableHead><TableHead>Role</TableHead><TableHead>Status</TableHead>
                   <TableHead>Setup</TableHead><TableHead>Created</TableHead><TableHead className="text-right">Actions</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
-                  {rows.map((u) => (
+                  {visibleRows.map((u) => (
                     <TableRow key={u.userId}>
                       <TableCell>
-                        <div className="font-medium">{u.username}</div>
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(u.userId)}
+                          onChange={() => toggleOne(u.userId)}
+                          aria-label={`Select ${u.username}`}
+                          className="h-4 w-4 accent-primary"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{u.fullName || u.username}</div>
+                        <div className="text-xs text-muted-foreground">@{u.username}</div>
                         <div className="text-xs text-muted-foreground">{u.email}</div>
                       </TableCell>
-                      <TableCell><Badge variant="secondary">{u.role}</Badge></TableCell>
+                      <TableCell><Badge variant="secondary">{ROLE_LABELS[u.role] ?? u.role}</Badge></TableCell>
                       <TableCell>
                         <Badge className={u.isActive ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-rose-500/15 text-rose-700 dark:text-rose-300"}>
-                          {u.isActive ? "active" : "deactivated"}
+                          {u.isActive ? "Active" : "Blocked"}
                         </Badge>
                       </TableCell>
                       <TableCell>{u.mustSetupSecurity ? <Badge variant="outline">pending</Badge> : <Badge className="bg-sky-500/15 text-sky-700 dark:text-sky-300">complete</Badge>}</TableCell>
                       <TableCell className="text-xs">{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-1">
+                          <Button size="sm" variant="outline" onClick={() => { setEditTarget(u); setEditName(u.fullName ?? u.username); setEditEmail(u.email); }} title="Edit details"><Pencil className="h-3.5 w-3.5" /></Button>
                           <Button size="sm" variant="outline" onClick={() => { setPwTarget(u); setPwValue(""); }} title="Reset password"><KeyRound className="h-3.5 w-3.5" /></Button>
                           <Button size="sm" variant="outline" onClick={() => { setUnameTarget(u); setUnameValue(u.username); }} title="Change username"><UserCog className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline" onClick={() => setActiveTarget({ user: u, nextActive: !u.isActive })} title={u.isActive ? "Deactivate account" : "Activate account"}><Power className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="outline" onClick={() => setActiveTarget({ user: u, nextActive: !u.isActive })} title={u.isActive ? "Block account" : "Unblock account"}><Power className="h-3.5 w-3.5" /></Button>
                           {actor === "admin" && (
                             <Button size="sm" variant="outline" onClick={() => setSecTarget(u)} title="Reset security setup"><RefreshCcw className="h-3.5 w-3.5" /></Button>
                           )}
@@ -314,8 +328,8 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
                       </TableCell>
                     </TableRow>
                   ))}
-                  {rows.length === 0 && (
-                    <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  {visibleRows.length === 0 && (
+                    <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                       No users match your search or filters. Try a different name, or clear the filters to see everyone.
                     </TableCell></TableRow>
                   )}
