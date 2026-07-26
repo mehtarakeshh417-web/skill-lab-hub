@@ -38,6 +38,7 @@ const NAV: Record<AppRole, NavItem[]> = {
   ],
   portal_manager: [
     { label: "Operations", to: "/manager", icon: LayoutDashboard },
+    { label: "Directory", to: "/manager/directory", icon: School2 },
     { label: "Approvals", to: "/manager/pending-schools", icon: ClipboardList },
     { label: "Users", to: "/manager/users", icon: UserCog },
     { label: "Audit Trail", to: "/manager/audit-logs", icon: ScrollText },
