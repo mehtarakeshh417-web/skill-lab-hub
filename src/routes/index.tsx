@@ -27,6 +27,7 @@ import {
   Cpu,
 } from "lucide-react";
 import auroraImg from "@/assets/aurora.jpg";
+import { TechLogo, getTechGradient } from "@/lib/tech-logos";
 
 // High-quality Unsplash imagery (CDN — no install)
 const UNSPLASH = {
