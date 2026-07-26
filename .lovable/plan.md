@@ -1,24 +1,43 @@
-## What's wrong
+## Admin Console — full redesign
 
-1. **"Invalid origin" rejection** — `src/routes/api/public/school-registrations.ts` compares the browser's `Origin` header against the origin of `request.url`. In the Lovable preview the page is served from `...lovableproject.com` while the server sees a different internal host, so every real submission is rejected with HTTP 403 before validation or the database is ever reached. The network log confirms: `403 {"ok":false,"error":"This registration request came from an invalid origin."}`.
+Rebuild the Admin area into the true owner console: real data everywhere, no fake charts, premium layout, and full control over every account on the portal.
 
-2. **Error not visible** — the failure is only reported through a Sonner toast pinned to the top of the viewport. The user is at the bottom of a long form when they submit, and (with the 3D-transformed page shell) the toast renders far from the button, so the message appears "off-screen" until scrolling up.
+### 1. Overview page (`/admin`)
+- Remove the fake "Engagement trend" bar chart and the hardcoded "Technology mix" percentages entirely.
+- New stat band (all cards visible, responsive 2/3/6 grid, no clipping): Schools, Teachers, Students, Sales Reps, Pending approvals, Rejected/Inactive — each with a live count and a click-through to its directory.
+- Keep the Pending School Approvals panel (existing approve/reject logic untouched).
+- Add compact "Recent activity" and "Recently onboarded schools" cards fed by real rows.
+- Quick-action tiles: Onboard school, Add sales rep, User management, Audit trail, Export reports.
 
-## Plan
+### 2. Directory (new `/admin/directory`)
+A premium tabbed workspace — **Schools · Teachers · Students · Sales Reps** — with:
+- Sticky filter bar: search, **Region**, **State**, **City**, **School**, Status. State→City options are linked (reuse the existing India locations data); School filter narrows Teachers/Students.
+- Card-style rows with generous padding, high-contrast hierarchy, glowing status pills.
+- **Unmasked contact details for Admin** — full email/phone everywhere (managers keep masking).
+- Row expander showing full profile (principal, designation, address, area, sales rep, created date, counts of teachers/students under a school).
+- Row actions: Reset password, Change username, Activate/Deactivate, Delete.
 
-### 1. Allow any origin
-- Delete the origin comparison in the POST handler. Keep the JSON content-type check, Zod validation, tagged field errors, and server-side uniqueness checks — those are the real protections.
-- Add `Access-Control-Allow-Origin: *` plus an `OPTIONS` 204 handler so the endpoint works from any host/preview/published domain.
+### 3. Account control
+- Admin can change the password of **any** user (school, teacher, student, sales rep, manager, admin) from the directory and from User Management — reusing the existing `adminResetUserPassword` flow in a premium modal with generate/copy helpers.
+- **Cascading school delete**: deleting a school also deletes every teacher and student under it — their table rows *and* their login accounts — inside one server-side routine, with a typed-confirmation modal that states exactly how many teachers/students will be removed. (The database has no FK cascade today, so this is enforced in the delete routine.)
+- Deleting a teacher/student/sales rep removes their row and login.
 
-### 2. Make the error impossible to miss
-In `src/routes/register-school.tsx`, without changing the layout or field structure:
-- Add a submission-error banner rendered directly above the Submit Registration button, showing the returned message (and the field name when the error is field-tagged). It clears on the next submit attempt.
-- On failure, scroll the offending field (or the banner) into view with `scrollIntoView({ behavior: "smooth", block: "center" })` and focus it — the same focus mechanism already used for missing-field validation.
-- Keep the existing toast as a secondary signal.
+### 4. Reports & export
+- Export button on every directory tab and on Overview: downloads the currently filtered rows as **CSV** and **Excel (.xlsx)** (xlsx is already in the project).
+- Reports include full unmasked contact fields for Admin, plus a summary sheet (counts by state/region/status).
 
-### 3. Verify
-- Post malformed and valid JSON straight to `/api/public/school-registrations` to confirm no 403 and a 201 with `status: "pending"`.
-- Run a real browser submission on `/register-school`: confirm the row lands in `school_registrations` as **Pending Approval**, the success screen shows, and a forced failure (duplicate school code) surfaces the inline banner next to the button without scrolling. Clean up test rows afterwards.
+### 5. Audit trail
+- `/admin/audit-logs` and the Manager equivalent become clean, premium **empty-state pages** ("Audit trail — coming soon") as requested. Existing logging keeps writing to the database untouched, so nothing is lost when we build it out later.
 
-## Technical notes
-Files touched: `src/routes/api/public/school-registrations.ts` (drop origin gate, add CORS + OPTIONS) and `src/routes/register-school.tsx` (inline error banner + scroll-to-error). No schema, business-logic, or approval-workflow changes.
+### 6. Extra owner-grade features included
+- Global command search (⌘K) across schools/teachers/students/reps.
+- Impersonation-free "View as school" read-only drill-down from a school row into its teacher/student roster.
+- Portal health strip: inactive accounts, accounts pending security setup, schools with zero students.
+- Bulk select + bulk deactivate/export in the directory.
+
+### Technical notes
+- New `src/lib/directory.server.ts` + `directory.functions.ts`: admin/manager-gated listing of schools, teachers, students and sales reps with region/state/city/school/status filters and audience-based masking (admin = unmasked).
+- New `src/lib/admin-delete.server.ts`: cascading delete of a school and all dependent teacher/student rows and auth users, wrapped with existing audit logging.
+- New route `src/routes/admin.directory.tsx`; `admin.tsx` rewritten; `admin.audit-logs.tsx` and `manager` audit page reduced to empty states.
+- Sidebar nav for admin updated to point at real routes (Overview, Directory, Users, Reports, Audit Trail) instead of the current duplicated `/admin` links.
+- No changes to auth, roles, approval logic, RLS or existing state handlers — all new reads go through the existing role-gated server-function pattern.
