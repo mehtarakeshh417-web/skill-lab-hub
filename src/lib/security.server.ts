@@ -162,6 +162,44 @@ export async function writeAudit(entry: AuditEntry) {
 
 /* ============== User lookup ============== */
 
+const IDENTITY_TABLES = ["sales_reps", "schools", "students", "teachers"] as const;
+
+function digitsOf(value: string) {
+  return value.replace(/\D+/g, "");
+}
+
+/** True when the raw input looks like a phone number (digits, spaces, +, -, ()). */
+export function looksLikePhone(raw: string) {
+  const d = digitsOf(raw);
+  return d.length >= 7 && /^[+()\-.\s\d]+$/.test(raw.trim());
+}
+
+/**
+ * Find the auth user id behind a username / email / phone number by scanning the
+ * role directory tables (sales reps, schools, students, teachers).
+ */
+async function findUserIdInDirectory(raw: string): Promise<{ userId: string; username: string } | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const lower = raw.toLowerCase();
+  const phone = digitsOf(raw);
+  const last10 = phone.length >= 10 ? phone.slice(-10) : phone;
+
+  for (const table of IDENTITY_TABLES) {
+    const filters = [`username.ilike.${lower}`, `email.ilike.${lower}`];
+    if (phone.length >= 7) filters.push(`phone.ilike.%${last10}%`);
+    const { data } = await supabaseAdmin
+      .from(table)
+      .select("user_id, username")
+      .or(filters.join(","))
+      .limit(2);
+    const rows = (data ?? []).filter((r) => !!r.user_id);
+    if (rows.length === 1) {
+      return { userId: rows[0].user_id as string, username: (rows[0].username as string | null) ?? lower };
+    }
+  }
+  return null;
+}
+
 /** Resolve a raw identifier (username or email) to the auth user id + email. */
 export async function resolveIdentifier(identifier: string): Promise<{ userId: string; email: string; username: string } | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -171,20 +209,31 @@ export async function resolveIdentifier(identifier: string): Promise<{ userId: s
 
   // Look in user_security first (username index)
   const uname = raw.toLowerCase();
-  const { data: sec } = await supabaseAdmin
-    .from("user_security")
-    .select("user_id, username")
-    .ilike("username", uname)
-    .maybeSingle();
-  if (sec?.user_id) {
-    const { data: u } = await supabaseAdmin.auth.admin.getUserById(sec.user_id);
-    if (u.user) return { userId: u.user.id, email: u.user.email ?? asEmail, username: sec.username ?? uname };
+  if (!looksLikePhone(raw)) {
+    const { data: sec } = await supabaseAdmin
+      .from("user_security")
+      .select("user_id, username")
+      .ilike("username", uname)
+      .maybeSingle();
+    if (sec?.user_id) {
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(sec.user_id);
+      if (u.user) return { userId: u.user.id, email: u.user.email ?? asEmail, username: sec.username ?? uname };
+    }
+  }
+
+  // Directory lookup: username, real email, or phone number on the role tables
+  const dir = await findUserIdInDirectory(raw);
+  if (dir) {
+    const { data: u } = await supabaseAdmin.auth.admin.getUserById(dir.userId);
+    if (u.user) return { userId: u.user.id, email: u.user.email ?? asEmail, username: dir.username };
   }
 
   // Fallback: page auth users and match email
-  const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-  const hit = list?.users?.find((u) => (u.email ?? "").toLowerCase() === asEmail);
-  if (hit) return { userId: hit.id, email: hit.email ?? asEmail, username: (hit.user_metadata?.username as string) ?? uname };
+  if (!looksLikePhone(raw)) {
+    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const hit = list?.users?.find((u) => (u.email ?? "").toLowerCase() === asEmail);
+    if (hit) return { userId: hit.id, email: hit.email ?? asEmail, username: (hit.user_metadata?.username as string) ?? uname };
+  }
   return null;
 }
 

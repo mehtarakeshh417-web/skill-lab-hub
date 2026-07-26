@@ -72,6 +72,39 @@ export const completeSecuritySetup = createServerFn({ method: "POST" })
   });
 
 /* Forgot-password: step 1 — lookup identifier */
+
+/* Login helper: resolve a username / email / phone identifier to the sign-in email.
+ * The password is verified server-side first so the endpoint cannot be used to
+ * enumerate accounts or discover a user's email address. */
+export const resolveLoginEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: { identifier: string; password: string }) => {
+    if (!d.identifier?.trim()) throw new Error("Enter your username, email or phone number.");
+    if (!d.password) throw new Error("Enter your password.");
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const { resolveIdentifier } = await import("./security.server");
+    const hit = await resolveIdentifier(data.identifier);
+    if (!hit?.email) return { ok: false as const };
+
+    const { createClient } = await import("@supabase/supabase-js");
+    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
+    const probe = createClient(process.env.SUPABASE_URL!, key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: {
+        fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+          const h = new Headers(init?.headers);
+          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+          h.set("apikey", key);
+          return fetch(input, { ...init, headers: h });
+        },
+      },
+    });
+    const { error } = await probe.auth.signInWithPassword({ email: hit.email, password: data.password });
+    if (error) return { ok: false as const };
+    return { ok: true as const, email: hit.email, username: hit.username };
+  });
+
 export const startForgotPassword = createServerFn({ method: "POST" })
   .inputValidator((d: { identifier: string }) => d)
   .handler(async ({ data }) => {

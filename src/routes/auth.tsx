@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, ROLE_HOME } from "@/lib/auth";
 import { mockSignIn, mockSignOut } from "@/lib/mock-auth";
 import { recordAuthEvent } from "@/lib/audit.functions";
+import { resolveLoginEmail } from "@/lib/security.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,8 @@ export const Route = createFileRoute("/auth")({
 function resolveEmail(input: string) {
   const trimmed = input.trim();
   if (trimmed.includes("@")) return trimmed;
+  // Phone numbers cannot be guessed into an email — resolved server-side instead.
+  if (/^[+()\-.\s\d]+$/.test(trimmed)) return null;
   // Username convenience: "admin" -> "admin@avartan.app"
   return `${trimmed.toLowerCase()}@avartan.app`;
 }
@@ -51,7 +54,7 @@ function AuthPage() {
   }, [user, role, loading, navigate]);
 
   const identifierError = useMemo(() => {
-    if (!identifier.trim()) return "Enter your username or email.";
+    if (!identifier.trim()) return "Enter your username, email or phone number.";
     return undefined;
   }, [identifier]);
   const passwordError = useMemo(() => {
@@ -67,14 +70,32 @@ function AuthPage() {
       return;
     }
     setSubmitting(true);
-    const email = resolveEmail(identifier);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (!error) {
-      mockSignOut();
-      setSubmitting(false);
-      toast.success("Welcome back!");
-      void recordAuthEvent({ data: { event: "login", identifier } }).catch(() => null);
-      return;
+    const guessedEmail = resolveEmail(identifier);
+    let error: { message: string } | null = null;
+    if (guessedEmail) {
+      const res = await supabase.auth.signInWithPassword({ email: guessedEmail, password });
+      if (!res.error) {
+        mockSignOut();
+        setSubmitting(false);
+        toast.success("Welcome back!");
+        void recordAuthEvent({ data: { event: "login", identifier } }).catch(() => null);
+        return;
+      }
+      error = res.error;
+    }
+
+    // Second pass: resolve username / real email / phone number to the sign-in email.
+    const resolved = await resolveLoginEmail({ data: { identifier, password } }).catch(() => null);
+    if (resolved?.ok && resolved.email && resolved.email !== guessedEmail) {
+      const res = await supabase.auth.signInWithPassword({ email: resolved.email, password });
+      if (!res.error) {
+        mockSignOut();
+        setSubmitting(false);
+        toast.success("Welcome back!");
+        void recordAuthEvent({ data: { event: "login", identifier } }).catch(() => null);
+        return;
+      }
+      error = res.error;
     }
 
     // Demo-only fallback for seeded teacher/student flows that do not yet exist in backend auth.
@@ -89,7 +110,7 @@ function AuthPage() {
       return;
     }
     setSubmitting(false);
-    const description = mock.reason || error.message;
+    const description = mock.reason || error?.message || "Invalid credentials.";
     void recordAuthEvent({ data: { event: "login_failed", identifier, reason: description } }).catch(() => null);
     setFieldError({ form: description });
     toast.error("Sign in failed", { description });
@@ -179,7 +200,7 @@ function AuthPage() {
             <form onSubmit={onSubmit} className="mt-8 space-y-5" noValidate>
               <div className="space-y-2">
                 <Label htmlFor="identifier" className="text-sm font-semibold">
-                  Username or email
+                  Username, email or phone
                 </Label>
                 <Input
                   id="identifier"
@@ -188,7 +209,7 @@ function AuthPage() {
                     setIdentifier(e.target.value);
                     if (fieldError.identifier || fieldError.form) setFieldError({});
                   }}
-                  placeholder="e.g. delhi-public or school@example.com"
+                  placeholder="e.g. delhi-public, school@example.com or 9876543210"
                   autoComplete="username"
                   className={`h-12 text-base ${fieldError.identifier ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
                   aria-invalid={Boolean(fieldError.identifier)}
