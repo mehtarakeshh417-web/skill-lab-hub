@@ -109,15 +109,13 @@ function Header() {
         </Link>
         <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
           <a href="#technologies" className="hover:text-foreground">Technologies</a>
-          <a href="#roles" className="hover:text-foreground">For You</a>
-          <a href="#register-school" className="hover:text-foreground">Register School</a>
           <a href="#about" className="hover:text-foreground">About</a>
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />
           <Link
             to="/auth"
-            className="group relative inline-flex h-10 items-center gap-2 overflow-hidden rounded-full p-[1.5px] text-xs font-semibold tracking-wide text-foreground transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+            className="group relative inline-flex h-11 items-center gap-2 overflow-hidden rounded-full p-[1.5px] text-sm font-semibold tracking-wide text-foreground transition-all duration-500 hover:scale-[1.03] active:scale-[0.97]"
           >
             {/* Animated conic gradient ring */}
             <span
@@ -129,7 +127,7 @@ function Header() {
               }}
             />
             {/* Glass interior */}
-            <span className="relative z-10 inline-flex h-full w-full items-center gap-2 rounded-full bg-background/85 px-4 backdrop-blur-2xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_10px_40px_-12px_hsl(var(--primary)/0.55)] transition-shadow duration-500 group-hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_18px_55px_-12px_hsl(var(--primary)/0.85)]">
+            <span className="relative z-10 inline-flex h-full w-full items-center gap-2 rounded-full bg-background/85 px-5 backdrop-blur-2xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_10px_40px_-12px_hsl(var(--primary)/0.55)] transition-shadow duration-500 group-hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_18px_55px_-12px_hsl(var(--primary)/0.85)]">
               {/* Shimmer sweep */}
               <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
                 <span className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-700 group-hover:left-full group-hover:opacity-100" />
@@ -139,14 +137,14 @@ function Header() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/80 opacity-70" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-gradient-to-br from-primary to-primary-glow shadow-[0_0_12px_3px_hsl(var(--primary)/0.85)]" />
               </span>
-              <span className="relative bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text font-bold tracking-wider text-transparent">
+              <span className="relative bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text font-bold tracking-wide text-transparent">
                 Sign in
               </span>
-              <ArrowRight className="relative h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:translate-x-0.5" />
+              <ArrowRight className="relative h-4 w-4 text-primary transition-transform duration-300 group-hover:translate-x-0.5" />
             </span>
           </Link>
-          <Button variant="hero" size="sm" asChild>
-            <Link to="/auth">Get started <ArrowRight className="h-4 w-4" /></Link>
+          <Button variant="hero" size="sm" className="h-11 rounded-full px-5" asChild>
+            <a href="#register-school">Register School <ArrowRight className="h-4 w-4" /></a>
           </Button>
         </div>
       </div>
