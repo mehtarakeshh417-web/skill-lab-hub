@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, useCallback, useRef, type DragEvent } from "react";
 import { AppShell } from "@/components/app-shell";
+import { ProjectsWidget } from "@/components/projects-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -123,6 +124,7 @@ function TeacherWorkspace() {
     <AppShell requireRole="teacher" title="Teacher Workspace">
       <div className="space-y-6">
         <HeaderStats tasks={tasks} subs={subs} studentCount={myStudents.length} onOpen={setTab} />
+        <ProjectsWidget role="teacher" />
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 gap-1 backdrop-blur bg-card/60 border border-border/60">
             <TabsTrigger value="tasks"><ClipboardList className="h-4 w-4 mr-1.5" />Tasks</TabsTrigger>

@@ -28,8 +28,10 @@ import { Route as SchoolIndexRouteImport } from './routes/school.index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TeacherQuizzesRouteImport } from './routes/teacher.quizzes'
+import { Route as TeacherProjectsRouteImport } from './routes/teacher.projects'
 import { Route as TeacherAssignmentsRouteImport } from './routes/teacher.assignments'
 import { Route as StudentQuizzesRouteImport } from './routes/student.quizzes'
+import { Route as StudentProjectsRouteImport } from './routes/student.projects'
 import { Route as StudentAssignmentsRouteImport } from './routes/student.assignments'
 import { Route as SettingsChangePasswordRouteImport } from './routes/settings.change-password'
 import { Route as SchoolCreateTeacherRouteImport } from './routes/school.create-teacher'
@@ -146,6 +148,11 @@ const TeacherQuizzesRoute = TeacherQuizzesRouteImport.update({
   path: '/quizzes',
   getParentRoute: () => TeacherRoute,
 } as any)
+const TeacherProjectsRoute = TeacherProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => TeacherRoute,
+} as any)
 const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
   id: '/assignments',
   path: '/assignments',
@@ -154,6 +161,11 @@ const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
 const StudentQuizzesRoute = StudentQuizzesRouteImport.update({
   id: '/quizzes',
   path: '/quizzes',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentProjectsRoute = StudentProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
   getParentRoute: () => StudentRoute,
 } as any)
 const StudentAssignmentsRoute = StudentAssignmentsRouteImport.update({
@@ -290,8 +302,10 @@ export interface FileRoutesByFullPath {
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/settings/change-password': typeof SettingsChangePasswordRoute
   '/student/assignments': typeof StudentAssignmentsRoute
+  '/student/projects': typeof StudentProjectsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
+  '/teacher/projects': typeof TeacherProjectsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/admin/': typeof AdminIndexRoute
   '/manager/': typeof ManagerIndexRoute
@@ -328,8 +342,10 @@ export interface FileRoutesByTo {
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/settings/change-password': typeof SettingsChangePasswordRoute
   '/student/assignments': typeof StudentAssignmentsRoute
+  '/student/projects': typeof StudentProjectsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
+  '/teacher/projects': typeof TeacherProjectsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/admin': typeof AdminIndexRoute
   '/manager': typeof ManagerIndexRoute
@@ -372,8 +388,10 @@ export interface FileRoutesById {
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/settings/change-password': typeof SettingsChangePasswordRoute
   '/student/assignments': typeof StudentAssignmentsRoute
+  '/student/projects': typeof StudentProjectsRoute
   '/student/quizzes': typeof StudentQuizzesRoute
   '/teacher/assignments': typeof TeacherAssignmentsRoute
+  '/teacher/projects': typeof TeacherProjectsRoute
   '/teacher/quizzes': typeof TeacherQuizzesRoute
   '/admin/': typeof AdminIndexRoute
   '/manager/': typeof ManagerIndexRoute
@@ -417,8 +435,10 @@ export interface FileRouteTypes {
     | '/school/create-teacher'
     | '/settings/change-password'
     | '/student/assignments'
+    | '/student/projects'
     | '/student/quizzes'
     | '/teacher/assignments'
+    | '/teacher/projects'
     | '/teacher/quizzes'
     | '/admin/'
     | '/manager/'
@@ -455,8 +475,10 @@ export interface FileRouteTypes {
     | '/school/create-teacher'
     | '/settings/change-password'
     | '/student/assignments'
+    | '/student/projects'
     | '/student/quizzes'
     | '/teacher/assignments'
+    | '/teacher/projects'
     | '/teacher/quizzes'
     | '/admin'
     | '/manager'
@@ -498,8 +520,10 @@ export interface FileRouteTypes {
     | '/school/create-teacher'
     | '/settings/change-password'
     | '/student/assignments'
+    | '/student/projects'
     | '/student/quizzes'
     | '/teacher/assignments'
+    | '/teacher/projects'
     | '/teacher/quizzes'
     | '/admin/'
     | '/manager/'
@@ -665,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeacherQuizzesRouteImport
       parentRoute: typeof TeacherRoute
     }
+    '/teacher/projects': {
+      id: '/teacher/projects'
+      path: '/projects'
+      fullPath: '/teacher/projects'
+      preLoaderRoute: typeof TeacherProjectsRouteImport
+      parentRoute: typeof TeacherRoute
+    }
     '/teacher/assignments': {
       id: '/teacher/assignments'
       path: '/assignments'
@@ -677,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/quizzes'
       fullPath: '/student/quizzes'
       preLoaderRoute: typeof StudentQuizzesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/projects': {
+      id: '/student/projects'
+      path: '/projects'
+      fullPath: '/student/projects'
+      preLoaderRoute: typeof StudentProjectsRouteImport
       parentRoute: typeof StudentRoute
     }
     '/student/assignments': {
@@ -886,12 +924,14 @@ const SchoolRouteWithChildren =
 
 interface StudentRouteChildren {
   StudentAssignmentsRoute: typeof StudentAssignmentsRoute
+  StudentProjectsRoute: typeof StudentProjectsRoute
   StudentQuizzesRoute: typeof StudentQuizzesRoute
   StudentIndexRoute: typeof StudentIndexRoute
 }
 
 const StudentRouteChildren: StudentRouteChildren = {
   StudentAssignmentsRoute: StudentAssignmentsRoute,
+  StudentProjectsRoute: StudentProjectsRoute,
   StudentQuizzesRoute: StudentQuizzesRoute,
   StudentIndexRoute: StudentIndexRoute,
 }
@@ -901,12 +941,14 @@ const StudentRouteWithChildren =
 
 interface TeacherRouteChildren {
   TeacherAssignmentsRoute: typeof TeacherAssignmentsRoute
+  TeacherProjectsRoute: typeof TeacherProjectsRoute
   TeacherQuizzesRoute: typeof TeacherQuizzesRoute
   TeacherIndexRoute: typeof TeacherIndexRoute
 }
 
 const TeacherRouteChildren: TeacherRouteChildren = {
   TeacherAssignmentsRoute: TeacherAssignmentsRoute,
+  TeacherProjectsRoute: TeacherProjectsRoute,
   TeacherQuizzesRoute: TeacherQuizzesRoute,
   TeacherIndexRoute: TeacherIndexRoute,
 }
