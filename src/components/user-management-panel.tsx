@@ -395,7 +395,6 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
         open={Boolean(activeTarget) && activeTarget?.nextActive === false}
         onOpenChange={(o) => { if (!o) setActiveTarget(null); }}
         tone="warning"
-        tone="warning"
         icon={Power}
         busy={busy}
         title="Deactivate this account?"
