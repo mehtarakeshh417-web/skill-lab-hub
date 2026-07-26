@@ -27,6 +27,7 @@ import {
   Cpu,
 } from "lucide-react";
 import auroraImg from "@/assets/aurora.jpg";
+import { TechLogo, getTechGradient } from "@/lib/tech-logos";
 
 // High-quality Unsplash imagery (CDN — no install)
 const UNSPLASH = {
@@ -52,17 +53,17 @@ export const Route = createFileRoute("/")({
 });
 
 const techs = [
-  { name: "Scratch Jr", icon: Blocks, color: "from-pink-500 to-rose-500" },
-  { name: "Scratch", icon: Blocks, color: "from-amber-500 to-orange-500" },
-  { name: "HTML", icon: FileCode, color: "from-orange-500 to-red-500" },
-  { name: "Python", icon: Code2, color: "from-sky-500 to-emerald-500" },
-  { name: "Java", icon: Code2, color: "from-rose-500 to-pink-500" },
-  { name: "MySQL", icon: Database, color: "from-teal-500 to-emerald-500" },
-  { name: "Paint", icon: Palette, color: "from-amber-500 to-amber-500" },
-  { name: "Editor", icon: FileText, color: "from-blue-500 to-emerald-500" },
-  { name: "Spreadsheet", icon: Table2, color: "from-green-500 to-emerald-500" },
-  { name: "Presentation", icon: Presentation, color: "from-yellow-500 to-amber-500" },
-];
+  "Scratch Jr",
+  "Scratch",
+  "HTML",
+  "Python",
+  "Java",
+  "MySQL",
+  "Paint",
+  "Editor",
+  "Spreadsheet",
+  "Presentation",
+].map((name) => ({ name, color: getTechGradient(name) }));
 
 function Landing() {
   return (
@@ -285,8 +286,8 @@ function LogoMarquee() {
           <div className="relative flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
             <div className="flex w-max animate-marquee gap-12 whitespace-nowrap py-2">
               {[...items, ...items].map((it, i) => (
-                <div key={i} className="flex items-center gap-2 font-display text-lg font-semibold text-muted-foreground/70">
-                  <Sparkles className="h-4 w-4 text-primary/70" /> {it}
+                <div key={i} className="flex items-center gap-2.5 font-display text-lg font-semibold text-muted-foreground/80">
+                  <TechLogo name={it} tone="brand" className="h-5 w-5 shrink-0" /> {it}
                 </div>
               ))}
             </div>
@@ -321,8 +322,8 @@ function Technologies() {
               className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-elegant transition-all hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-elevated"
             >
               <div className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${t.color} opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-40`} />
-              <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${t.color} text-white shadow-md`}>
-                <t.icon className="h-5 w-5" />
+              <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${t.color} text-white shadow-md`}>
+                <TechLogo name={t.name} className="h-6 w-6" />
               </div>
               <div className="font-semibold">{t.name}</div>
               <div className="mt-1 text-xs text-muted-foreground">Interactive practice</div>

@@ -1,3 +1,4 @@
+import { TechLogo } from "@/lib/tech-logos";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
@@ -133,7 +134,11 @@ function StudentProjectsPage() {
                     <Badge variant="outline" className={`rounded-full px-3 py-1 text-xs font-semibold ${meta.className}`}>{meta.label}</Badge>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    {p.technology && <span>{p.technology}</span>}
+                    {p.technology && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <TechLogo name={p.technology} tone="brand" className="h-3.5 w-3.5" /> {p.technology}
+                      </span>
+                    )}
                     <span>· {SUBMISSION_TYPES.find((s) => s.value === p.submission_type)?.label ?? p.submission_type}</span>
                     <span>· Max {p.max_marks ?? 100} marks</span>
                     {p.due_date && <span>· Due {new Date(p.due_date).toLocaleDateString()}</span>}
