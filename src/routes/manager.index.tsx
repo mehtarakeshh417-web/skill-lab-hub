@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/app-shell";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
+import { PendingSchoolsPanel } from "@/components/pending-schools-panel";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listSalesReps } from "@/lib/sales-reps.functions";
 import { listSchoolRegistrations } from "@/lib/registrations.functions";
@@ -47,6 +48,21 @@ function ManagerDashboard() {
         <StatCard label="Pending approvals" value={regsData?.counts.pending ?? 0} icon={ClipboardList} />
         <StatCard label="Students" value={data?.counts.students ?? 0} icon={Users} />
         <StatCard label="Sales reps" value={repsData?.counts.total ?? 0} icon={UserCog} />
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-elegant">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-primary" />
+            <div className="font-display text-lg font-semibold">Pending school approvals</div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Approve to activate the school login, or reject to keep it inactive.
+          </div>
+        </div>
+        <div className="mt-5">
+          <PendingSchoolsPanel audience="manager" />
+        </div>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
