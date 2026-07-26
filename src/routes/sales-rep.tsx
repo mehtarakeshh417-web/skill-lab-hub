@@ -25,21 +25,23 @@ function SalesRepDashboard() {
   return (
     <AppShell requireRole="sales_rep" title={data?.profile.fullName ?? "Sales Representative"}>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Schools assigned" value={data?.counts.total ?? 0} icon={School2} />
-        <StatCard label="Active" value={data?.counts.active ?? 0} icon={CheckCircle2} />
-        <StatCard label="Inactive" value={data?.counts.inactive ?? 0} icon={XCircle} />
-        <StatCard label="Added this month" value={data?.counts.thisMonth ?? 0} icon={CalendarClock} />
+        <StatCard label="Schools assigned" value={data?.counts.total ?? 0} icon={School2} hash="my-schools" hint="See the full list" />
+        <StatCard label="Active" value={data?.counts.active ?? 0} icon={CheckCircle2} hash="my-schools" hint="See active schools" />
+        <StatCard label="Inactive" value={data?.counts.inactive ?? 0} icon={XCircle} hash="my-schools" hint="See inactive schools" />
+        <StatCard label="Added this month" value={data?.counts.thisMonth ?? 0} icon={CalendarClock} hash="my-schools" hint="See recent additions" />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-elegant">
+      <div id="my-schools" className="mt-6 scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-elegant">
         <div className="font-display text-lg font-semibold">My schools</div>
         {isLoading ? (
-          <div className="mt-4 text-sm text-muted-foreground">Loading…</div>
+          <div className="mt-4 text-sm text-muted-foreground">Loading your schools…</div>
         ) : error ? (
-          <div className="mt-4 text-sm text-destructive">{(error as Error).message}</div>
+          <div className="mt-4 text-sm text-destructive">
+            {friendlyError(error, "We couldn't load your schools right now. Please refresh the page and try again.")}
+          </div>
         ) : (data?.schools ?? []).length === 0 ? (
           <div className="mt-4 text-sm text-muted-foreground">
-            No schools assigned yet. An admin or manager will assign schools to you during onboarding.
+            You don't have any schools assigned yet. Your manager will assign schools to you as they are onboarded.
           </div>
         ) : (
           <div className="mt-4 overflow-x-auto">
