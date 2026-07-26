@@ -153,6 +153,9 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                   value={audience === "manager" ? maskPhone(r.phone) : r.phone}
                 />
                 <FieldPair label="Address" value={r.address || "—"} />
+                <FieldPair label="State" value={r.state || "—"} />
+                <FieldPair label="City" value={r.city || "—"} />
+                <FieldPair label="Area" value={r.area || "—"} />
                 <FieldPair label="Submission notes" value={r.notes || "— none provided —"} full />
               </div>
 
@@ -164,7 +167,9 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                       <LabeledInput label="School code" value={val("schoolCode", r.schoolCode)} onChange={(v) => setDraft("schoolCode", v)} />
                       <LabeledInput label="Principal" value={val("principalName", r.principalName)} onChange={(v) => setDraft("principalName", v)} />
                       <LabeledInput label="Designation" value={val("designation", r.designation)} onChange={(v) => setDraft("designation", v)} />
-                      <LabeledInput label="Region" value={val("region", r.region)} onChange={(v) => setDraft("region", v)} />
+                      <LabeledInput label="State" value={val("state", r.state)} onChange={(v) => setDraft("state", v)} />
+                      <LabeledInput label="City" value={val("city", r.city)} onChange={(v) => setDraft("city", v)} />
+                      <LabeledInput label="Area" value={val("area", r.area)} onChange={(v) => setDraft("area", v)} />
                       <LabeledInput label="Email" value={val("email", r.email)} onChange={(v) => setDraft("email", v)} />
                       <LabeledInput label="Phone" value={val("phone", r.phone)} onChange={(v) => setDraft("phone", v)} />
                       <LabeledInput label="Address" value={val("address", r.address)} onChange={(v) => setDraft("address", v)} />
@@ -210,7 +215,9 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                                 schoolCode: val("schoolCode", r.schoolCode),
                                 principalName: val("principalName", r.principalName),
                                 designation: val("designation", r.designation),
-                                region: val("region", r.region),
+                                state: val("state", r.state),
+                                city: val("city", r.city),
+                                area: val("area", r.area),
                                 email: val("email", r.email),
                                 phone: val("phone", r.phone),
                                 address: val("address", r.address),
