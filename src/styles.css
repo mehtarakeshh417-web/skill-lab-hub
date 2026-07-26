@@ -318,8 +318,7 @@
  * ============================================================ */
 
 @utility scene-3d {
-  perspective: 1400px;
-  perspective-origin: 50% 30%;
+  position: relative;
 }
 @utility preserve-3d { transform-style: preserve-3d; }
 
