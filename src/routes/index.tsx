@@ -322,8 +322,8 @@ function Technologies() {
               className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-elegant transition-all hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-elevated"
             >
               <div className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${t.color} opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-40`} />
-              <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${t.color} text-white shadow-md`}>
-                <t.icon className="h-5 w-5" />
+              <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${t.color} text-white shadow-md`}>
+                <TechLogo name={t.name} className="h-6 w-6" />
               </div>
               <div className="font-semibold">{t.name}</div>
               <div className="mt-1 text-xs text-muted-foreground">Interactive practice</div>
