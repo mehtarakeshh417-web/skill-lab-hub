@@ -1,17 +1,20 @@
 import { z } from "zod";
 
 export const schoolOnboardingSchema = z.object({
-  schoolName: z.string().trim().min(2, "School name is required").max(140),
-  schoolCode: z.string().trim().min(3, "School code is required").max(40),
-  username: z.string().trim().toLowerCase().min(1, "Username is required").max(120),
-  password: z.string().min(1, "Password is required").max(256),
-  phone: z.string().trim().min(1, "Phone number is required").max(40),
-  email: z.string().trim().toLowerCase().email("Enter a valid email address").max(180),
-  address: z.string().trim().max(500).optional().default(""),
-  principalName: z.string().trim().max(120).optional().default(""),
-  region: z.string().trim().max(120).optional().default(""),
-  designation: z.string().trim().max(100).optional().default("Principal"),
-  notes: z.string().trim().max(1000).optional().default(""),
+  schoolName: z.string().trim().min(1, "School name is required"),
+  schoolCode: z.string().trim().min(1, "School code is required"),
+  username: z.string().trim().toLowerCase().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+  phone: z.string().trim().min(1, "Phone number is required"),
+  email: z.string().trim().toLowerCase().min(1, "Email is required").email("Enter a valid email address"),
+  address: z.string().trim().min(1, "Address is required"),
+  principalName: z.string().trim().min(1, "Principal name is required"),
+  state: z.string().trim().min(1, "State is required"),
+  city: z.string().trim().min(1, "City is required"),
+  area: z.string().trim().min(1, "Area is required"),
+  region: z.string().trim().optional().default(""),
+  designation: z.string().trim().min(1, "Designation is required"),
+  notes: z.string().trim().min(1, "Notes are required"),
   salesRepId: z.string().uuid("Assign a sales representative"),
 });
 

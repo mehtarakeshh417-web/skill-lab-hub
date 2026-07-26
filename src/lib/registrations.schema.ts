@@ -1,17 +1,20 @@
 import { z } from "zod";
 
 export const submitRegistrationSchema = z.object({
-  schoolName: z.string().trim().min(2, "School name is required").max(160),
-  schoolCode: z.string().trim().min(3, "School code is required").max(40),
-  principalName: z.string().trim().max(160).optional().default(""),
-  region: z.string().trim().max(160).optional().default(""),
-  designation: z.string().trim().max(120).optional().default("Principal"),
-  notes: z.string().trim().max(2000).optional().default(""),
-  username: z.string().trim().toLowerCase().min(1, "Username is required").max(120),
-  password: z.string().min(1, "Password is required").max(256),
-  email: z.string().trim().toLowerCase().email("Enter a valid email address").max(200),
-  phone: z.string().trim().min(1, "Phone is required").max(40),
-  address: z.string().trim().max(600).optional().default(""),
+  schoolName: z.string().trim().min(1, "School name is required"),
+  schoolCode: z.string().trim().min(1, "School code is required"),
+  principalName: z.string().trim().min(1, "Principal name is required"),
+  designation: z.string().trim().min(1, "Designation is required"),
+  state: z.string().trim().min(1, "State is required"),
+  city: z.string().trim().min(1, "City is required"),
+  area: z.string().trim().min(1, "Area is required"),
+  region: z.string().trim().optional().default(""),
+  notes: z.string().trim().min(1, "Submission notes are required"),
+  username: z.string().trim().toLowerCase().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+  email: z.string().trim().toLowerCase().min(1, "Email is required").email("Enter a valid email address"),
+  phone: z.string().trim().min(1, "Phone is required"),
+  address: z.string().trim().min(1, "Address is required"),
 });
 export type SubmitRegistrationInput = z.infer<typeof submitRegistrationSchema>;
 
@@ -19,20 +22,23 @@ export const approveRegistrationSchema = z.object({
   id: z.string().uuid(),
   salesRepId: z.string().uuid("Assign a sales representative"),
   // Optional overrides at approval time
-  schoolName: z.string().trim().max(160).optional(),
-  schoolCode: z.string().trim().max(40).optional(),
-  principalName: z.string().trim().max(160).optional(),
-  region: z.string().trim().max(160).optional(),
-  designation: z.string().trim().max(120).optional(),
-  notes: z.string().trim().max(2000).optional(),
-  email: z.string().trim().toLowerCase().email().max(200).optional(),
-  phone: z.string().trim().max(40).optional(),
-  address: z.string().trim().max(600).optional(),
+  schoolName: z.string().trim().optional(),
+  schoolCode: z.string().trim().optional(),
+  principalName: z.string().trim().optional(),
+  region: z.string().trim().optional(),
+  state: z.string().trim().optional(),
+  city: z.string().trim().optional(),
+  area: z.string().trim().optional(),
+  designation: z.string().trim().optional(),
+  notes: z.string().trim().optional(),
+  email: z.string().trim().toLowerCase().email().optional(),
+  phone: z.string().trim().optional(),
+  address: z.string().trim().optional(),
 });
 export type ApproveRegistrationInput = z.infer<typeof approveRegistrationSchema>;
 
 export const rejectRegistrationSchema = z.object({
   id: z.string().uuid(),
-  reason: z.string().trim().max(600).optional().default(""),
+  reason: z.string().trim().optional().default(""),
 });
 export type RejectRegistrationInput = z.infer<typeof rejectRegistrationSchema>;
