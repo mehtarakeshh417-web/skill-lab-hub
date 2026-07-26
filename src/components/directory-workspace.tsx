@@ -341,7 +341,7 @@ export function DirectoryWorkspace({
               size="sm"
               className="rounded-xl"
               disabled={busy}
-              onClick={() => bulkDeactivate(
+              onClick={() => requestBulkDeactivate(
                 tab === "schools"
                   ? schools.filter((s) => selected.includes(s.id)).map((s) => s.userId)
                   : people.filter((p) => selected.includes(p.id)).map((p) => p.userId),
@@ -381,7 +381,14 @@ export function DirectoryWorkspace({
                   <Button size="sm" variant="outline" className="rounded-xl" disabled={!s.userId} onClick={() => { setUnameTarget({ userId: s.userId!, label: s.name }); setUnameValue(s.username); }}>
                     <UserCog className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" variant="outline" className="rounded-xl" disabled={busy || !s.userId} onClick={() => onToggleActive(s.userId, s.status !== "active")}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    disabled={busy || !s.userId}
+                    title={s.status === "active" ? "Deactivate school login" : "Reactivate school login"}
+                    onClick={() => s.userId && setActiveTarget({ userId: s.userId, label: s.name, nextActive: s.status !== "active" })}
+                  >
                     <Power className="h-4 w-4" />
                   </Button>
                   {isAdmin && (
@@ -451,11 +458,18 @@ export function DirectoryWorkspace({
                     <Button size="sm" variant="outline" className="rounded-xl" onClick={() => { setUnameTarget({ userId: p.userId, label: p.fullName }); setUnameValue(p.username); }}>
                       <UserCog className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" className="rounded-xl" disabled={busy} onClick={() => onToggleActive(p.userId, p.status !== "active")}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl"
+                      disabled={busy}
+                      title={p.status === "active" ? "Deactivate account" : "Reactivate account"}
+                      onClick={() => setActiveTarget({ userId: p.userId, label: p.fullName, nextActive: p.status !== "active" })}
+                    >
                       <Power className="h-4 w-4" />
                     </Button>
                     {isAdmin && (
-                      <Button size="sm" variant="destructive" className="rounded-xl" disabled={busy} onClick={() => onDeletePerson(personKind, p)}>
+                      <Button size="sm" variant="destructive" className="rounded-xl" disabled={busy} title="Delete account" onClick={() => setPersonTarget({ kind: personKind, row: p })}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
