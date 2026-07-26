@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { listSalesReps } from "@/lib/sales-reps.functions";
 import { useAuth } from "@/lib/auth";
-import { ChevronDown, ChevronRight, ShieldCheck, User, School2 } from "lucide-react";
+import { ChevronDown, ChevronRight, ShieldCheck, User, School2, Maximize2, Minimize2 } from "lucide-react";
 import type { SalesRepRecord } from "@/lib/sales-reps.server";
 
 type Node = SalesRepRecord & { children: Node[] };
@@ -43,6 +44,7 @@ export function SalesHierarchy() {
     retry: false,
   });
   const [q, setQ] = useState("");
+  const [expandSignal, setExpandSignal] = useState<{ open: boolean; n: number } | null>(null);
   const tree = useMemo(() => buildTree(data?.reps ?? []), [data]);
   const filtered = q ? tree.filter((n) => matches(n, q)) : tree;
 
@@ -55,12 +57,20 @@ export function SalesHierarchy() {
             {data?.counts.total ?? 0} representatives · {data?.counts.active ?? 0} active
           </p>
         </div>
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name, username, or employee ID"
-          className="md:w-80"
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setExpandSignal((s) => ({ open: true, n: (s?.n ?? 0) + 1 }))}>
+            <Maximize2 className="h-4 w-4" /> Expand all
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setExpandSignal((s) => ({ open: false, n: (s?.n ?? 0) + 1 }))}>
+            <Minimize2 className="h-4 w-4" /> Collapse all
+          </Button>
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search by name, username, or employee ID"
+            className="md:w-80"
+          />
+        </div>
       </div>
 
       <div className="mt-6 rounded-2xl border border-border/60 bg-background/40 p-6">
@@ -75,7 +85,7 @@ export function SalesHierarchy() {
         ) : (
           <ul className="mt-2 space-y-1">
             {filtered.map((n) => (
-              <TreeItem key={n.id} node={n} depth={0} defaultOpen={Boolean(q)} />
+              <TreeItem key={n.id} node={n} depth={0} defaultOpen={Boolean(q)} expandSignal={expandSignal} />
             ))}
           </ul>
         )}
@@ -84,13 +94,18 @@ export function SalesHierarchy() {
   );
 }
 
-function TreeItem({ node, depth, defaultOpen }: { node: Node; depth: number; defaultOpen: boolean }) {
+function TreeItem({ node, depth, defaultOpen, expandSignal }: { node: Node; depth: number; defaultOpen: boolean; expandSignal: { open: boolean; n: number } | null }) {
   const [open, setOpen] = useState(defaultOpen || depth < 1);
   const hasChildren = node.children.length > 0;
+
+  useEffect(() => {
+    if (expandSignal) setOpen(expandSignal.open);
+  }, [expandSignal]);
+
   return (
-    <li className="relative">
+    <li className={depth > 0 ? "relative border-l border-border/50 pl-3" : "relative"}>
       <div
-        className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm hover:bg-accent/40"
+        className="flex items-center gap-2 rounded-xl border border-transparent px-2 py-2.5 text-sm transition-colors hover:border-primary/30 hover:bg-accent/40"
         style={{ paddingLeft: `${depth * 20 + 8}px` }}
       >
         {hasChildren ? (
@@ -133,7 +148,7 @@ function TreeItem({ node, depth, defaultOpen }: { node: Node; depth: number; def
       {hasChildren && open && (
         <ul className="space-y-1">
           {node.children.map((c) => (
-            <TreeItem key={c.id} node={c} depth={depth + 1} defaultOpen={defaultOpen} />
+            <TreeItem key={c.id} node={c} depth={depth + 1} defaultOpen={defaultOpen} expandSignal={expandSignal} />
           ))}
         </ul>
       )}

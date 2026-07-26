@@ -7,6 +7,7 @@ import {
   adminSetUserActive,
   adminResetSecurity,
   adminDeleteUser,
+  adminUpdateUserProfile,
   type ManagedUser,
 } from "@/lib/security.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +21,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { friendlyError } from "@/lib/messages";
 import { toast } from "sonner";
-import { Loader2, KeyRound, UserCog, Power, ShieldOff, Trash2, RefreshCcw, Search } from "lucide-react";
+import { exportXlsx, type ExportColumn } from "@/lib/export-report";
+import { Loader2, KeyRound, UserCog, Power, ShieldOff, Trash2, RefreshCcw, Search, Pencil, FileSpreadsheet, Users2 } from "lucide-react";
+
+const ROLE_LABELS: Record<string, string> = {
+  all: "All roles",
+  admin: "Administrator",
+  portal_manager: "Portal manager",
+  sales_rep: "Sales representative",
+  school: "School",
+  teacher: "Teacher",
+  student: "Student",
+};
 
 type Actor = "admin" | "manager";
 
@@ -31,10 +43,13 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
   const setActive = useServerFn(adminSetUserActive);
   const resetSec = useServerFn(adminResetSecurity);
   const del = useServerFn(adminDeleteUser);
+  const updProfile = useServerFn(adminUpdateUserProfile);
 
   const [rows, setRows] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [setupFilter, setSetupFilter] = useState("all");
   const [search, setSearch] = useState("");
 
   const [pwTarget, setPwTarget] = useState<ManagedUser | null>(null);
@@ -45,6 +60,11 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
   const [activeTarget, setActiveTarget] = useState<{ user: ManagedUser; nextActive: boolean } | null>(null);
   const [secTarget, setSecTarget] = useState<ManagedUser | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
+  const [editTarget, setEditTarget] = useState<ManagedUser | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkAction, setBulkAction] = useState<"block" | "unblock" | "delete" | null>(null);
 
   const roles = actor === "admin"
     ? ["all", "admin", "portal_manager", "sales_rep", "school", "teacher", "student"]
@@ -57,6 +77,71 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
     finally { setLoading(false); }
   }
   useEffect(() => { refresh(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [roleFilter]);
+
+  const visibleRows = rows.filter((u) => {
+    if (statusFilter === "active" && !u.isActive) return false;
+    if (statusFilter === "blocked" && u.isActive) return false;
+    if (setupFilter === "pending" && !u.mustSetupSecurity) return false;
+    if (setupFilter === "complete" && u.mustSetupSecurity) return false;
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return [u.username, u.email, u.fullName ?? ""].some((v) => v.toLowerCase().includes(q));
+  });
+  const allSelected = visibleRows.length > 0 && visibleRows.every((u) => selected.includes(u.userId));
+
+  function toggleAll() {
+    setSelected(allSelected ? [] : visibleRows.map((u) => u.userId));
+  }
+  function toggleOne(id: string) {
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  function exportList() {
+    const cols: ExportColumn<ManagedUser>[] = [
+      { header: "Name", value: (r) => r.fullName ?? "" },
+      { header: "Username", value: (r) => r.username },
+      { header: "Email", value: (r) => r.email },
+      { header: "Role", value: (r) => ROLE_LABELS[r.role] ?? r.role },
+      { header: "Status", value: (r) => (r.isActive ? "Active" : "Blocked") },
+      { header: "Security setup", value: (r) => (r.mustSetupSecurity ? "Pending" : "Complete") },
+      { header: "Created", value: (r) => new Date(r.createdAt).toLocaleDateString() },
+    ];
+    exportXlsx(visibleRows, cols, `avartan-users-${new Date().toISOString().slice(0, 10)}`);
+  }
+
+  async function runBulk() {
+    if (!bulkAction) return;
+    const targets = rows.filter((u) => selected.includes(u.userId));
+    setBusy(true);
+    let done = 0;
+    let failed = 0;
+    for (const u of targets) {
+      try {
+        if (bulkAction === "delete") await del({ data: { userId: u.userId } });
+        else await setActive({ data: { userId: u.userId, active: bulkAction === "unblock" } });
+        done += 1;
+      } catch { failed += 1; }
+    }
+    setBusy(false);
+    setBulkAction(null);
+    setSelected([]);
+    if (done) toast.success(`${done} account${done === 1 ? "" : "s"} updated`);
+    if (failed) toast.error(`${failed} account${failed === 1 ? "" : "s"} could not be updated`, { description: "Some accounts may be protected. Please try them individually." });
+    refresh();
+  }
+
+  async function submitProfile() {
+    if (!editTarget) return;
+    setBusy(true);
+    try {
+      await updProfile({ data: { userId: editTarget.userId, fullName: editName, email: editEmail } });
+      toast.success("Profile updated", { description: `${editName} has been saved.` });
+      setEditTarget(null);
+      refresh();
+    } catch (e) {
+      toast.error("We couldn't save these details", { description: friendlyError(e) });
+    } finally { setBusy(false); }
+  }
 
   async function confirmSetActive() {
     if (!activeTarget) return;
@@ -126,25 +211,67 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><UserCog className="h-5 w-5 text-primary" /> User Management</CardTitle>
+          <CardTitle className="flex flex-wrap items-center justify-between gap-3">
+            <span className="flex items-center gap-2"><UserCog className="h-5 w-5 text-primary" /> User Management</span>
+            <span className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={exportList} disabled={visibleRows.length === 0}>
+                <FileSpreadsheet className="h-4 w-4" /> Export
+              </Button>
+              <Button variant="outline" size="sm" onClick={refresh}><RefreshCcw className="h-4 w-4" /> Refresh</Button>
+            </span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             <div>
               <Label>Role</Label>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{roles.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                <SelectContent>{roles.map((r) => <SelectItem key={r} value={r}>{ROLE_LABELS[r] ?? r}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="md:col-span-3">
+            <div>
+              <Label>Status</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="blocked">Blocked</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Security setup</Label>
+              <Select value={setupFilter} onValueChange={setSetupFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="complete">Complete</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label>Search</Label>
               <div className="flex gap-2">
-                <Input placeholder="Username or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+                <Input placeholder="Name, username or email" value={search} onChange={(e) => setSearch(e.target.value)} />
                 <Button onClick={refresh}><Search className="h-4 w-4" /></Button>
               </div>
             </div>
           </div>
+          {selected.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3">
+              <Users2 className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">{selected.length} selected</span>
+              <div className="ml-auto flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setBulkAction("block")}>Block</Button>
+                <Button size="sm" variant="outline" onClick={() => setBulkAction("unblock")}>Unblock</Button>
+                <Button size="sm" variant="outline" className="text-rose-600" onClick={() => setBulkAction("delete")}>Delete</Button>
+                <Button size="sm" variant="ghost" onClick={() => setSelected([])}>Clear</Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -156,29 +283,43 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
+                  <TableHead className="w-10">
+                    <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all users" className="h-4 w-4 accent-primary" />
+                  </TableHead>
                   <TableHead>User</TableHead><TableHead>Role</TableHead><TableHead>Status</TableHead>
                   <TableHead>Setup</TableHead><TableHead>Created</TableHead><TableHead className="text-right">Actions</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
-                  {rows.map((u) => (
+                  {visibleRows.map((u) => (
                     <TableRow key={u.userId}>
                       <TableCell>
-                        <div className="font-medium">{u.username}</div>
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(u.userId)}
+                          onChange={() => toggleOne(u.userId)}
+                          aria-label={`Select ${u.username}`}
+                          className="h-4 w-4 accent-primary"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{u.fullName || u.username}</div>
+                        <div className="text-xs text-muted-foreground">@{u.username}</div>
                         <div className="text-xs text-muted-foreground">{u.email}</div>
                       </TableCell>
-                      <TableCell><Badge variant="secondary">{u.role}</Badge></TableCell>
+                      <TableCell><Badge variant="secondary">{ROLE_LABELS[u.role] ?? u.role}</Badge></TableCell>
                       <TableCell>
                         <Badge className={u.isActive ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-rose-500/15 text-rose-700 dark:text-rose-300"}>
-                          {u.isActive ? "active" : "deactivated"}
+                          {u.isActive ? "Active" : "Blocked"}
                         </Badge>
                       </TableCell>
                       <TableCell>{u.mustSetupSecurity ? <Badge variant="outline">pending</Badge> : <Badge className="bg-sky-500/15 text-sky-700 dark:text-sky-300">complete</Badge>}</TableCell>
                       <TableCell className="text-xs">{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-1">
+                          <Button size="sm" variant="outline" onClick={() => { setEditTarget(u); setEditName(u.fullName ?? u.username); setEditEmail(u.email); }} title="Edit details"><Pencil className="h-3.5 w-3.5" /></Button>
                           <Button size="sm" variant="outline" onClick={() => { setPwTarget(u); setPwValue(""); }} title="Reset password"><KeyRound className="h-3.5 w-3.5" /></Button>
                           <Button size="sm" variant="outline" onClick={() => { setUnameTarget(u); setUnameValue(u.username); }} title="Change username"><UserCog className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline" onClick={() => setActiveTarget({ user: u, nextActive: !u.isActive })} title={u.isActive ? "Deactivate account" : "Activate account"}><Power className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="outline" onClick={() => setActiveTarget({ user: u, nextActive: !u.isActive })} title={u.isActive ? "Block account" : "Unblock account"}><Power className="h-3.5 w-3.5" /></Button>
                           {actor === "admin" && (
                             <Button size="sm" variant="outline" onClick={() => setSecTarget(u)} title="Reset security setup"><RefreshCcw className="h-3.5 w-3.5" /></Button>
                           )}
@@ -187,8 +328,8 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
                       </TableCell>
                     </TableRow>
                   ))}
-                  {rows.length === 0 && (
-                    <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  {visibleRows.length === 0 && (
+                    <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                       No users match your search or filters. Try a different name, or clear the filters to see everyone.
                     </TableCell></TableRow>
                   )}
@@ -225,6 +366,27 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
           <DialogFooter>
             <Button variant="outline" onClick={() => setUnameTarget(null)} disabled={busy}>Cancel</Button>
             <Button onClick={submitUname} disabled={busy || unameValue.length < 3}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update username"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editTarget} onOpenChange={(o) => !o && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit details — {editTarget?.username}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Full name</Label>
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Full name" />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="name@example.com" />
+            </div>
+            <p className="text-xs text-muted-foreground">These details appear across directories and reports. Changing the email also changes the address used for sign-in links.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
+            <Button onClick={submitProfile} disabled={busy || editName.trim().length < 2}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -298,6 +460,31 @@ export function UserManagementPanel({ actor }: { actor: Actor }) {
       {actor === "admin" && (
         <div className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldOff className="h-3 w-3" /> For your safety, you can't change or remove your own admin account here.</div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(bulkAction)}
+        onOpenChange={(o) => { if (!o) setBulkAction(null); }}
+        tone={bulkAction === "delete" ? "danger" : "warning"}
+        icon={bulkAction === "delete" ? Trash2 : Power}
+        busy={busy}
+        title={
+          bulkAction === "delete"
+            ? `Delete ${selected.length} account${selected.length === 1 ? "" : "s"} permanently?`
+            : bulkAction === "block"
+              ? `Block ${selected.length} account${selected.length === 1 ? "" : "s"}?`
+              : `Unblock ${selected.length} account${selected.length === 1 ? "" : "s"}?`
+        }
+        description={
+          bulkAction === "delete"
+            ? <>The selected people will lose access immediately and their profiles will be removed. This cannot be undone.</>
+            : bulkAction === "block"
+              ? <>The selected people will be signed out and won't be able to log in until you unblock them.</>
+              : <>The selected people will be able to sign in again with their existing username and password.</>
+        }
+        confirmLabel={bulkAction === "delete" ? "Delete permanently" : bulkAction === "block" ? "Block accounts" : "Unblock accounts"}
+        cancelLabel="Cancel"
+        onConfirm={runBulk}
+      />
     </div>
   );
 }

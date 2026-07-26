@@ -1,43 +1,54 @@
-## Admin Console — full redesign
+## Goal
 
-Rebuild the Admin area into the true owner console: real data everywhere, no fake charts, premium layout, and full control over every account on the portal.
+Every admin menu item is its own working page, every overview card actually clicks through, and the Users page gives full control (modify, block, delete, filter) over any account.
 
-### 1. Overview page (`/admin`)
-- Remove the fake "Engagement trend" bar chart and the hardcoded "Technology mix" percentages entirely.
-- New stat band (all cards visible, responsive 2/3/6 grid, no clipping): Schools, Teachers, Students, Sales Reps, Pending approvals, Rejected/Inactive — each with a live count and a click-through to its directory.
-- Keep the Pending School Approvals panel (existing approve/reject logic untouched).
-- Add compact "Recent activity" and "Recently onboarded schools" cards fed by real rows.
-- Quick-action tiles: Onboard school, Add sales rep, User management, Audit trail, Export reports.
+## 1. Fix the "nothing is clickable" bug first
 
-### 2. Directory (new `/admin/directory`)
-A premium tabbed workspace — **Schools · Teachers · Students · Sales Reps** — with:
-- Sticky filter bar: search, **Region**, **State**, **City**, **School**, Status. State→City options are linked (reuse the existing India locations data); School filter narrows Teachers/Students.
-- Card-style rows with generous padding, high-contrast hierarchy, glowing status pills.
-- **Unmasked contact details for Admin** — full email/phone everywhere (managers keep masking).
-- Row expander showing full profile (principal, designation, address, area, sales rep, created date, counts of teachers/students under a school).
-- Row actions: Reset password, Change username, Activate/Deactivate, Delete.
+The global 3D card style (`.slab-3d:hover`) applies a `rotateX/rotateY/translateZ` transform on hover. In Chromium this moves the painted card away from the pointer's hit-test target — the same bug that previously broke the Register School submit button (which was fixed with a one-off `registration-form-surface` opt-out).
 
-### 3. Account control
-- Admin can change the password of **any** user (school, teacher, student, sales rep, manager, admin) from the directory and from User Management — reusing the existing `adminResetUserPassword` flow in a premium modal with generate/copy helpers.
-- **Cascading school delete**: deleting a school also deletes every teacher and student under it — their table rows *and* their login accounts — inside one server-side routine, with a typed-confirmation modal that states exactly how many teachers/students will be removed. (The database has no FK cascade today, so this is enforced in the delete routine.)
-- Deleting a teacher/student/sales rep removes their row and login.
+Fix it properly and globally in `src/styles.css`:
+- Hover lift becomes a flat `translateY` only — no `rotateX`/`rotateY`/`perspective` on any element that contains links, buttons, inputs, tables, or menus.
+- Remove `body { perspective }` so no ancestor re-projects the whole page.
+- Keep the depth look through shadows, borders and glow (visually unchanged, hit-testing correct).
+- Drop the now-unneeded `registration-form-surface` special case.
 
-### 4. Reports & export
-- Export button on every directory tab and on Overview: downloads the currently filtered rows as **CSV** and **Excel (.xlsx)** (xlsx is already in the project).
-- Reports include full unmasked contact fields for Admin, plus a summary sheet (counts by state/region/status).
+Verification: after the change, run an automated pointer hit-test over every link/button on each admin page and confirm each element is the top element at its own centre.
 
-### 5. Audit trail
-- `/admin/audit-logs` and the Manager equivalent become clean, premium **empty-state pages** ("Audit trail — coming soon") as requested. Existing logging keeps writing to the database untouched, so nothing is lost when we build it out later.
+## 2. Overview (`/admin`) — lean dashboard only
 
-### 6. Extra owner-grade features included
-- Global command search (⌘K) across schools/teachers/students/reps.
-- Impersonation-free "View as school" read-only drill-down from a school row into its teacher/student roster.
-- Portal health strip: inactive accounts, accounts pending security setup, schools with zero students.
-- Bulk select + bulk deactivate/export in the directory.
+Strip everything that isn't a dashboard summary: remove the "Recently onboarded schools" list and the health tiles block from the overview page. What stays:
+- Six live stat cards (Schools, Teachers, Students, Sales reps, Pending approvals, Deactivated) — each opens its detailed view.
+- One compact row of quick links to the other four menu pages.
 
-### Technical notes
-- New `src/lib/directory.server.ts` + `directory.functions.ts`: admin/manager-gated listing of schools, teachers, students and sales reps with region/state/city/school/status filters and audience-based masking (admin = unmasked).
-- New `src/lib/admin-delete.server.ts`: cascading delete of a school and all dependent teacher/student rows and auth users, wrapped with existing audit logging.
-- New route `src/routes/admin.directory.tsx`; `admin.tsx` rewritten; `admin.audit-logs.tsx` and `manager` audit page reduced to empty states.
-- Sidebar nav for admin updated to point at real routes (Overview, Directory, Users, Reports, Audit Trail) instead of the current duplicated `/admin` links.
-- No changes to auth, roles, approval logic, RLS or existing state handlers — all new reads go through the existing role-gated server-function pattern.
+Detailed drill-down views stay on the directory page, which is reachable only from a card click (not from the menu).
+
+## 3. Menu structure
+
+Sidebar (`app-shell`): Overview, Approvals, Sales hierarchy, Users, Audit Trail. The Directory entry is already removed from the menu and stays removed.
+
+## 4. Approvals (`/admin/pending-schools`)
+
+Dedicated page listing every school submitted through Register School with status Pending. Each row expands to show full submitted details (contact, state/city/area, sales rep) with Approve and Reject actions, plus tabs for Approved / Rejected history and a search box. Approve provisions the school login exactly as it does today.
+
+## 5. Sales hierarchy (`/admin/sales-hierarchy`)
+
+Full-page premium org tree: expand/collapse parent-child nodes with chevrons, connector lines, per-rep cards showing name, code, region, schools owned and direct reports count, plus Expand-all / Collapse-all and a search that reveals matching branches.
+
+## 6. Users (`/admin/users`) — full control
+
+One page listing every account on the portal with:
+- Filters: role (admin, manager, sales rep, school, teacher, student), status (active / blocked), school, state/city, and free-text search on name, username or email.
+- Row actions: Edit profile details, Change username, Reset password, Block / Unblock, Reset security setup, Delete (with a clear confirmation dialog explaining consequences).
+- Bulk select for block/unblock/delete, and CSV/Excel export of the filtered list.
+- Status shown as a coloured badge; every action writes to the audit log as it does today.
+
+## 7. Audit Trail (`/admin/audit-logs`)
+
+Stays an intentionally empty page with a clean "coming soon" placeholder, as requested.
+
+## Technical notes
+
+- No changes to data flow, server functions, RLS, roles or business logic — only the CSS hit-testing fix, page composition, and wiring existing server functions (`adminSetUserActive`, `adminDeleteUser`, `adminChangeUsername`, `adminResetUserPassword`, `adminResetSecurity`, `getDirectory`) into the Users page UI.
+- A profile-edit server function will be added only if one doesn't already cover name/email/phone updates.
+- Each route keeps its own `head()` metadata.
+- Final check runs the automated click test across `/admin`, `/admin/pending-schools`, `/admin/sales-hierarchy`, `/admin/users`, `/admin/audit-logs`.

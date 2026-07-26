@@ -39,7 +39,6 @@ function AdminDashboard() {
 
   const totals = data?.totals;
   const schools = data?.schools ?? [];
-  const recentSchools = schools.slice(0, 6);
 
   function downloadPortalReport() {
     const cols: ExportColumn<SchoolRow>[] = [
@@ -84,17 +83,14 @@ function AdminDashboard() {
         <QuickAction to="/admin/audit-logs" icon={ScrollText} label="Audit trail" hint="Activity history" />
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <HealthTile label="Accounts pending security setup" value={totals?.pendingSecurity ?? 0} to="/admin/users" hint="Manage these users" />
-        <HealthTile label="Schools with zero students" value={totals?.schoolsWithoutStudents ?? 0} to="/admin/directory" search={{ tab: "schools" }} hint="Review those schools" />
-        <HealthTile label="Deactivated accounts" value={totals?.inactiveAccounts ?? 0} to="/admin/directory" search={{ tab: "schools", status: "inactive" }} hint="See paused accounts" />
-      </div>
-
       <div className="mt-6 rounded-3xl border border-border/60 bg-card/70 p-6 shadow-elegant backdrop-blur-xl lg:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-primary" />
-            <div className="font-display text-lg font-semibold">Recently onboarded schools</div>
+            <div>
+              <div className="font-display text-lg font-semibold">Portal report</div>
+              <div className="text-xs text-muted-foreground">Download a full snapshot of schools, teachers, students and sales coverage.</div>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" className="rounded-xl" onClick={downloadPortalReport}>
@@ -105,40 +101,6 @@ function AdminDashboard() {
             </Button>
           </div>
         </div>
-        {recentSchools.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-border/70 px-6 py-12 text-center text-sm text-muted-foreground">
-            No schools have been onboarded yet. As soon as you approve a registration, the school will appear here.
-          </div>
-        ) : (
-          <div className="mt-6 grid gap-3 lg:grid-cols-2">
-            {recentSchools.map((s) => (
-              <Link
-                key={s.id}
-                to="/admin/directory"
-                search={{ tab: "schools", status: "all" }}
-                className="group rounded-2xl border border-border/50 bg-background/50 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <div className="font-semibold">{s.name}</div>
-                    <div className="text-xs text-muted-foreground">{s.schoolCode} · {[s.city, s.state].filter(Boolean).join(", ") || "—"}</div>
-                  </div>
-                  <div className="text-right text-xs text-muted-foreground">
-                    <div>{s.teacherCount} teachers · {s.studentCount} students</div>
-                    <div>{new Date(s.createdAt).toLocaleDateString()}</div>
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                  <span>{s.email || "—"}</span>
-                  <span className="text-muted-foreground">{s.phone || "—"}</span>
-                </div>
-                <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-80 group-hover:opacity-100">
-                  Open in directory <ArrowRight className="h-3.5 w-3.5" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
       </div>
     </AppShell>
   );
@@ -155,22 +117,6 @@ function QuickAction({ to, icon: Icon, label, hint }: { to: string; icon: typeof
       </div>
       <div className="mt-3 font-semibold">{label}</div>
       <div className="text-xs text-muted-foreground">{hint}</div>
-    </Link>
-  );
-}
-
-function HealthTile({ label, value, to, search, hint }: { label: string; value: number; to: string; search?: Record<string, string>; hint: string }) {
-  return (
-    <Link
-      to={to}
-      search={search}
-      className="group rounded-2xl border border-border/60 bg-card/60 px-6 py-5 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
-    >
-      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="mt-2 font-display text-2xl font-bold">{value}</div>
-      <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-80 group-hover:opacity-100">
-        {hint} <ArrowRight className="h-3.5 w-3.5" />
-      </div>
     </Link>
   );
 }
