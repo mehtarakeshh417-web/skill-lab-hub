@@ -17,7 +17,7 @@ import { STATUS_META, SUBMISSION_TYPES, type ProjectStatus } from "@/lib/project
 import { Award, CheckCircle2, Clock3, FileCheck2, FolderKanban, Loader2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/student/projects")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { focus?: string } => ({
     focus: typeof search.focus === "string" ? search.focus : undefined,
   }),
   head: () => ({

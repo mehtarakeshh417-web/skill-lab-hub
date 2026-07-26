@@ -48,7 +48,9 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/teacher/assignments")({
-  validateSearch: (s: Record<string, unknown>) => ({ attempt: typeof s.attempt === "string" ? s.attempt : undefined }),
+  validateSearch: (s: Record<string, unknown>): { attempt?: string } => ({
+    attempt: typeof s.attempt === "string" ? s.attempt : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Assignments Studio · Teacher · Avartan Skill Lab" },

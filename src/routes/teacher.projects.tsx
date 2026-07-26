@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/teacher/projects")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { submission?: string } => ({
     submission: typeof search.submission === "string" ? search.submission : undefined,
   }),
   head: () => ({
