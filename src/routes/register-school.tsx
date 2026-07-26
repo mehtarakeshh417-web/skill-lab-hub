@@ -356,25 +356,19 @@ function RegisterSchool() {
                 </div>
               </div>
 
-              <div className="mt-8 flex flex-col gap-4 border-t border-border/60 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <p className="max-w-xl text-xs text-muted-foreground leading-relaxed">
+              <div className="mt-10 flex flex-col gap-5 border-t border-border/60 pt-7 sm:flex-row sm:items-center sm:justify-between">
+                <p className="max-w-md text-xs text-muted-foreground leading-relaxed">
                   By submitting, you authorize Avartan to contact your institution regarding onboarding. Your application enters the
-                  review queue as <span className="font-semibold text-amber-400">Pending Approval</span> and will typically be processed within one business day.
+                  review queue as <span className="font-semibold text-amber-500 dark:text-amber-400">Pending Approval</span> and will typically be processed within one business day.
                 </p>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn-3d group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-2xl px-8 text-base font-bold text-primary-foreground transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-70"
+                  style={{ backgroundImage: "linear-gradient(100deg, var(--primary), var(--accent))" }}
+                  className="inline-flex h-16 w-full shrink-0 items-center justify-center gap-2.5 rounded-2xl px-10 text-base font-bold tracking-tight text-primary-foreground shadow-[0_16px_40px_-12px_var(--primary)] ring-1 ring-inset ring-white/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-14px_var(--primary)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
-                  <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary via-primary-glow to-primary opacity-95 transition-opacity duration-300 group-hover:opacity-100" />
-                  <span className="absolute inset-0 rounded-2xl shadow-[0_18px_50px_-10px_hsl(var(--primary)/0.85)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_-10px_hsl(var(--primary))]" />
-                  <span className="absolute inset-0 -translate-x-full overflow-hidden rounded-2xl">
-                    <span className="absolute inset-y-0 w-1/3 -skew-x-12 bg-white/30 transition-transform duration-700 group-hover:translate-x-[400%]" />
-                  </span>
-                  <span className="relative inline-flex items-center gap-2">
-                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                    {submitting ? "Submitting Application…" : "Submit Registration"}
-                  </span>
+                  {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                  {submitting ? "Submitting Application…" : "Submit Registration"}
                 </button>
               </div>
             </div>
@@ -383,6 +377,21 @@ function RegisterSchool() {
         </div>
       </div>
     </section>
+  );
+}
+
+function SectionHeading({ step, title, caption }: { step: string; title: string; caption: string }) {
+  return (
+    <div className="mt-10 flex items-center gap-4 first:mt-8">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 font-display text-sm font-bold text-primary">
+        {step}
+      </span>
+      <div className="min-w-0">
+        <h4 className="font-display text-sm font-bold uppercase tracking-[0.14em]">{title}</h4>
+        <p className="text-xs text-muted-foreground">{caption}</p>
+      </div>
+      <span className="ml-2 hidden h-px flex-1 bg-gradient-to-r from-border to-transparent sm:block" />
+    </div>
   );
 }
 
