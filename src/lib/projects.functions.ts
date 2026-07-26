@@ -123,7 +123,7 @@ export const listTeacherProjects = createServerFn({ method: "GET" })
 
     const roster = await studentDirectory(context.supabase, teacher.school_id);
 
-    const projects = [] as Array<Record<string, unknown>>;
+    const projects: any[] = [];
     for (const p of data ?? []) {
       const targeted =
         p.target_kind === "class"
@@ -140,7 +140,7 @@ export const listTeacherProjects = createServerFn({ method: "GET" })
       for (const s of p.submissions ?? []) {
         subs.push({
           ...s,
-          files: await signFiles(((s.files ?? []) as unknown as ProjectFile[]) ?? []),
+          files: await signFiles((s.files ?? []) as unknown as ProjectFile[]),
         });
       }
       projects.push({ ...p, audience: targeted, submissions: subs });
@@ -189,13 +189,13 @@ export const listStudentProjects = createServerFn({ method: "GET" })
       .in("assignment_id", mine.map((p) => p.id));
     if (subs.error) throw new Error(subs.error.message);
 
-    const out = [];
+    const out: any[] = [];
     for (const p of mine) {
       const sub = (subs.data ?? []).find((s) => s.assignment_id === p.id) ?? null;
       out.push({
         ...p,
         submission: sub
-          ? { ...sub, files: await signFiles(((sub.files ?? []) as unknown as ProjectFile[]) ?? []) }
+          ? { ...sub, files: await signFiles((sub.files ?? []) as unknown as ProjectFile[]) }
           : null,
       });
     }
