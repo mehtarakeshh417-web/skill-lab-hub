@@ -15,6 +15,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SetupSecurityRouteImport } from './routes/setup-security'
 import { Route as SchoolRouteImport } from './routes/school'
 import { Route as SalesRepRouteImport } from './routes/sales-rep'
+import { Route as RegisterSchoolRouteImport } from './routes/register-school'
 import { Route as ManagerRouteImport } from './routes/manager'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ConsoleRouteImport } from './routes/console'
@@ -70,6 +71,11 @@ const SchoolRoute = SchoolRouteImport.update({
 const SalesRepRoute = SalesRepRouteImport.update({
   id: '/sales-rep',
   path: '/sales-rep',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterSchoolRoute = RegisterSchoolRouteImport.update({
+  id: '/register-school',
+  path: '/register-school',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManagerRoute = ManagerRouteImport.update({
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/console': typeof ConsoleRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/manager': typeof ManagerRouteWithChildren
+  '/register-school': typeof RegisterSchoolRoute
   '/sales-rep': typeof SalesRepRoute
   '/school': typeof SchoolRouteWithChildren
   '/setup-security': typeof SetupSecurityRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/console': typeof ConsoleRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/register-school': typeof RegisterSchoolRoute
   '/sales-rep': typeof SalesRepRoute
   '/setup-security': typeof SetupSecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/console': typeof ConsoleRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/manager': typeof ManagerRouteWithChildren
+  '/register-school': typeof RegisterSchoolRoute
   '/sales-rep': typeof SalesRepRoute
   '/school': typeof SchoolRouteWithChildren
   '/setup-security': typeof SetupSecurityRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/console'
     | '/forgot-password'
     | '/manager'
+    | '/register-school'
     | '/sales-rep'
     | '/school'
     | '/setup-security'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/console'
     | '/forgot-password'
+    | '/register-school'
     | '/sales-rep'
     | '/setup-security'
     | '/sitemap.xml'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/console'
     | '/forgot-password'
     | '/manager'
+    | '/register-school'
     | '/sales-rep'
     | '/school'
     | '/setup-security'
@@ -414,6 +426,7 @@ export interface RootRouteChildren {
   ConsoleRoute: typeof ConsoleRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ManagerRoute: typeof ManagerRouteWithChildren
+  RegisterSchoolRoute: typeof RegisterSchoolRoute
   SalesRepRoute: typeof SalesRepRoute
   SchoolRoute: typeof SchoolRouteWithChildren
   SetupSecurityRoute: typeof SetupSecurityRoute
@@ -466,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/sales-rep'
       fullPath: '/sales-rep'
       preLoaderRoute: typeof SalesRepRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register-school': {
+      id: '/register-school'
+      path: '/register-school'
+      fullPath: '/register-school'
+      preLoaderRoute: typeof RegisterSchoolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manager': {
@@ -740,6 +760,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConsoleRoute: ConsoleRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ManagerRoute: ManagerRouteWithChildren,
+  RegisterSchoolRoute: RegisterSchoolRoute,
   SalesRepRoute: SalesRepRoute,
   SchoolRoute: SchoolRouteWithChildren,
   SetupSecurityRoute: SetupSecurityRoute,
