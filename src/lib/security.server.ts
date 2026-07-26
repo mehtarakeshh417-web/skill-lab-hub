@@ -55,9 +55,12 @@ export type AuditEntry = {
   actorUsername?: string | null;
   actorRole?: string | null;
   action: string;
+  module?: string | null;
   entityType?: string | null;
   entityId?: string | null;
   entityLabel?: string | null;
+  targetUserId?: string | null;
+  targetRole?: string | null;
   previousValue?: unknown;
   newValue?: unknown;
   ipAddress?: string | null;
@@ -66,21 +69,92 @@ export type AuditEntry = {
   remarks?: string | null;
 };
 
+/** Best-effort capture of client IP + browser from the active request. */
+export function requestClientInfo(): { ipAddress: string | null; userAgent: string | null } {
+  try {
+    // Imported lazily so this module stays usable outside a request scope.
+    const {
+      getRequestHeader,
+    } = require("@tanstack/react-start/server") as typeof import("@tanstack/react-start/server");
+    const fwd = getRequestHeader("x-forwarded-for") ?? "";
+    const ip =
+      fwd.split(",")[0]?.trim() ||
+      getRequestHeader("cf-connecting-ip") ||
+      getRequestHeader("x-real-ip") ||
+      null;
+    return { ipAddress: ip || null, userAgent: getRequestHeader("user-agent") ?? null };
+  } catch {
+    return { ipAddress: null, userAgent: null };
+  }
+}
+
+/** Infer the portal module from the action key when one is not supplied. */
+function inferModule(action: string): string {
+  const head = action.split(".")[0];
+  const map: Record<string, string> = {
+    admin: "User Management",
+    security: "Security",
+    auth: "Authentication",
+    school: "Schools",
+    schools: "Schools",
+    registration: "School Registrations",
+    teacher: "Teachers",
+    student: "Students",
+    sales: "Sales Network",
+    assignment: "Projects & Assignments",
+    quiz: "Quizzes",
+    directory: "Directory",
+  };
+  return map[head] ?? "Portal";
+}
+
 export async function writeAudit(entry: AuditEntry) {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const client = requestClientInfo();
+    let actorUsername = entry.actorUsername ?? null;
+    let actorRole = entry.actorRole ?? null;
+    if (entry.actorUserId && (!actorUsername || !actorRole)) {
+      const { data: sec } = await supabaseAdmin
+        .from("user_security")
+        .select("username")
+        .eq("user_id", entry.actorUserId)
+        .maybeSingle();
+      actorUsername = actorUsername ?? sec?.username ?? null;
+      if (!actorRole) {
+        const { data: r } = await supabaseAdmin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", entry.actorUserId)
+          .maybeSingle();
+        actorRole = (r?.role as string) ?? null;
+      }
+    }
+    let targetRole = entry.targetRole ?? null;
+    const targetUserId = entry.targetUserId ?? (entry.entityType === "user" ? entry.entityId : null);
+    if (!targetRole && targetUserId) {
+      const { data: r } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", targetUserId)
+        .maybeSingle();
+      targetRole = (r?.role as string) ?? null;
+    }
     await supabaseAdmin.from("audit_logs").insert({
       actor_user_id: entry.actorUserId ?? null,
-      actor_username: entry.actorUsername ?? null,
-      actor_role: entry.actorRole ?? null,
+      actor_username: actorUsername,
+      actor_role: actorRole,
       action: entry.action,
+      module: entry.module ?? inferModule(entry.action),
       entity_type: entry.entityType ?? null,
       entity_id: entry.entityId ?? null,
       entity_label: entry.entityLabel ?? null,
+      target_user_id: targetUserId && /^[0-9a-f-]{36}$/i.test(targetUserId) ? targetUserId : null,
+      target_role: targetRole,
       previous_value: entry.previousValue ? (entry.previousValue as never) : null,
       new_value: entry.newValue ? (entry.newValue as never) : null,
-      ip_address: entry.ipAddress ?? null,
-      user_agent: entry.userAgent ?? null,
+      ip_address: entry.ipAddress ?? client.ipAddress,
+      user_agent: entry.userAgent ?? client.userAgent,
       status: entry.status ?? "success",
       remarks: entry.remarks ?? null,
     });
