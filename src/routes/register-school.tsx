@@ -73,6 +73,7 @@ function RegisterSchool() {
     state: "",
     city: "",
     area: "",
+    salesRepId: "",
     notes: "",
     username: "",
     password: "",
@@ -86,6 +87,34 @@ function RegisterSchool() {
   const [focused, setFocused] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState<{ schoolName: string; schoolCode: string } | null>(null);
   const [formError, setFormError] = useState<string>("");
+  const [reps, setReps] = useState<{ id: string; fullName: string; designation: string }[]>([]);
+  const [repsLoading, setRepsLoading] = useState(true);
+
+  const loadReps = useCallback(async () => {
+    try {
+      const res = await fetch("/api/public/sales-reps", { headers: { accept: "application/json" } });
+      const json = (await res.json().catch(() => null)) as
+        | { ok?: boolean; reps?: { id: string; fullName: string; designation: string }[] }
+        | null;
+      if (json?.ok && Array.isArray(json.reps)) setReps(json.reps);
+    } catch {
+      /* keep the previously loaded list */
+    } finally {
+      setRepsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadReps();
+    if (typeof window === "undefined") return;
+    const onFocus = () => void loadReps();
+    window.addEventListener("focus", onFocus);
+    const interval = window.setInterval(() => void loadReps(), 60_000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(interval);
+    };
+  }, [loadReps]);
 
   const update = (k: keyof typeof empty, v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -105,6 +134,7 @@ function RegisterSchool() {
     state: "State",
     city: "City",
     area: "Area",
+    salesRepId: "Sales Representative",
     notes: "Submission Notes",
     username: "Login Username",
     password: "Login Password",
@@ -192,6 +222,7 @@ function RegisterSchool() {
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(),
           address: form.address.trim(),
+          salesRepId: form.salesRepId,
         }),
       });
       const result = (await response.json().catch(() => null)) as
