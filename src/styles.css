@@ -216,6 +216,77 @@
   }
 }
 
+/* ── Premium surface + motion utilities ─────────────────────── */
+
+@utility bg-gradient-gold { background-image: var(--gradient-gold); }
+@utility shadow-soft { box-shadow: var(--shadow-xs); }
+@utility shadow-gold { box-shadow: var(--shadow-gold); }
+
+@utility glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+}
+
+@utility surface-card {
+  background: color-mix(in oklab, var(--card) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+@utility hover-lift {
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out-soft),
+              border-color var(--dur-base) ease;
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+}
+
+@utility press {
+  transition: transform var(--dur-fast) var(--ease-spring), filter var(--dur-fast) ease;
+}
+.press:active { transform: scale(0.97); }
+
+@utility focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px color-mix(in oklab, var(--ring) 70%, transparent);
+}
+
+@keyframes page-enter-kf {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@utility page-enter {
+  animation: page-enter-kf var(--dur-slow) var(--ease-out-soft) both;
+}
+
+@utility stagger-in {
+  animation: page-enter-kf var(--dur-slow) var(--ease-out-soft) both;
+}
+.stagger-in > * { animation: page-enter-kf var(--dur-slow) var(--ease-out-soft) both; }
+.stagger-in > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-in > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-in > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-in > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-in > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-in > *:nth-child(6) { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @utility bg-gradient-hero { background-image: var(--gradient-hero); }
 @utility bg-gradient-brand { background-image: var(--gradient-brand); }
 @utility bg-gradient-accent { background-image: var(--gradient-accent); }
