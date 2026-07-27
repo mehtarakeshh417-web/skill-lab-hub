@@ -106,6 +106,27 @@ function classesKey(schoolCode: string) {
   return `avartan.school.classes.${schoolCode.toLowerCase()}.v1`;
 }
 
+/** Normalised keys so "Class 3"/"3" and "Section Lily"/"Lily" line up. */
+function normClass(value: string | null | undefined) {
+  const raw = (value ?? "").trim().toLowerCase();
+  const digits = raw.match(/\d+/);
+  return digits ? digits[0] : raw.replace(/[^a-z0-9]/g, "");
+}
+
+function normSection(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/^section\s+/, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function rosterKeyOf(student: { classSection?: string }) {
+  const raw = student.classSection ?? "";
+  const [cls, ...rest] = raw.split("-");
+  return `${normClass(cls)}::${normSection(rest.join("-"))}`;
+}
+
 function loadClasses(schoolCode: string): ClassEntry[] {
   if (typeof window === "undefined") return DEFAULT_CLASSES;
   try {
