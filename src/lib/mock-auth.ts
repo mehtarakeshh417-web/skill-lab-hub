@@ -17,6 +17,7 @@ export type MockAccount = {
   teacherId?: string;           // for student → teacher mapping
   teacherName?: string;
   classSection?: string;        // for student
+  databaseId?: string;          // durable directory row identifier
   meta?: Record<string, string>;
 };
 

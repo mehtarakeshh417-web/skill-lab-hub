@@ -92,11 +92,13 @@ function TeacherWorkspace() {
 
   // Real allocations from the backend: sections assigned to me + their students.
   const fetchWorkspace = useServerFn(getMyTeacherWorkspace);
-  const { data: workspace } = useQuery({
-    queryKey: ["teacher-workspace"],
+  const { data: workspace, error: workspaceError } = useQuery({
+    queryKey: ["teacher-workspace", user?.id ?? "signed-out"],
     queryFn: () => fetchWorkspace(),
     enabled: Boolean(session),
     retry: false,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
   const mySections = workspace?.sections ?? [];
 
@@ -110,7 +112,8 @@ function TeacherWorkspace() {
       email: "",
       schoolCode,
       classSection: [s.className, s.section].filter(Boolean).join(" - "),
-      meta: { admissionId: s.rollNumber },
+      databaseId: s.id,
+      meta: { admissionId: s.rollNumber, allocationSource: s.allocationSource },
     } as MockAccount));
     const mock = accounts.filter(
       (a) =>
@@ -158,6 +161,11 @@ function TeacherWorkspace() {
   return (
     <AppShell requireRole="teacher" title="Teacher Workspace">
       <div className="space-y-6">
+        {workspaceError ? (
+          <div role="alert" className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            Teacher allocations could not be loaded: {workspaceError instanceof Error ? workspaceError.message : "Please refresh and try again."}
+          </div>
+        ) : null}
         <HeaderStats
           tasks={tasks}
           subs={subs}
@@ -280,13 +288,14 @@ function HeaderStats({
     <>
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
       {stats.map((s) => (
-        <button
+        <Button
           key={s.label}
           type="button"
+          variant="ghost"
           onClick={() => setDetail(s.kind)}
           title={s.hint}
           aria-label={`${s.label}: ${s.value}. ${s.hint}`}
-          className={`group rounded-xl border border-border/60 bg-gradient-to-br ${s.tone} p-4 text-left backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+          className={`group h-auto min-h-28 w-full flex-col items-stretch rounded-xl border border-border/60 bg-gradient-to-br ${s.tone} p-4 text-left backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
         >
           <div className="flex items-center justify-between">
             <s.icon className="h-4 w-4 opacity-80" />
@@ -294,7 +303,7 @@ function HeaderStats({
           </div>
           <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
           <div className="mt-1 text-[11px] font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">{s.hint}</div>
-        </button>
+        </Button>
       ))}
     </div>
     <StatDetailDialog
@@ -364,7 +373,7 @@ function StatDetailDialog({
               key={s.username}
               primary={s.fullName}
               secondary={`${s.classSection || "—"} · Roll ${s.meta?.admissionId || "—"}`}
-              trailing={`login: ${s.username}`}
+              trailing={`${s.meta?.allocationSource === "direct" ? "Direct allocation" : s.meta?.allocationSource === "section_and_direct" ? "Section + direct" : "Section allocation"} · login: ${s.username}`}
             />
           ))}
         </List>

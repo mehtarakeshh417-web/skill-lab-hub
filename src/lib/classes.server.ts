@@ -18,6 +18,12 @@ export type SectionInput = {
   teacherUsername: string | null;
 };
 
+export type StudentTeacherAssignmentRecord = {
+  id: string;
+  teacherId: string;
+  studentId: string;
+};
+
 /** Normalised comparison key so "Section A" / "a" and "Class 6" / "6" line up. */
 export function sectionKey(value: string | null | undefined): string {
   const raw = (value ?? "").trim().toLowerCase().replace(/^section\s+/, "");
@@ -76,6 +82,93 @@ export async function listClassSectionsForSchoolActor(
 ) {
   const school = await getSchoolForActor(actorUserId);
   return { schoolId: school.id, sections: await loadSections(school.id) };
+}
+
+export async function listStudentTeacherAssignmentsForSchoolActor(
+  _actorSupabase: AuthedClient,
+  actorUserId: string,
+) {
+  const school = await getSchoolForActor(actorUserId);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("student_teacher_assignments")
+    .select("id, teacher_id, student_id")
+    .eq("school_id", school.id);
+  if (error) throw new Error(error.message);
+  return {
+    schoolId: school.id,
+    assignments: (data ?? []).map((row) => ({
+      id: row.id,
+      teacherId: row.teacher_id,
+      studentId: row.student_id,
+    })),
+  };
+}
+
+export async function assignTeacherToSectionForSchoolActor(
+  input: { sectionId: string; teacherId: string | null },
+  _actorSupabase: AuthedClient,
+  actorUserId: string,
+) {
+  const school = await getSchoolForActor(actorUserId);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  if (input.teacherId) {
+    const teacher = await supabaseAdmin
+      .from("teachers")
+      .select("id")
+      .eq("id", input.teacherId)
+      .eq("school_id", school.id)
+      .maybeSingle();
+    if (teacher.error) throw new Error(teacher.error.message);
+    if (!teacher.data) throw new Error("That teacher does not belong to your school.");
+  }
+
+  const update = await supabaseAdmin
+    .from("class_sections")
+    .update({ teacher_id: input.teacherId })
+    .eq("id", input.sectionId)
+    .eq("school_id", school.id)
+    .select("id")
+    .maybeSingle();
+  if (update.error) throw new Error(update.error.message);
+  if (!update.data) throw new Error("Section not found for this school.");
+
+  return { schoolId: school.id, sections: await loadSections(school.id) };
+}
+
+export async function setStudentTeacherAssignmentForSchoolActor(
+  input: { teacherId: string; studentId: string; assigned: boolean },
+  _actorSupabase: AuthedClient,
+  actorUserId: string,
+) {
+  const school = await getSchoolForActor(actorUserId);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const [teacher, student] = await Promise.all([
+    supabaseAdmin.from("teachers").select("id").eq("id", input.teacherId).eq("school_id", school.id).maybeSingle(),
+    supabaseAdmin.from("students").select("id").eq("id", input.studentId).eq("school_id", school.id).maybeSingle(),
+  ]);
+  if (teacher.error) throw new Error(teacher.error.message);
+  if (student.error) throw new Error(student.error.message);
+  if (!teacher.data || !student.data) throw new Error("Teacher and student must belong to your school.");
+
+  if (input.assigned) {
+    const { error } = await supabaseAdmin.from("student_teacher_assignments").upsert(
+      { school_id: school.id, teacher_id: input.teacherId, student_id: input.studentId },
+      { onConflict: "teacher_id,student_id" },
+    );
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabaseAdmin
+      .from("student_teacher_assignments")
+      .delete()
+      .eq("school_id", school.id)
+      .eq("teacher_id", input.teacherId)
+      .eq("student_id", input.studentId);
+    if (error) throw new Error(error.message);
+  }
+
+  return listStudentTeacherAssignmentsForSchoolActor(_actorSupabase, actorUserId);
 }
 
 /** Replace the school's whole class/section structure with the supplied list. */
@@ -143,6 +236,7 @@ export type TeacherWorkspaceSummary = {
     className: string;
     section: string;
     status: string;
+    allocationSource: "section" | "direct" | "section_and_direct";
   }>;
 };
 
@@ -155,7 +249,7 @@ export async function getTeacherWorkspaceForActor(
   const teacher = await getTeacherForUser(actorSupabase, actorUserId);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const [sectionRows, studentRows] = await Promise.all([
+  const [sectionRows, studentRows, assignmentRows] = await Promise.all([
     supabaseAdmin
       .from("class_sections")
       .select("id, class_name, section_name")
@@ -167,18 +261,26 @@ export async function getTeacherWorkspaceForActor(
       .select("id, full_name, username, roll_number, class_name, section, status")
       .eq("school_id", teacher.school_id)
       .order("class_name", { ascending: true }),
+    supabaseAdmin
+      .from("student_teacher_assignments")
+      .select("student_id")
+      .eq("school_id", teacher.school_id)
+      .eq("teacher_id", teacher.id),
   ]);
   if (sectionRows.error) throw new Error(sectionRows.error.message);
   if (studentRows.error) throw new Error(studentRows.error.message);
+  if (assignmentRows.error) throw new Error(assignmentRows.error.message);
 
   const allocated = sectionRows.data ?? [];
   const allocatedKeys = new Set(
     allocated.map((s) => `${classKey(s.class_name)}::${sectionKey(s.section_name)}`),
   );
 
-  const mine = (studentRows.data ?? []).filter((s) =>
-    allocatedKeys.has(`${classKey(s.class_name)}::${sectionKey(s.section)}`),
-  );
+  const directStudentIds = new Set((assignmentRows.data ?? []).map((row) => row.student_id));
+  const mine = (studentRows.data ?? []).filter((s) => {
+    const sectionAssigned = allocatedKeys.has(`${classKey(s.class_name)}::${sectionKey(s.section)}`);
+    return sectionAssigned || directStudentIds.has(s.id);
+  });
 
   const countByKey = new Map<string, number>();
   mine.forEach((s) => {
@@ -204,6 +306,9 @@ export async function getTeacherWorkspaceForActor(
       className: s.class_name ?? "",
       section: s.section ?? "",
       status: s.status,
+      allocationSource: allocatedKeys.has(`${classKey(s.class_name)}::${sectionKey(s.section)}`)
+        ? directStudentIds.has(s.id) ? "section_and_direct" : "section"
+        : "direct",
     })),
   };
 }
