@@ -95,7 +95,15 @@ export function useTheme() {
   return { mode, setTheme, toggle, accent, setAccent };
 }
 
-export function ThemePicker({ className, align = "right" }: { className?: string; align?: "left" | "right" }) {
+export function ThemePicker({
+  className,
+  align = "right",
+  side = "bottom",
+}: {
+  className?: string;
+  align?: "left" | "right";
+  side?: "bottom" | "top";
+}) {
   const { mode, setTheme, accent, setAccent } = useTheme();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -128,7 +136,8 @@ export function ThemePicker({ className, align = "right" }: { className?: string
       {open && (
         <div
           className={cn(
-            "absolute z-50 mt-2 w-64 rounded-2xl border border-border/60 bg-popover/95 p-4 shadow-lg backdrop-blur-xl",
+            "absolute z-50 w-64 rounded-2xl border border-border/60 bg-popover/95 p-4 shadow-lg backdrop-blur-xl",
+            side === "top" ? "bottom-full mb-2" : "top-full mt-2",
             align === "right" ? "right-0" : "left-0",
           )}
         >
