@@ -1,15 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Upload, UserPlus } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Upload, UserPlus } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createStudent } from "@/lib/students.functions";
+import { listMyClassSections } from "@/lib/classes.functions";
 import { studentCreateSchema, type StudentCreateInput } from "@/lib/students.schema";
+
+const SELECT_CLASS =
+  "h-11 w-full rounded-xl border border-input bg-background/70 px-4 text-sm outline-none transition focus:ring-2 focus:ring-primary/40";
 
 export const Route = createFileRoute("/school/add-student")({
   head: () => ({
@@ -71,12 +75,48 @@ function AddStudentWorkspace() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const create = useServerFn(createStudent);
+  const fetchSections = useServerFn(listMyClassSections);
 
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  const { data: sectionData, isLoading: sectionsLoading } = useQuery({
+    queryKey: ["school-class-sections"],
+    queryFn: () => fetchSections(),
+    retry: false,
+  });
+  const sections = useMemo(() => sectionData?.sections ?? [], [sectionData]);
+
+  const classOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const list: string[] = [];
+    sections.forEach((s) => {
+      if (seen.has(s.className)) return;
+      seen.add(s.className);
+      list.push(s.className);
+    });
+    return list;
+  }, [sections]);
+
+  const sectionOptions = useMemo(
+    () => sections.filter((s) => s.className === form.className),
+    [sections, form.className],
+  );
+
+  // Keep the section choice consistent with the selected class.
+  useEffect(() => {
+    if (!form.className) return;
+    if (form.section && !sectionOptions.some((s) => s.sectionName === form.section)) {
+      setForm((prev) => ({ ...prev, section: "" }));
+    }
+  }, [form.className, form.section, sectionOptions]);
+
+  const selectedSection = sections.find(
+    (s) => s.className === form.className && s.sectionName === form.section,
+  );
 
   const mutation = useMutation({
     mutationFn: (data: StudentCreateInput) => create({ data }),
@@ -159,11 +199,60 @@ function AddStudentWorkspace() {
             <Input value={form.rollNumber} onChange={(e) => set("rollNumber", e.target.value)} placeholder="R-101" />
           </Field>
           <Field label="Class" error={errors.className}>
-            <Input value={form.className} onChange={(e) => set("className", e.target.value)} placeholder="Grade 8" />
+            <select
+              value={form.className}
+              onChange={(e) => set("className", e.target.value)}
+              className={SELECT_CLASS}
+              disabled={sectionsLoading || classOptions.length === 0}
+            >
+              <option value="">
+                {sectionsLoading ? "Loading classes…" : "Select a class"}
+              </option>
+              {classOptions.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </Field>
           <Field label="Section" error={errors.section}>
-            <Input value={form.section} onChange={(e) => set("section", e.target.value)} placeholder="A" />
+            <select
+              value={form.section}
+              onChange={(e) => set("section", e.target.value)}
+              className={SELECT_CLASS}
+              disabled={!form.className || sectionOptions.length === 0}
+            >
+              <option value="">
+                {form.className ? "Select a section" : "Pick a class first"}
+              </option>
+              {sectionOptions.map((s) => (
+                <option key={s.id} value={s.sectionName}>
+                  {s.sectionName}
+                  {s.teacherName ? ` — ${s.teacherName}` : " — no teacher yet"}
+                </option>
+              ))}
+            </select>
           </Field>
+          <div className="sm:col-span-2">
+            {classOptions.length === 0 && !sectionsLoading ? (
+              <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-foreground/80">
+                No classes or sections have been registered yet.{" "}
+                <Link to="/school" className="font-semibold text-amber-600 underline underline-offset-4">
+                  Set them up in Classes &amp; Sections
+                </Link>{" "}
+                so new students are allocated to a teacher automatically.
+              </div>
+            ) : (
+              <div className="flex items-start gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-foreground/80">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                <span>
+                  {selectedSection?.teacherName
+                    ? `${selectedSection.teacherName} leads this section and will see this student automatically.`
+                    : "The teacher mapped to this section will see this student automatically."}
+                </span>
+              </div>
+            )}
+          </div>
           <Field label="Gender" error={errors.gender}>
             <select
               value={form.gender}
