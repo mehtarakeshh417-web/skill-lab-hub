@@ -130,6 +130,8 @@ export function AppShell({
 
   const nav = NAV[role];
   const RoleIcon = ROLE_ICON[role];
+  // Roles with a single destination don't need a nav rail at all.
+  const hideNav = nav.length <= 1;
 
   const navLinks = (onNavigate?: () => void) => (
     <nav className="flex-1 space-y-1.5 p-4">
@@ -208,30 +210,44 @@ export function AppShell({
       />
 
       {/* Sidebar */}
-      <aside className="relative z-10 hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/80 text-sidebar-foreground backdrop-blur-xl lg:flex">
-        {brand}
-        {navLinks()}
-        {profileBlock}
-      </aside>
+      {!hideNav && (
+        <aside className="relative z-10 hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/80 text-sidebar-foreground backdrop-blur-xl lg:flex">
+          {brand}
+          {navLinks()}
+          {profileBlock}
+        </aside>
+      )}
 
       {/* Main */}
       <div className="relative z-10 flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl lg:px-10">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Open navigation" className="lg:hidden">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground">
-              <div className="flex h-full flex-col">
-                {brand}
-                {navLinks()}
-                {profileBlock}
-              </div>
-            </SheetContent>
-          </Sheet>
-          <div className="hidden lg:block" />
+          {hideNav ? (
+            <Link to={ROLE_HOME[role]} className="flex items-center gap-2">
+              <img
+                src={avartanLogo.url}
+                alt="Avartan"
+                className="h-9 w-9 shrink-0 rounded-xl bg-white/95 object-contain p-0.5 shadow-md"
+              />
+            </Link>
+          ) : (
+            <>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Open navigation" className="lg:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-72 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground">
+                  <div className="flex h-full flex-col">
+                    {brand}
+                    {navLinks()}
+                    {profileBlock}
+                  </div>
+                </SheetContent>
+              </Sheet>
+              <div className="hidden lg:block" />
+            </>
+          )}
 
           <div className="min-w-0">
             <div className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -249,6 +265,17 @@ export function AppShell({
             </Link>
             <ThemePicker />
             <NotificationsBell />
+            {hideNav && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Sign out"
+                className="h-9 w-9 shrink-0 text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
+                onClick={signOut}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </header>
         <main key={pathname} className="page-enter flex-1 p-5 sm:p-6 lg:p-10">
