@@ -338,19 +338,9 @@ function SchoolWorkspace() {
   }, [classes]);
 
   const [tab, setTab] = useState<"teachers" | "structure" | "monitor">("teachers");
-  const [allocationTeacher, setAllocationTeacher] = useState<MockAccount | null>(null);
-  const allocationSectionRef = useRef<HTMLDivElement | null>(null);
-
-  const openAllocation = (teacher: MockAccount) => {
-    setAllocationTeacher(teacher);
-    window.setTimeout(
-      () => allocationSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
-      60,
-    );
-  };
 
   const tabs = [
-    { id: "teachers" as const, label: "Teacher Allocation", icon: GraduationCap },
+    { id: "teachers" as const, label: "Teacher Roster", icon: GraduationCap },
     { id: "structure" as const, label: "Classes & Sections", icon: Layers },
     { id: "monitor" as const, label: "Performance Monitor", icon: TrendingUp },
   ];
