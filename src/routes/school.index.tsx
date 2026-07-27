@@ -491,12 +491,10 @@ function SchoolWorkspace() {
 
 function TeacherPanel({
   teachers,
-  selectedUsername,
-  onSelectTeacher,
+  classes,
 }: {
   teachers: MockAccount[];
-  selectedUsername: string | null;
-  onSelectTeacher: (teacher: MockAccount) => void;
+  classes: ClassEntry[];
 }) {
   const [q, setQ] = useState("");
 
@@ -504,6 +502,19 @@ function TeacherPanel({
     const blob = `${t.fullName} ${t.username} ${t.teacherId ?? ""}`.toLowerCase();
     return blob.includes(q.trim().toLowerCase());
   });
+
+  const sectionsByTeacher = useMemo(() => {
+    const map = new Map<string, string[]>();
+    classes.forEach((c) =>
+      c.sections.forEach((s) => {
+        if (!s.teacherUsername) return;
+        const list = map.get(s.teacherUsername) ?? [];
+        list.push(`${c.grade} · ${s.name}`);
+        map.set(s.teacherUsername, list);
+      }),
+    );
+    return map;
+  }, [classes]);
 
   return (
     <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-emerald-950/10 backdrop-blur-xl">
@@ -517,8 +528,10 @@ function TeacherPanel({
         <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 sm:flex sm:justify-between sm:p-6">
           <div className="min-w-0">
             <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Faculty</div>
-            <h3 className="truncate font-display text-lg font-bold">Teacher roster &amp; allocation</h3>
-            <p className="text-xs text-muted-foreground">Create teachers for your school and assign them to sections.</p>
+            <h3 className="truncate font-display text-lg font-bold">Teacher roster</h3>
+            <p className="text-xs text-muted-foreground">
+              Each teacher automatically receives the students of the sections they lead.
+            </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <div className="relative">
@@ -544,7 +557,9 @@ function TeacherPanel({
         />
       ) : (
         <ul className="divide-y divide-border">
-          {filtered.map((t) => (
+          {filtered.map((t) => {
+            const owned = sectionsByTeacher.get(t.username) ?? [];
+            return (
             <li key={t.username} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4 transition-colors hover:bg-accent/40 sm:flex sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-sky-500/20 font-display text-sm font-bold text-emerald-500">
@@ -564,16 +579,25 @@ function TeacherPanel({
                   </div>
                 </div>
               </div>
-              <Button
-                variant={selectedUsername === t.username ? "hero" : "outline"}
-                size="sm"
-                onClick={() => onSelectTeacher(t)}
-                className="shrink-0"
-              >
-                <Edit3 className="h-3.5 w-3.5" /> Map
-              </Button>
+              <div className="flex max-w-[240px] shrink-0 flex-wrap justify-end gap-1">
+                {owned.length === 0 ? (
+                  <span className="rounded-full border border-border/60 bg-muted/60 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
+                    No section yet
+                  </span>
+                ) : (
+                  owned.map((label) => (
+                    <span
+                      key={label}
+                      className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-500"
+                    >
+                      {label}
+                    </span>
+                  ))
+                )}
+              </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </section>
