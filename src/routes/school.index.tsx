@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -29,7 +29,13 @@ import { useAuth } from "@/lib/auth";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listMySchoolTeachers } from "@/lib/teachers.functions";
 import { listMySchoolStudents } from "@/lib/students.functions";
-import { listMyClassSections, saveMyClassSections } from "@/lib/classes.functions";
+import {
+  assignTeacherToSection,
+  listMyClassSections,
+  listMyStudentTeacherAssignments,
+  saveMyClassSections,
+  setStudentTeacherAssignment,
+} from "@/lib/classes.functions";
 import {
   getMockAccount,
   listMockAccounts,
@@ -153,6 +159,7 @@ function SchoolDashboard() {
 
 function SchoolWorkspace() {
   const { user, session } = useAuth();
+  const queryClient = useQueryClient();
   const getSchools = useServerFn(getSchoolDashboardData);
   const { data: backendData } = useQuery({
     queryKey: ["schools", "dashboard", "mine"],
@@ -208,6 +215,31 @@ function SchoolWorkspace() {
     mutationFn: (sections: Array<{ className: string; sectionName: string; teacherUsername: string | null }>) =>
       persistSections({ data: { sections } }),
   });
+  const assignSectionFn = useServerFn(assignTeacherToSection);
+  const assignSection = useMutation({
+    mutationFn: (input: { sectionId: string; teacherId: string | null }) =>
+      assignSectionFn({ data: input }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["school-class-sections"] });
+      await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
+    },
+  });
+  const fetchStudentAssignments = useServerFn(listMyStudentTeacherAssignments);
+  const { data: studentAssignments } = useQuery({
+    queryKey: ["school-student-teacher-assignments"],
+    queryFn: () => fetchStudentAssignments(),
+    enabled: Boolean(session),
+    retry: false,
+  });
+  const setStudentAssignmentFn = useServerFn(setStudentTeacherAssignment);
+  const updateStudentAssignment = useMutation({
+    mutationFn: (input: { teacherId: string; studentId: string; assigned: boolean }) =>
+      setStudentAssignmentFn({ data: input }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["school-student-teacher-assignments"] });
+      await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
+    },
+  });
   const hydratedSections = useRef(false);
   const toSectionPayload = (list: ClassEntry[]) =>
     list.flatMap((c) =>
@@ -244,12 +276,6 @@ function SchoolWorkspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backendSections]);
 
-  useEffect(() => {
-    if (!hydratedSections.current) return;
-    saveSections.mutate(toSectionPayload(classes));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classes]);
-
   const teachers = useMemo(() => {
     const mock = accounts.filter(
       (a) =>
@@ -265,6 +291,7 @@ function SchoolWorkspace() {
       phone: t.phone,
       schoolCode,
       teacherId: t.employeeId || t.id.slice(0, 6).toUpperCase(),
+      databaseId: t.id,
     } as MockAccount));
     const seen = new Set<string>();
     return [...backend, ...mock].filter((t) => {
@@ -289,6 +316,8 @@ function SchoolWorkspace() {
       phone: s.phone,
       schoolCode,
       classSection: [s.className, s.section].filter(Boolean).join("-") || undefined,
+      databaseId: s.id,
+      meta: { admissionId: s.rollNumber },
     } as MockAccount));
     const seen = new Set<string>();
     return [...backend, ...mock].filter((s) => {
@@ -421,25 +450,68 @@ function SchoolWorkspace() {
               <AllocationWorkspace
                 teacher={allocationTeacher}
                 classes={classes}
+                students={students}
+                assignedStudentIds={new Set(
+                  (studentAssignments?.assignments ?? [])
+                    .filter((row) => row.teacherId === allocationTeacher.databaseId)
+                    .map((row) => row.studentId),
+                )}
+                savingSectionId={assignSection.isPending ? assignSection.variables?.sectionId ?? null : null}
+                savingStudentId={updateStudentAssignment.isPending ? updateStudentAssignment.variables?.studentId ?? null : null}
                 onClose={() => setAllocationTeacher(null)}
-                onAssign={(classId, sectionId) => {
-                  setClasses((arr) =>
-                    arr.map((c) =>
-                      c.id === classId
-                        ? {
-                            ...c,
-                            sections: c.sections.map((s) =>
-                              s.id === sectionId
-                                ? { ...s, teacherUsername: allocationTeacher.username }
-                                : s,
-                            ),
-                          }
-                        : c,
-                    ),
-                  );
-                  toast.success("Teacher allocated", {
-                    description: `${allocationTeacher.fullName} now leads this section.`,
-                  });
+                onAssign={async (_classId, sectionId) => {
+                  if (!allocationTeacher.databaseId) {
+                    toast.error("This teacher is not connected to the school directory.");
+                    return;
+                  }
+                  try {
+                    const result = await assignSection.mutateAsync({
+                      sectionId,
+                      teacherId: allocationTeacher.databaseId,
+                    });
+                    const grouped = new Map<string, ClassEntry>();
+                    result.sections.forEach((row) => {
+                      const entry = grouped.get(row.className) ?? {
+                        id: `cl-${row.className.toLowerCase().replace(/\s+/g, "-")}`,
+                        grade: row.className,
+                        sections: [],
+                      };
+                      entry.sections.push({
+                        id: row.id,
+                        name: row.sectionName,
+                        teacherUsername: row.teacherUsername ?? undefined,
+                      });
+                      grouped.set(row.className, entry);
+                    });
+                    setClasses(Array.from(grouped.values()));
+                    toast.success("Teacher allocation saved", {
+                      description: `${allocationTeacher.fullName} now leads this section.`,
+                    });
+                  } catch (error) {
+                    toast.error("Allocation could not be saved", {
+                      description: error instanceof Error ? error.message : "Please try again.",
+                    });
+                  }
+                }}
+                onToggleStudent={async (student, assigned) => {
+                  if (!allocationTeacher.databaseId || !student.databaseId) {
+                    toast.error("This directory record is not available for allocation.");
+                    return;
+                  }
+                  try {
+                    await updateStudentAssignment.mutateAsync({
+                      teacherId: allocationTeacher.databaseId,
+                      studentId: student.databaseId,
+                      assigned,
+                    });
+                    toast.success(assigned ? "Student allocated" : "Student removed", {
+                      description: `${student.fullName} ${assigned ? "is now visible" : "is no longer directly allocated"} to ${allocationTeacher.fullName}.`,
+                    });
+                  } catch (error) {
+                    toast.error("Student allocation could not be saved", {
+                      description: error instanceof Error ? error.message : "Please try again.",
+                    });
+                  }
                 }}
               />
             ) : (
@@ -566,16 +638,32 @@ function TeacherPanel({
 function AllocationWorkspace({
   teacher,
   classes,
+  students,
+  assignedStudentIds,
+  savingSectionId,
+  savingStudentId,
   onClose,
   onAssign,
+  onToggleStudent,
 }: {
   teacher: MockAccount;
   classes: ClassEntry[];
+  students: MockAccount[];
+  assignedStudentIds: Set<string>;
+  savingSectionId: string | null;
+  savingStudentId: string | null;
   onClose: () => void;
-  onAssign: (classId: string, sectionId: string) => void;
+  onAssign: (classId: string, sectionId: string) => Promise<void>;
+  onToggleStudent: (student: MockAccount, assigned: boolean) => Promise<void>;
 }) {
+  const [studentQuery, setStudentQuery] = useState("");
   const pairs = classes.flatMap((c) => c.sections.map((s) => ({ c, s })));
   const mine = pairs.filter(({ s }) => s.teacherUsername === teacher.username).length;
+  const filteredStudents = students.filter((student) =>
+    `${student.fullName} ${student.username} ${student.classSection ?? ""}`
+      .toLowerCase()
+      .includes(studentQuery.trim().toLowerCase()),
+  );
   return (
     <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-emerald-950/10 ring-1 ring-white/5 backdrop-blur-xl">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-border/60 bg-gradient-to-r from-emerald-500/10 via-card to-sky-500/5 p-6 sm:flex sm:justify-between sm:p-8">
@@ -606,7 +694,8 @@ function AllocationWorkspace({
               return (
                 <li key={`${c.id}-${s.id}`}>
                   <button
-                    onClick={() => onAssign(c.id, s.id)}
+                    onClick={() => void onAssign(c.id, s.id)}
+                    disabled={savingSectionId !== null}
                     className={cn(
                       "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border bg-background/70 p-5 text-left transition-all hover:-translate-y-0.5 hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:shadow-lg active:scale-[0.99]",
                       owned && "border-emerald-500/50 bg-emerald-500/10 shadow-lg"
@@ -618,13 +707,54 @@ function AllocationWorkspace({
                         {s.teacherUsername ? `Currently led by @${s.teacherUsername}` : "Unassigned"}
                       </div>
                     </div>
-                    {owned && <Sparkles className="h-5 w-5 shrink-0 text-emerald-500" />}
+                    {savingSectionId === s.id ? (
+                      <span className="text-xs font-semibold text-primary">Saving…</span>
+                    ) : owned ? <Sparkles className="h-5 w-5 shrink-0 text-emerald-500" /> : null}
                   </button>
                 </li>
               );
             })}
           </ul>
         )}
+        <div className="mt-8 border-t border-border/60 pt-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Direct student allocation</div>
+              <h4 className="mt-1 font-display text-xl font-bold">Select individual students</h4>
+              <p className="mt-1 text-sm text-muted-foreground">Use this when students should be visible even if their class or section is not assigned.</p>
+            </div>
+            <div className="relative w-full sm:max-w-sm">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={studentQuery} onChange={(event) => setStudentQuery(event.target.value)} placeholder="Search students or class" className="pl-11" />
+            </div>
+          </div>
+          {filteredStudents.length === 0 ? (
+            <div className="mt-5 rounded-2xl border border-dashed border-border/70 p-8 text-center text-sm text-muted-foreground">No students match this search.</div>
+          ) : (
+            <ul className="mt-5 grid gap-3 lg:grid-cols-2">
+              {filteredStudents.map((student) => {
+                const assigned = student.databaseId ? assignedStudentIds.has(student.databaseId) : false;
+                const saving = savingStudentId === student.databaseId;
+                return (
+                  <li key={student.username} className="flex items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/60 p-4">
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold">{student.fullName}</div>
+                      <div className="truncate text-xs text-muted-foreground">@{student.username} · {student.classSection || "Class not set"}</div>
+                    </div>
+                    <Button
+                      variant={assigned ? "hero" : "outline"}
+                      size="sm"
+                      disabled={!student.databaseId || savingStudentId !== null}
+                      onClick={() => void onToggleStudent(student, !assigned)}
+                    >
+                      {saving ? "Saving…" : assigned ? "Allocated" : "Allocate"}
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </div>
     </section>
   );
