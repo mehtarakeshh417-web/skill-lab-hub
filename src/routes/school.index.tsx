@@ -193,6 +193,62 @@ function SchoolWorkspace() {
     saveClasses(schoolCode, classes);
   }, [classes, schoolCode]);
 
+  // Persist the class/section structure (and teacher allocation) in the backend
+  // so teachers see their allocations when they sign in on their own device.
+  const fetchSections = useServerFn(listMyClassSections);
+  const persistSections = useServerFn(saveMyClassSections);
+  const { data: backendSections } = useQuery({
+    queryKey: ["school-class-sections"],
+    queryFn: () => fetchSections(),
+    enabled: Boolean(session),
+    retry: false,
+  });
+  const saveSections = useMutation({
+    mutationFn: (sections: Array<{ className: string; sectionName: string; teacherUsername: string | null }>) =>
+      persistSections({ data: { sections } }),
+  });
+  const hydratedSections = useRef(false);
+  const toSectionPayload = (list: ClassEntry[]) =>
+    list.flatMap((c) =>
+      c.sections.map((s) => ({
+        className: c.grade,
+        sectionName: s.name,
+        teacherUsername: s.teacherUsername ?? null,
+      })),
+    );
+
+  useEffect(() => {
+    if (!backendSections || hydratedSections.current) return;
+    hydratedSections.current = true;
+    if (backendSections.sections.length > 0) {
+      const grouped = new Map<string, ClassEntry>();
+      backendSections.sections.forEach((row) => {
+        const entry = grouped.get(row.className) ?? {
+          id: `cl-${row.className.toLowerCase().replace(/\s+/g, "-")}`,
+          grade: row.className,
+          sections: [],
+        };
+        entry.sections.push({
+          id: row.id,
+          name: row.sectionName,
+          teacherUsername: row.teacherUsername ?? undefined,
+        });
+        grouped.set(row.className, entry);
+      });
+      setClasses(Array.from(grouped.values()));
+    } else {
+      // First run: push whatever structure exists locally into the backend.
+      saveSections.mutate(toSectionPayload(classes));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backendSections]);
+
+  useEffect(() => {
+    if (!hydratedSections.current) return;
+    saveSections.mutate(toSectionPayload(classes));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classes]);
+
   const teachers = useMemo(() => {
     const mock = accounts.filter(
       (a) =>
