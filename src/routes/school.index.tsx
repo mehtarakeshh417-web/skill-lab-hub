@@ -722,7 +722,8 @@ function StructurePanel({
               Register classes &amp; attach sections
             </h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              Build the academic spine of your campus — every section can be assigned a lead instructor.
+              Assign a lead instructor to each section. Every student created in that section is
+              allocated to that teacher automatically.
             </p>
           </div>
           <div className="hidden h-20 w-32 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10 sm:block">
@@ -805,6 +806,9 @@ function StructurePanel({
                     <div className="flex min-w-0 items-center gap-2.5">
                       <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_10px_currentColor]" />
                       <span className="truncate text-sm font-semibold">{s.name}</span>
+                      <span className="shrink-0 rounded-full border border-border/60 bg-muted/60 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                        {rosterCounts.get(`${normClass(c.grade)}::${normSection(s.name)}`) ?? 0} students
+                      </span>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <select
