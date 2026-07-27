@@ -105,8 +105,14 @@ export async function signFiles(files: ProjectFile[]): Promise<Array<ProjectFile
   return out;
 }
 
-export async function studentDirectory(supabase: Client, schoolId: string) {
-  const { data, error } = await supabase
+/**
+ * Teachers have no direct SELECT policy on students, so the school roster must
+ * be read with the admin client after the caller is confirmed as a teacher of
+ * that school (same as the objective-assignment studio).
+ */
+export async function studentDirectory(schoolId: string) {
+  const db = await admin();
+  const { data, error } = await db
     .from("students")
     .select("id, full_name, roll_number, class_name, section")
     .eq("school_id", schoolId)
