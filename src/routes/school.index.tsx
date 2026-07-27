@@ -429,91 +429,23 @@ function SchoolWorkspace() {
 
       {tab === "teachers" && (
         <>
-          <TeacherPanel
-            teachers={teachers}
-            selectedUsername={allocationTeacher?.username ?? null}
-            onSelectTeacher={openAllocation}
-          />
-
-          <div ref={allocationSectionRef} className="w-full scroll-mt-24 border-t border-border/60 pt-6">
-            {allocationTeacher ? (
-              <AllocationWorkspace
-                teacher={allocationTeacher}
-                classes={classes}
-                students={students}
-                assignedStudentIds={new Set(
-                  (studentAssignments?.assignments ?? [])
-                    .filter((row) => row.teacherId === allocationTeacher.databaseId)
-                    .map((row) => row.studentId),
-                )}
-                savingSectionId={assignSection.isPending ? assignSection.variables?.sectionId ?? null : null}
-                savingStudentId={updateStudentAssignment.isPending ? updateStudentAssignment.variables?.studentId ?? null : null}
-                onClose={() => setAllocationTeacher(null)}
-                onAssign={async (_classId, sectionId) => {
-                  if (!allocationTeacher.databaseId) {
-                    toast.error("This teacher is not connected to the school directory.");
-                    return;
-                  }
-                  try {
-                    const result = await assignSection.mutateAsync({
-                      sectionId,
-                      teacherId: allocationTeacher.databaseId,
-                    });
-                    const grouped = new Map<string, ClassEntry>();
-                    result.sections.forEach((row) => {
-                      const entry = grouped.get(row.className) ?? {
-                        id: `cl-${row.className.toLowerCase().replace(/\s+/g, "-")}`,
-                        grade: row.className,
-                        sections: [],
-                      };
-                      entry.sections.push({
-                        id: row.id,
-                        name: row.sectionName,
-                        teacherUsername: row.teacherUsername ?? undefined,
-                      });
-                      grouped.set(row.className, entry);
-                    });
-                    setClasses(Array.from(grouped.values()));
-                    toast.success("Teacher allocation saved", {
-                      description: `${allocationTeacher.fullName} now leads this section.`,
-                    });
-                  } catch (error) {
-                    toast.error("Allocation could not be saved", {
-                      description: error instanceof Error ? error.message : "Please try again.",
-                    });
-                  }
-                }}
-                onToggleStudent={async (student, assigned) => {
-                  if (!allocationTeacher.databaseId || !student.databaseId) {
-                    toast.error("This directory record is not available for allocation.");
-                    return;
-                  }
-                  try {
-                    await updateStudentAssignment.mutateAsync({
-                      teacherId: allocationTeacher.databaseId,
-                      studentId: student.databaseId,
-                      assigned,
-                    });
-                    toast.success(assigned ? "Student allocated" : "Student removed", {
-                      description: `${student.fullName} ${assigned ? "is now visible" : "is no longer directly allocated"} to ${allocationTeacher.fullName}.`,
-                    });
-                  } catch (error) {
-                    toast.error("Student allocation could not be saved", {
-                      description: error instanceof Error ? error.message : "Please try again.",
-                    });
-                  }
-                }}
-              />
-            ) : (
-              <section className="w-full rounded-3xl border border-dashed border-border/70 bg-card/40 p-10 text-center backdrop-blur-xl">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Allocation workspace</div>
-                <h3 className="mt-2 font-display text-xl font-bold">Pick a teacher to allocate sections</h3>
-                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  Use the <span className="font-semibold text-foreground">Map</span> button above. The allocation workspace will open here as a separate full-width section.
-                </p>
-              </section>
-            )}
-          </div>
+          <TeacherPanel teachers={teachers} classes={classes} />
+          <section className="w-full rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-6 backdrop-blur-xl sm:p-8">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">
+              Automatic allocation
+            </div>
+            <h3 className="mt-2 font-display text-xl font-bold">Students are allocated automatically</h3>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Every student is created with a Class and Section. Whichever teacher leads that section in{" "}
+              <button
+                onClick={() => setTab("structure")}
+                className="font-semibold text-emerald-500 underline underline-offset-4"
+              >
+                Classes &amp; Sections
+              </button>{" "}
+              sees those students on their dashboard instantly — there is nothing to allocate by hand.
+            </p>
+          </section>
         </>
       )}
       {tab === "structure" && (
@@ -521,6 +453,7 @@ function SchoolWorkspace() {
           classes={classes}
           setClasses={setClasses}
           teachers={teachers}
+          students={students}
           isSaving={saveSections.isPending}
           onSave={async () => {
             try {
