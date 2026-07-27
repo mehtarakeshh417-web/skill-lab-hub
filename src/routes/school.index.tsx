@@ -960,6 +960,9 @@ function MonitorPanel({
             <Button size="sm" variant="hero" asChild className="shrink-0">
               <Link to="/school/bulk-students"><Upload className="h-3.5 w-3.5" /> Bulk Upload</Link>
             </Button>
+            <Button size="sm" variant="hero" asChild className="shrink-0">
+              <Link to="/school/add-student"><Users className="h-3.5 w-3.5" /> Add Student</Link>
+            </Button>
           </div>
         </div>
         {filtered.length === 0 ? (

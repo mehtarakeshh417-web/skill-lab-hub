@@ -36,6 +36,7 @@ import { Route as StudentAssignmentsRouteImport } from './routes/student.assignm
 import { Route as SettingsChangePasswordRouteImport } from './routes/settings.change-password'
 import { Route as SchoolCreateTeacherRouteImport } from './routes/school.create-teacher'
 import { Route as SchoolBulkStudentsRouteImport } from './routes/school.bulk-students'
+import { Route as SchoolAddStudentRouteImport } from './routes/school.add-student'
 import { Route as ManagerUsersRouteImport } from './routes/manager.users'
 import { Route as ManagerSalesHierarchyRouteImport } from './routes/manager.sales-hierarchy'
 import { Route as ManagerPendingSchoolsRouteImport } from './routes/manager.pending-schools'
@@ -188,6 +189,11 @@ const SchoolBulkStudentsRoute = SchoolBulkStudentsRouteImport.update({
   path: '/bulk-students',
   getParentRoute: () => SchoolRoute,
 } as any)
+const SchoolAddStudentRoute = SchoolAddStudentRouteImport.update({
+  id: '/add-student',
+  path: '/add-student',
+  getParentRoute: () => SchoolRoute,
+} as any)
 const ManagerUsersRoute = ManagerUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -298,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/manager/users': typeof ManagerUsersRoute
+  '/school/add-student': typeof SchoolAddStudentRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/settings/change-password': typeof SettingsChangePasswordRoute
@@ -338,6 +345,7 @@ export interface FileRoutesByTo {
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/manager/users': typeof ManagerUsersRoute
+  '/school/add-student': typeof SchoolAddStudentRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/settings/change-password': typeof SettingsChangePasswordRoute
@@ -384,6 +392,7 @@ export interface FileRoutesById {
   '/manager/pending-schools': typeof ManagerPendingSchoolsRoute
   '/manager/sales-hierarchy': typeof ManagerSalesHierarchyRoute
   '/manager/users': typeof ManagerUsersRoute
+  '/school/add-student': typeof SchoolAddStudentRoute
   '/school/bulk-students': typeof SchoolBulkStudentsRoute
   '/school/create-teacher': typeof SchoolCreateTeacherRoute
   '/settings/change-password': typeof SettingsChangePasswordRoute
@@ -431,6 +440,7 @@ export interface FileRouteTypes {
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
     | '/manager/users'
+    | '/school/add-student'
     | '/school/bulk-students'
     | '/school/create-teacher'
     | '/settings/change-password'
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
     | '/manager/users'
+    | '/school/add-student'
     | '/school/bulk-students'
     | '/school/create-teacher'
     | '/settings/change-password'
@@ -516,6 +527,7 @@ export interface FileRouteTypes {
     | '/manager/pending-schools'
     | '/manager/sales-hierarchy'
     | '/manager/users'
+    | '/school/add-student'
     | '/school/bulk-students'
     | '/school/create-teacher'
     | '/settings/change-password'
@@ -745,6 +757,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolBulkStudentsRouteImport
       parentRoute: typeof SchoolRoute
     }
+    '/school/add-student': {
+      id: '/school/add-student'
+      path: '/add-student'
+      fullPath: '/school/add-student'
+      preLoaderRoute: typeof SchoolAddStudentRouteImport
+      parentRoute: typeof SchoolRoute
+    }
     '/manager/users': {
       id: '/manager/users'
       path: '/users'
@@ -908,12 +927,14 @@ const ManagerRouteWithChildren =
   ManagerRoute._addFileChildren(ManagerRouteChildren)
 
 interface SchoolRouteChildren {
+  SchoolAddStudentRoute: typeof SchoolAddStudentRoute
   SchoolBulkStudentsRoute: typeof SchoolBulkStudentsRoute
   SchoolCreateTeacherRoute: typeof SchoolCreateTeacherRoute
   SchoolIndexRoute: typeof SchoolIndexRoute
 }
 
 const SchoolRouteChildren: SchoolRouteChildren = {
+  SchoolAddStudentRoute: SchoolAddStudentRoute,
   SchoolBulkStudentsRoute: SchoolBulkStudentsRoute,
   SchoolCreateTeacherRoute: SchoolCreateTeacherRoute,
   SchoolIndexRoute: SchoolIndexRoute,
