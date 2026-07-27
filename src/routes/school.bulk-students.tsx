@@ -247,7 +247,8 @@ function BulkStudentsWorkspace() {
             <p className="text-sm text-muted-foreground">
               Download the Excel template, fill in student details, and re-upload to create all
               accounts in one go. Each student can immediately sign in using the username and
-              password from the file.
+              password from the file. The Class and Section columns decide which teacher sees each
+              student — no manual allocation is needed.
             </p>
           </div>
         </div>
@@ -339,6 +340,65 @@ function BulkStudentsWorkspace() {
                 </div>
               </div>
             ) : null}
+          </div>
+        ) : null}
+
+        {allocation.length ? (
+          <div className="mt-8 rounded-2xl border border-border/60 bg-background/40 p-5">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">
+                  Automatic allocation preview
+                </div>
+                <h3 className="mt-1 font-display text-lg font-bold">Teacher each student will land with</h3>
+              </div>
+              {missingSections.length ? (
+                <Button
+                  type="button"
+                  variant="soft"
+                  size="sm"
+                  disabled={registerSections.isPending}
+                  onClick={() => registerSections.mutate()}
+                >
+                  {registerSections.isPending
+                    ? "Registering…"
+                    : `Register ${missingSections.length} missing section${missingSections.length === 1 ? "" : "s"}`}
+                </Button>
+              ) : null}
+            </div>
+
+            <div className="mt-4 max-h-80 space-y-2 overflow-y-auto">
+              {allocation.map((row) => (
+                <div
+                  key={row.index}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-card/70 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">{row.fullName}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {row.incomplete ? "Class / Section missing" : `${row.className} · ${row.section}`}
+                    </div>
+                  </div>
+                  {row.incomplete ? (
+                    <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-600">
+                      Fill Class and Section
+                    </span>
+                  ) : !row.registered ? (
+                    <span className="rounded-full bg-rose-500/15 px-3 py-1 text-xs font-semibold text-rose-500">
+                      Section not registered
+                    </span>
+                  ) : row.teacherName ? (
+                    <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600">
+                      {row.teacherName}
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-600">
+                      No teacher on this section yet
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         ) : null}
 
