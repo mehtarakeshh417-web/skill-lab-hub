@@ -12,9 +12,6 @@ import {
   Plus,
   Trash2,
   Download,
-  Sparkles,
-  Edit3,
-  X,
   TreePine,
   ClipboardList,
   TrendingUp,
@@ -30,11 +27,8 @@ import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listMySchoolTeachers } from "@/lib/teachers.functions";
 import { listMySchoolStudents } from "@/lib/students.functions";
 import {
-  assignTeacherToSection,
   listMyClassSections,
-  listMyStudentTeacherAssignments,
   saveMyClassSections,
-  setStudentTeacherAssignment,
 } from "@/lib/classes.functions";
 import {
   getMockAccount,
@@ -240,31 +234,6 @@ function SchoolWorkspace() {
       await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
     },
   });
-  const assignSectionFn = useServerFn(assignTeacherToSection);
-  const assignSection = useMutation({
-    mutationFn: (input: { sectionId: string; teacherId: string | null }) =>
-      assignSectionFn({ data: input }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["school-class-sections"] });
-      await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
-    },
-  });
-  const fetchStudentAssignments = useServerFn(listMyStudentTeacherAssignments);
-  const { data: studentAssignments } = useQuery({
-    queryKey: ["school-student-teacher-assignments"],
-    queryFn: () => fetchStudentAssignments(),
-    enabled: Boolean(session),
-    retry: false,
-  });
-  const setStudentAssignmentFn = useServerFn(setStudentTeacherAssignment);
-  const updateStudentAssignment = useMutation({
-    mutationFn: (input: { teacherId: string; studentId: string; assigned: boolean }) =>
-      setStudentAssignmentFn({ data: input }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["school-student-teacher-assignments"] });
-      await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
-    },
-  });
   const hydratedSections = useRef(false);
   const toSectionPayload = (list: ClassEntry[]) =>
     list.flatMap((c) =>
@@ -363,19 +332,9 @@ function SchoolWorkspace() {
   }, [classes]);
 
   const [tab, setTab] = useState<"teachers" | "structure" | "monitor">("teachers");
-  const [allocationTeacher, setAllocationTeacher] = useState<MockAccount | null>(null);
-  const allocationSectionRef = useRef<HTMLDivElement | null>(null);
-
-  const openAllocation = (teacher: MockAccount) => {
-    setAllocationTeacher(teacher);
-    window.setTimeout(
-      () => allocationSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
-      60,
-    );
-  };
 
   const tabs = [
-    { id: "teachers" as const, label: "Teacher Allocation", icon: GraduationCap },
+    { id: "teachers" as const, label: "Teacher Roster", icon: GraduationCap },
     { id: "structure" as const, label: "Classes & Sections", icon: Layers },
     { id: "monitor" as const, label: "Performance Monitor", icon: TrendingUp },
   ];
@@ -464,91 +423,23 @@ function SchoolWorkspace() {
 
       {tab === "teachers" && (
         <>
-          <TeacherPanel
-            teachers={teachers}
-            selectedUsername={allocationTeacher?.username ?? null}
-            onSelectTeacher={openAllocation}
-          />
-
-          <div ref={allocationSectionRef} className="w-full scroll-mt-24 border-t border-border/60 pt-6">
-            {allocationTeacher ? (
-              <AllocationWorkspace
-                teacher={allocationTeacher}
-                classes={classes}
-                students={students}
-                assignedStudentIds={new Set(
-                  (studentAssignments?.assignments ?? [])
-                    .filter((row) => row.teacherId === allocationTeacher.databaseId)
-                    .map((row) => row.studentId),
-                )}
-                savingSectionId={assignSection.isPending ? assignSection.variables?.sectionId ?? null : null}
-                savingStudentId={updateStudentAssignment.isPending ? updateStudentAssignment.variables?.studentId ?? null : null}
-                onClose={() => setAllocationTeacher(null)}
-                onAssign={async (_classId, sectionId) => {
-                  if (!allocationTeacher.databaseId) {
-                    toast.error("This teacher is not connected to the school directory.");
-                    return;
-                  }
-                  try {
-                    const result = await assignSection.mutateAsync({
-                      sectionId,
-                      teacherId: allocationTeacher.databaseId,
-                    });
-                    const grouped = new Map<string, ClassEntry>();
-                    result.sections.forEach((row) => {
-                      const entry = grouped.get(row.className) ?? {
-                        id: `cl-${row.className.toLowerCase().replace(/\s+/g, "-")}`,
-                        grade: row.className,
-                        sections: [],
-                      };
-                      entry.sections.push({
-                        id: row.id,
-                        name: row.sectionName,
-                        teacherUsername: row.teacherUsername ?? undefined,
-                      });
-                      grouped.set(row.className, entry);
-                    });
-                    setClasses(Array.from(grouped.values()));
-                    toast.success("Teacher allocation saved", {
-                      description: `${allocationTeacher.fullName} now leads this section.`,
-                    });
-                  } catch (error) {
-                    toast.error("Allocation could not be saved", {
-                      description: error instanceof Error ? error.message : "Please try again.",
-                    });
-                  }
-                }}
-                onToggleStudent={async (student, assigned) => {
-                  if (!allocationTeacher.databaseId || !student.databaseId) {
-                    toast.error("This directory record is not available for allocation.");
-                    return;
-                  }
-                  try {
-                    await updateStudentAssignment.mutateAsync({
-                      teacherId: allocationTeacher.databaseId,
-                      studentId: student.databaseId,
-                      assigned,
-                    });
-                    toast.success(assigned ? "Student allocated" : "Student removed", {
-                      description: `${student.fullName} ${assigned ? "is now visible" : "is no longer directly allocated"} to ${allocationTeacher.fullName}.`,
-                    });
-                  } catch (error) {
-                    toast.error("Student allocation could not be saved", {
-                      description: error instanceof Error ? error.message : "Please try again.",
-                    });
-                  }
-                }}
-              />
-            ) : (
-              <section className="w-full rounded-3xl border border-dashed border-border/70 bg-card/40 p-10 text-center backdrop-blur-xl">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Allocation workspace</div>
-                <h3 className="mt-2 font-display text-xl font-bold">Pick a teacher to allocate sections</h3>
-                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  Use the <span className="font-semibold text-foreground">Map</span> button above. The allocation workspace will open here as a separate full-width section.
-                </p>
-              </section>
-            )}
-          </div>
+          <TeacherPanel teachers={teachers} classes={classes} />
+          <section className="w-full rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-6 backdrop-blur-xl sm:p-8">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">
+              Automatic allocation
+            </div>
+            <h3 className="mt-2 font-display text-xl font-bold">Students are allocated automatically</h3>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Every student is created with a Class and Section. Whichever teacher leads that section in{" "}
+              <button
+                onClick={() => setTab("structure")}
+                className="font-semibold text-emerald-500 underline underline-offset-4"
+              >
+                Classes &amp; Sections
+              </button>{" "}
+              sees those students on their dashboard instantly — there is nothing to allocate by hand.
+            </p>
+          </section>
         </>
       )}
       {tab === "structure" && (
@@ -556,6 +447,7 @@ function SchoolWorkspace() {
           classes={classes}
           setClasses={setClasses}
           teachers={teachers}
+          students={students}
           isSaving={saveSections.isPending}
           onSave={async () => {
             try {
@@ -593,12 +485,10 @@ function SchoolWorkspace() {
 
 function TeacherPanel({
   teachers,
-  selectedUsername,
-  onSelectTeacher,
+  classes,
 }: {
   teachers: MockAccount[];
-  selectedUsername: string | null;
-  onSelectTeacher: (teacher: MockAccount) => void;
+  classes: ClassEntry[];
 }) {
   const [q, setQ] = useState("");
 
@@ -606,6 +496,19 @@ function TeacherPanel({
     const blob = `${t.fullName} ${t.username} ${t.teacherId ?? ""}`.toLowerCase();
     return blob.includes(q.trim().toLowerCase());
   });
+
+  const sectionsByTeacher = useMemo(() => {
+    const map = new Map<string, string[]>();
+    classes.forEach((c) =>
+      c.sections.forEach((s) => {
+        if (!s.teacherUsername) return;
+        const list = map.get(s.teacherUsername) ?? [];
+        list.push(`${c.grade} · ${s.name}`);
+        map.set(s.teacherUsername, list);
+      }),
+    );
+    return map;
+  }, [classes]);
 
   return (
     <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-emerald-950/10 backdrop-blur-xl">
@@ -619,8 +522,10 @@ function TeacherPanel({
         <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 sm:flex sm:justify-between sm:p-6">
           <div className="min-w-0">
             <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Faculty</div>
-            <h3 className="truncate font-display text-lg font-bold">Teacher roster &amp; allocation</h3>
-            <p className="text-xs text-muted-foreground">Create teachers for your school and assign them to sections.</p>
+            <h3 className="truncate font-display text-lg font-bold">Teacher roster</h3>
+            <p className="text-xs text-muted-foreground">
+              Each teacher automatically receives the students of the sections they lead.
+            </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <div className="relative">
@@ -646,7 +551,9 @@ function TeacherPanel({
         />
       ) : (
         <ul className="divide-y divide-border">
-          {filtered.map((t) => (
+          {filtered.map((t) => {
+            const owned = sectionsByTeacher.get(t.username) ?? [];
+            return (
             <li key={t.username} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4 transition-colors hover:bg-accent/40 sm:flex sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-sky-500/20 font-display text-sm font-bold text-emerald-500">
@@ -666,169 +573,27 @@ function TeacherPanel({
                   </div>
                 </div>
               </div>
-              <Button
-                variant={selectedUsername === t.username ? "hero" : "outline"}
-                size="sm"
-                onClick={() => onSelectTeacher(t)}
-                className="shrink-0"
-              >
-                <Edit3 className="h-3.5 w-3.5" /> Map
-              </Button>
+              <div className="flex max-w-[240px] shrink-0 flex-wrap justify-end gap-1">
+                {owned.length === 0 ? (
+                  <span className="rounded-full border border-border/60 bg-muted/60 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
+                    No section yet
+                  </span>
+                ) : (
+                  owned.map((label) => (
+                    <span
+                      key={label}
+                      className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-500"
+                    >
+                      {label}
+                    </span>
+                  ))
+                )}
+              </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
-    </section>
-  );
-}
-
-function AllocationWorkspace({
-  teacher,
-  classes,
-  students,
-  assignedStudentIds,
-  savingSectionId,
-  savingStudentId,
-  onClose,
-  onAssign,
-  onToggleStudent,
-}: {
-  teacher: MockAccount;
-  classes: ClassEntry[];
-  students: MockAccount[];
-  assignedStudentIds: Set<string>;
-  savingSectionId: string | null;
-  savingStudentId: string | null;
-  onClose: () => void;
-  onAssign: (classId: string, sectionId: string) => Promise<void>;
-  onToggleStudent: (student: MockAccount, assigned: boolean) => Promise<void>;
-}) {
-  const [studentQuery, setStudentQuery] = useState("");
-  const pairs = classes.flatMap((c) => c.sections.map((s) => ({ c, s })));
-  const mine = pairs.filter(({ s }) => s.teacherUsername === teacher.username).length;
-  const rosterCounts = new Map<string, number>();
-  students.forEach((student) => {
-    const key = rosterKeyOf(student);
-    if (!key || key === "::") return;
-    rosterCounts.set(key, (rosterCounts.get(key) ?? 0) + 1);
-  });
-  const unmapped = pairs.filter(
-    ({ c, s }) =>
-      !s.teacherUsername && (rosterCounts.get(`${normClass(c.grade)}::${normSection(s.name)}`) ?? 0) > 0,
-  );
-  const filteredStudents = students.filter((student) =>
-    `${student.fullName} ${student.username} ${student.classSection ?? ""}`
-      .toLowerCase()
-      .includes(studentQuery.trim().toLowerCase()),
-  );
-  return (
-    <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-emerald-950/10 ring-1 ring-white/5 backdrop-blur-xl">
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-border/60 bg-gradient-to-r from-emerald-500/10 via-card to-sky-500/5 p-6 sm:flex sm:justify-between sm:p-8">
-        <div className="min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Allocation workspace</div>
-          <h3 className="truncate font-display text-xl font-bold sm:text-2xl">{teacher.fullName}</h3>
-          <p className="truncate text-xs text-muted-foreground">
-            @{teacher.username} · leading {mine} section{mine === 1 ? "" : "s"} · Expertise: {inferExpertise(teacher.username).join(" · ")}
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={onClose} className="shrink-0">
-          <X className="h-4 w-4" /> Close
-        </Button>
-      </header>
-
-      <div className="p-6 sm:p-8">
-        <div className="mb-4 text-sm font-medium text-muted-foreground">
-          Tap any Class · Section card below to allocate it to this teacher.
-        </div>
-        {unmapped.length > 0 && (
-          <div className="mb-5 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-5">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-600">Students waiting for a teacher</div>
-            <p className="mt-1 text-sm text-foreground/80">
-              {unmapped
-                .map(
-                  ({ c, s }) =>
-                    `${c.grade} · ${s.name} (${rosterCounts.get(`${normClass(c.grade)}::${normSection(s.name)}`)} students)`,
-                )
-                .join(", ")}
-              {" "}have enrolled students but no teacher. Tap the matching card below to allocate them to {teacher.fullName}.
-            </p>
-          </div>
-        )}
-        {pairs.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/70 p-10 text-center text-sm text-muted-foreground">
-            No classes or sections created yet. Add them in the structure panel first.
-          </div>
-        ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {pairs.map(({ c, s }) => {
-              const owned = s.teacherUsername === teacher.username;
-              const count = rosterCounts.get(`${normClass(c.grade)}::${normSection(s.name)}`) ?? 0;
-              return (
-                <li key={`${c.id}-${s.id}`}>
-                  <button
-                    onClick={() => void onAssign(c.id, s.id)}
-                    disabled={savingSectionId !== null}
-                    className={cn(
-                      "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border bg-background/70 p-5 text-left transition-all hover:-translate-y-0.5 hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:shadow-lg active:scale-[0.99]",
-                      owned && "border-emerald-500/50 bg-emerald-500/10 shadow-lg"
-                    )}
-                  >
-                    <div className="min-w-0">
-                      <div className="truncate font-display text-base font-bold">{c.grade} · {s.name}</div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {count} student{count === 1 ? "" : "s"} ·{" "}
-                        {s.teacherUsername ? `led by @${s.teacherUsername}` : "Unassigned"}
-                      </div>
-                    </div>
-                    {savingSectionId === s.id ? (
-                      <span className="text-xs font-semibold text-primary">Saving…</span>
-                    ) : owned ? <Sparkles className="h-5 w-5 shrink-0 text-emerald-500" /> : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <div className="mt-8 border-t border-border/60 pt-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Direct student allocation</div>
-              <h4 className="mt-1 font-display text-xl font-bold">Select individual students</h4>
-              <p className="mt-1 text-sm text-muted-foreground">Use this when students should be visible even if their class or section is not assigned.</p>
-            </div>
-            <div className="relative w-full sm:max-w-sm">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={studentQuery} onChange={(event) => setStudentQuery(event.target.value)} placeholder="Search students or class" className="pl-11" />
-            </div>
-          </div>
-          {filteredStudents.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-border/70 p-8 text-center text-sm text-muted-foreground">No students match this search.</div>
-          ) : (
-            <ul className="mt-5 grid gap-3 lg:grid-cols-2">
-              {filteredStudents.map((student) => {
-                const assigned = student.databaseId ? assignedStudentIds.has(student.databaseId) : false;
-                const saving = savingStudentId === student.databaseId;
-                return (
-                  <li key={student.username} className="flex items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/60 p-4">
-                    <div className="min-w-0">
-                      <div className="truncate font-semibold">{student.fullName}</div>
-                      <div className="truncate text-xs text-muted-foreground">@{student.username} · {student.classSection || "Class not set"}</div>
-                    </div>
-                    <Button
-                      variant={assigned ? "hero" : "outline"}
-                      size="sm"
-                      disabled={!student.databaseId || savingStudentId !== null}
-                      onClick={() => void onToggleStudent(student, !assigned)}
-                    >
-                      {saving ? "Saving…" : assigned ? "Allocated" : "Allocate"}
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      </div>
     </section>
   );
 }
@@ -841,17 +606,29 @@ function StructurePanel({
   classes,
   setClasses,
   teachers,
+  students,
   isSaving,
   onSave,
 }: {
   classes: ClassEntry[];
   setClasses: React.Dispatch<React.SetStateAction<ClassEntry[]>>;
   teachers: MockAccount[];
+  students: MockAccount[];
   isSaving: boolean;
   onSave: () => Promise<void>;
 }) {
   const [newClass, setNewClass] = useState("");
   const [classToRemove, setClassToRemove] = useState<string | null>(null);
+
+  const rosterCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    students.forEach((student) => {
+      const key = rosterKeyOf(student);
+      if (!key || key === "::") return;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+    return counts;
+  }, [students]);
 
   const addClass = () => {
     const grade = newClass.trim();
@@ -939,7 +716,8 @@ function StructurePanel({
               Register classes &amp; attach sections
             </h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              Build the academic spine of your campus — every section can be assigned a lead instructor.
+              Assign a lead instructor to each section. Every student created in that section is
+              allocated to that teacher automatically.
             </p>
           </div>
           <div className="hidden h-20 w-32 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10 sm:block">
@@ -1022,6 +800,9 @@ function StructurePanel({
                     <div className="flex min-w-0 items-center gap-2.5">
                       <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_10px_currentColor]" />
                       <span className="truncate text-sm font-semibold">{s.name}</span>
+                      <span className="shrink-0 rounded-full border border-border/60 bg-muted/60 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                        {rosterCounts.get(`${normClass(c.grade)}::${normSection(s.name)}`) ?? 0} students
+                      </span>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <select

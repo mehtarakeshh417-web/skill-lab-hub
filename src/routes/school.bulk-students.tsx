@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -8,12 +8,28 @@ import { AlertTriangle, ArrowLeft, CheckCircle2, Download, FileSpreadsheet, Uplo
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { bulkCreateStudents } from "@/lib/students.functions";
+import { listMyClassSections, saveMyClassSections } from "@/lib/classes.functions";
 import {
   STUDENT_TEMPLATE_COLUMNS,
   studentCreateSchema,
   type StudentCreateInput,
   type StudentTemplateKey,
 } from "@/lib/students.schema";
+
+/** Same normalisation the backend uses, so "3"/"Class 3" and "Lily"/"Section Lily" match. */
+function normClass(value: string | null | undefined) {
+  const raw = (value ?? "").trim().toLowerCase();
+  const digits = raw.match(/\d+/);
+  return digits ? digits[0] : raw.replace(/[^a-z0-9]/g, "");
+}
+
+function normSection(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/^section\s+/, "")
+    .replace(/[^a-z0-9]/g, "");
+}
 
 export const Route = createFileRoute("/school/bulk-students")({
   head: () => ({ meta: [{ title: "Bulk Upload Students · School" }] }),
@@ -33,12 +49,91 @@ function BulkStudentsPage() {
 function BulkStudentsWorkspace() {
   const queryClient = useQueryClient();
   const bulkCreate = useServerFn(bulkCreateStudents);
+  const fetchSections = useServerFn(listMyClassSections);
+  const persistSections = useServerFn(saveMyClassSections);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsedRows, setParsedRows] = useState<StudentCreateInput[]>([]);
   const [rowErrors, setRowErrors] = useState<RowError[]>([]);
   const [successCount, setSuccessCount] = useState<number | null>(null);
+
+  const { data: sectionData } = useQuery({
+    queryKey: ["school-class-sections"],
+    queryFn: () => fetchSections(),
+    retry: false,
+  });
+  const sections = useMemo(() => sectionData?.sections ?? [], [sectionData]);
+  const sectionByKey = useMemo(() => {
+    const map = new Map<string, { teacherName: string | null }>();
+    sections.forEach((s) =>
+      map.set(`${normClass(s.className)}::${normSection(s.sectionName)}`, {
+        teacherName: s.teacherName,
+      }),
+    );
+    return map;
+  }, [sections]);
+
+  const allocation = useMemo(
+    () =>
+      parsedRows.map((row, index) => {
+        const key = `${normClass(row.className)}::${normSection(row.section)}`;
+        const match = row.className && row.section ? sectionByKey.get(key) : undefined;
+        return {
+          index,
+          fullName: row.fullName,
+          className: row.className ?? "",
+          section: row.section ?? "",
+          registered: Boolean(match),
+          teacherName: match?.teacherName ?? null,
+          incomplete: !row.className || !row.section,
+        };
+      }),
+    [parsedRows, sectionByKey],
+  );
+
+  const missingSections = useMemo(() => {
+    const map = new Map<string, { className: string; sectionName: string }>();
+    allocation.forEach((row) => {
+      if (row.registered || row.incomplete) return;
+      map.set(`${normClass(row.className)}::${normSection(row.section)}`, {
+        className: row.className,
+        sectionName: row.section,
+      });
+    });
+    return Array.from(map.values());
+  }, [allocation]);
+
+  const registerSections = useMutation({
+    mutationFn: () =>
+      persistSections({
+        data: {
+          sections: [
+            ...sections.map((s) => ({
+              className: s.className,
+              sectionName: s.sectionName,
+              teacherUsername: s.teacherUsername,
+            })),
+            ...missingSections.map((s) => ({
+              className: s.className,
+              sectionName: s.sectionName,
+              teacherUsername: null,
+            })),
+          ],
+        },
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["school-class-sections"] });
+      toast.success("Sections registered", {
+        description: "Assign a teacher to each new section from Classes & Sections.",
+      });
+    },
+    onError: (err) => {
+      toast.error("Could not register the sections", {
+        description: err instanceof Error ? err.message : "Please try again.",
+      });
+    },
+  });
 
   const mutation = useMutation({
     mutationFn: bulkCreate,
@@ -152,7 +247,8 @@ function BulkStudentsWorkspace() {
             <p className="text-sm text-muted-foreground">
               Download the Excel template, fill in student details, and re-upload to create all
               accounts in one go. Each student can immediately sign in using the username and
-              password from the file.
+              password from the file. The Class and Section columns decide which teacher sees each
+              student — no manual allocation is needed.
             </p>
           </div>
         </div>
@@ -244,6 +340,65 @@ function BulkStudentsWorkspace() {
                 </div>
               </div>
             ) : null}
+          </div>
+        ) : null}
+
+        {allocation.length ? (
+          <div className="mt-8 rounded-2xl border border-border/60 bg-background/40 p-5">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">
+                  Automatic allocation preview
+                </div>
+                <h3 className="mt-1 font-display text-lg font-bold">Teacher each student will land with</h3>
+              </div>
+              {missingSections.length ? (
+                <Button
+                  type="button"
+                  variant="soft"
+                  size="sm"
+                  disabled={registerSections.isPending}
+                  onClick={() => registerSections.mutate()}
+                >
+                  {registerSections.isPending
+                    ? "Registering…"
+                    : `Register ${missingSections.length} missing section${missingSections.length === 1 ? "" : "s"}`}
+                </Button>
+              ) : null}
+            </div>
+
+            <div className="mt-4 max-h-80 space-y-2 overflow-y-auto">
+              {allocation.map((row) => (
+                <div
+                  key={row.index}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-card/70 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">{row.fullName}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {row.incomplete ? "Class / Section missing" : `${row.className} · ${row.section}`}
+                    </div>
+                  </div>
+                  {row.incomplete ? (
+                    <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-600">
+                      Fill Class and Section
+                    </span>
+                  ) : !row.registered ? (
+                    <span className="rounded-full bg-rose-500/15 px-3 py-1 text-xs font-semibold text-rose-500">
+                      Section not registered
+                    </span>
+                  ) : row.teacherName ? (
+                    <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600">
+                      {row.teacherName}
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-600">
+                      No teacher on this section yet
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         ) : null}
 

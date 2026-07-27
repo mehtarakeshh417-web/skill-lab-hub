@@ -1,41 +1,49 @@
-## What the data shows right now
+## Goal
 
-I checked the live database before planning:
+Stop allocating students to teachers by hand. A student picks a **Class · Section** when created (manual or bulk), and the teacher who owns that section automatically sees them.
 
-- 35 students exist, all in the same school, all recorded as **Class 3 / Section Lily**.
-- The school's section list contains only **Class 6 A/B, Class 7 A, Class 8 Blue/Red** — none of them is Class 3 / Lily.
-- **Zero sections have a teacher assigned** (`teacher_id` is empty on all 5 rows).
-- **Zero direct student-to-teacher assignments** exist.
-- Teacher "Meena" belongs to the same school as the 35 students.
+## How allocation will work
 
-So the teacher dashboard is correct to show 0 today: nothing has actually been allocated in the database yet, and the section list the allocation wizard offers cannot reach the 35 students because their class/section was never registered as a section.
+```text
+School sets up sections once:   Class 3 · Lily  ->  Teacher Meena
+Student created with            Class 3 · Lily
+Teacher Meena's dashboard       student appears instantly
+```
 
-## What to build
+No per-student allocation step exists anywhere.
 
-### 1. Derive sections from the real student roster
-The allocation wizard should stop relying solely on manually created sections. On load, read the distinct `class_name` / `section` pairs actually present in the school's student records and merge them into the section grid (marked as "from roster"). This makes **Class 3 · Lily** appear immediately, with its 35 students, so it can be mapped to a teacher.
+## 1. Student creation gets real Class / Section pickers
 
-### 2. Auto-register roster-derived sections on save
-When a teacher is mapped to a roster-derived section that has no `class_sections` row yet, create that row first, then set its `teacher_id`. No orphan mappings.
+`school/add-student`: the free-text "Class" and "Section" inputs become linked dropdowns fed by the school's registered sections. Selecting a class filters the section list. Each option shows the teacher who currently owns it (or "no teacher yet") so the school sees who the student is going to. A short helper line under the pickers states plainly: "The teacher mapped to this section will see this student automatically."
 
-### 3. Make section mapping actually pull students
-Confirm the teacher workspace query matches students by class + section case-insensitively and trimmed, so "Class 3"/"3" and "Lily"/"Section Lily" variants still resolve. Normalise on both the write and read side.
+If the school has no sections yet, the pickers show an inline prompt with a link to the section setup board.
 
-### 4. Roster visibility even before allocation (school-side)
-Show the school admin a clear banner when students exist in classes that have no teacher mapped, with a one-click jump into the allocation board for that class/section.
+## 2. Bulk upload validates against the same section list
 
-### 5. Verification pass
-After the changes, allocate Class 3 · Lily to Meena from the school portal, then confirm via database read that `class_sections.teacher_id` is set, and sign in as the teacher to confirm the dashboard shows 35 students, 1 section, and that the stat cards open populated detail dialogs.
+The Excel template keeps its Class/Section columns. During the preview step, each row's class/section is matched against the school's registered sections (case/prefix tolerant, same normalisation already used). Rows are annotated with the resolved teacher name; rows whose section does not exist are flagged in the preview as "section not registered" with an option to create those sections in one click before importing. Nothing silently lands unallocated.
+
+## 3. Manual allocation UI is removed
+
+From the school dashboard:
+- Remove the "Direct Student Allocation" searchable student list and its Map buttons.
+- Remove the per-teacher "Map students" entry point.
+
+What stays (renamed to reflect its new job) is the **Classes & Sections** board: the grid where each Class · Section card assigns exactly one teacher. This is the only allocation control left, and it is per-section, not per-student.
+
+## 4. Existing students keep working
+
+Roster-derived sections already auto-register, so every current class/section pair is present in the dropdowns. Students already in Class 3 · Lily continue to resolve through that section's teacher — no data change needed.
+
+## 5. Verification
+
+After the change: create one student through the form, confirm the database row carries the chosen class/section, then load the mapped teacher's dashboard and confirm the count went up by one without any allocation action.
 
 ## Technical notes
 
-- `src/lib/classes.server.ts`: add a roster-derived section reader; make `assignTeacherToSectionForSchoolActor` upsert the `class_sections` row when missing; normalise class/section comparison in `getTeacherWorkspaceForActor`.
-- `src/lib/classes.functions.ts`: expose the roster-sections reader as a server function.
-- `src/routes/school.index.tsx`: merge roster-derived sections into the allocation board, add the unmapped-class banner.
-- `src/routes/teacher.index.tsx`: no logic change expected beyond consuming the corrected workspace payload.
+- `src/lib/classes.functions.ts`: expose a light section list (class, section, teacher name) callable by the student-creation routes.
+- `src/routes/school.add-student.tsx`: replace the two `Input` fields with selects bound to that list; `className`/`section` state keys and the existing submit mutation stay unchanged.
+- `src/routes/school.bulk-students.tsx`: add section resolution to the preview table and a "register missing sections" action.
+- `src/routes/school.index.tsx`: delete the direct-allocation panel and Map buttons; keep the section→teacher board.
+- `src/lib/classes.server.ts`: no change to `getTeacherWorkspaceForActor` — section-key matching already delivers the auto-allocation. The direct-assignment server functions stay in place but become unused by the UI.
 
-No changes to auth, roles, state hooks, event handlers, or existing business logic.
-
-## Note on "old students"
-
-Existing students will not appear retroactively on their own — there is no allocation record in the database to derive from. This plan makes them *allocatable and visible in one click*; the school user still performs the mapping once. If you would prefer, I can additionally auto-map every unassigned roster section to a chosen teacher as a one-time backfill — tell me which teacher should receive Class 3 · Lily and I will include it.
+No changes to auth, roles, state hooks, event handlers, or student creation business logic.
