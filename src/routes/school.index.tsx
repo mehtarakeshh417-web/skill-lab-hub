@@ -309,6 +309,16 @@ function SchoolWorkspace() {
   }, [classes]);
 
   const [tab, setTab] = useState<"teachers" | "structure" | "monitor">("teachers");
+  const [allocationTeacher, setAllocationTeacher] = useState<MockAccount | null>(null);
+  const allocationSectionRef = useRef<HTMLDivElement | null>(null);
+
+  const openAllocation = (teacher: MockAccount) => {
+    setAllocationTeacher(teacher);
+    window.setTimeout(
+      () => allocationSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      60,
+    );
+  };
 
   const tabs = [
     { id: "teachers" as const, label: "Teacher Allocation", icon: GraduationCap },
@@ -399,24 +409,50 @@ function SchoolWorkspace() {
       </nav>
 
       {tab === "teachers" && (
-        <TeacherPanel
-          teachers={teachers}
-          classes={classes}
-          onAssign={(username, classId, sectionId) =>
-            setClasses((arr) =>
-              arr.map((c) =>
-                c.id === classId
-                  ? {
-                      ...c,
-                      sections: c.sections.map((s) =>
-                        s.id === sectionId ? { ...s, teacherUsername: username } : s
-                      ),
-                    }
-                  : c
-              )
-            )
-          }
-        />
+        <>
+          <TeacherPanel
+            teachers={teachers}
+            selectedUsername={allocationTeacher?.username ?? null}
+            onSelectTeacher={openAllocation}
+          />
+
+          <div ref={allocationSectionRef} className="w-full scroll-mt-24 border-t border-border/60 pt-6">
+            {allocationTeacher ? (
+              <AllocationWorkspace
+                teacher={allocationTeacher}
+                classes={classes}
+                onClose={() => setAllocationTeacher(null)}
+                onAssign={(classId, sectionId) => {
+                  setClasses((arr) =>
+                    arr.map((c) =>
+                      c.id === classId
+                        ? {
+                            ...c,
+                            sections: c.sections.map((s) =>
+                              s.id === sectionId
+                                ? { ...s, teacherUsername: allocationTeacher.username }
+                                : s,
+                            ),
+                          }
+                        : c,
+                    ),
+                  );
+                  toast.success("Teacher allocated", {
+                    description: `${allocationTeacher.fullName} now leads this section.`,
+                  });
+                }}
+              />
+            ) : (
+              <section className="w-full rounded-3xl border border-dashed border-border/70 bg-card/40 p-10 text-center backdrop-blur-xl">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Allocation workspace</div>
+                <h3 className="mt-2 font-display text-xl font-bold">Pick a teacher to allocate sections</h3>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                  Use the <span className="font-semibold text-foreground">Map</span> button above. The allocation workspace will open here as a separate full-width section.
+                </p>
+              </section>
+            )}
+          </div>
+        </>
       )}
       {tab === "structure" && (
         <StructurePanel
@@ -438,21 +474,14 @@ function SchoolWorkspace() {
 
 function TeacherPanel({
   teachers,
-  classes,
-  onAssign,
+  selectedUsername,
+  onSelectTeacher,
 }: {
   teachers: MockAccount[];
-  classes: ClassEntry[];
-  onAssign: (username: string, classId: string, sectionId: string) => void;
+  selectedUsername: string | null;
+  onSelectTeacher: (teacher: MockAccount) => void;
 }) {
   const [q, setQ] = useState("");
-  const [selected, setSelected] = useState<MockAccount | null>(null);
-  const allocRef = useRef<HTMLDivElement | null>(null);
-
-  const openAllocation = (t: MockAccount) => {
-    setSelected(t);
-    window.setTimeout(() => allocRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
-  };
 
   const filtered = teachers.filter((t) => {
     const blob = `${t.fullName} ${t.username} ${t.teacherId ?? ""}`.toLowerCase();
@@ -460,7 +489,6 @@ function TeacherPanel({
   });
 
   return (
-    <div className="space-y-6">
     <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-emerald-950/10 backdrop-blur-xl">
       <div className="relative overflow-hidden border-b border-border/60">
         <img
@@ -520,9 +548,9 @@ function TeacherPanel({
                 </div>
               </div>
               <Button
-                variant={selected?.username === t.username ? "hero" : "outline"}
+                variant={selectedUsername === t.username ? "hero" : "outline"}
                 size="sm"
-                onClick={() => openAllocation(t)}
+                onClick={() => onSelectTeacher(t)}
                 className="shrink-0"
               >
                 <Edit3 className="h-3.5 w-3.5" /> Map
@@ -532,31 +560,6 @@ function TeacherPanel({
         </ul>
       )}
     </section>
-
-      <div ref={allocRef} className="scroll-mt-24">
-        {selected ? (
-          <AllocationWorkspace
-            teacher={selected}
-            classes={classes}
-            onClose={() => setSelected(null)}
-            onAssign={(classId, sectionId) => {
-              onAssign(selected.username, classId, sectionId);
-              toast.success("Teacher allocated", {
-                description: `${selected.fullName} now leads this section.`,
-              });
-            }}
-          />
-        ) : (
-          <section className="rounded-3xl border border-dashed border-border/70 bg-card/40 p-10 text-center backdrop-blur-xl">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Allocation workspace</div>
-            <h3 className="mt-2 font-display text-xl font-bold">Pick a teacher to allocate sections</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Use the <span className="font-semibold text-foreground">Map</span> button on any teacher above and the full-width allocation board opens right here.
-            </p>
-          </section>
-        )}
-      </div>
-    </div>
   );
 }
 
