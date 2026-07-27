@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/notifications-bell";
+import { ThemePicker } from "@/lib/theme";
 import { useServerFn } from "@tanstack/react-start";
 import { getMySecurityStatus } from "@/lib/security.functions";
 import { useState } from "react";
@@ -246,6 +247,7 @@ export function AppShell({
             >
               <KeyRound className="h-3.5 w-3.5" /> Change password
             </Link>
+            <ThemePicker />
             <NotificationsBell />
           </div>
         </header>
