@@ -12,9 +12,6 @@ import {
   Plus,
   Trash2,
   Download,
-  Sparkles,
-  Edit3,
-  X,
   TreePine,
   ClipboardList,
   TrendingUp,
@@ -30,11 +27,8 @@ import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listMySchoolTeachers } from "@/lib/teachers.functions";
 import { listMySchoolStudents } from "@/lib/students.functions";
 import {
-  assignTeacherToSection,
   listMyClassSections,
-  listMyStudentTeacherAssignments,
   saveMyClassSections,
-  setStudentTeacherAssignment,
 } from "@/lib/classes.functions";
 import {
   getMockAccount,
