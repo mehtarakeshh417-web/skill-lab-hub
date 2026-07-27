@@ -240,31 +240,6 @@ function SchoolWorkspace() {
       await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
     },
   });
-  const assignSectionFn = useServerFn(assignTeacherToSection);
-  const assignSection = useMutation({
-    mutationFn: (input: { sectionId: string; teacherId: string | null }) =>
-      assignSectionFn({ data: input }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["school-class-sections"] });
-      await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
-    },
-  });
-  const fetchStudentAssignments = useServerFn(listMyStudentTeacherAssignments);
-  const { data: studentAssignments } = useQuery({
-    queryKey: ["school-student-teacher-assignments"],
-    queryFn: () => fetchStudentAssignments(),
-    enabled: Boolean(session),
-    retry: false,
-  });
-  const setStudentAssignmentFn = useServerFn(setStudentTeacherAssignment);
-  const updateStudentAssignment = useMutation({
-    mutationFn: (input: { teacherId: string; studentId: string; assigned: boolean }) =>
-      setStudentAssignmentFn({ data: input }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["school-student-teacher-assignments"] });
-      await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
-    },
-  });
   const hydratedSections = useRef(false);
   const toSectionPayload = (list: ClassEntry[]) =>
     list.flatMap((c) =>
