@@ -612,17 +612,29 @@ function StructurePanel({
   classes,
   setClasses,
   teachers,
+  students,
   isSaving,
   onSave,
 }: {
   classes: ClassEntry[];
   setClasses: React.Dispatch<React.SetStateAction<ClassEntry[]>>;
   teachers: MockAccount[];
+  students: MockAccount[];
   isSaving: boolean;
   onSave: () => Promise<void>;
 }) {
   const [newClass, setNewClass] = useState("");
   const [classToRemove, setClassToRemove] = useState<string | null>(null);
+
+  const rosterCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    students.forEach((student) => {
+      const key = rosterKeyOf(student);
+      if (!key || key === "::") return;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+    return counts;
+  }, [students]);
 
   const addClass = () => {
     const grade = newClass.trim();
