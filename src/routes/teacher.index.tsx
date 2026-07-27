@@ -423,8 +423,6 @@ function Row({ primary, secondary, trailing }: { primary: string; secondary?: st
 function Empty({ text }: { text: string }) {
   return <div className="rounded-xl border border-dashed border-border/70 p-6 text-center text-sm text-muted-foreground">{text}</div>;
 }
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Task authoring
