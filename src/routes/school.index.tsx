@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listMySchoolTeachers } from "@/lib/teachers.functions";
+import { listMySchoolStudents } from "@/lib/students.functions";
 import {
   getMockAccount,
   listMockAccounts,
@@ -165,6 +166,13 @@ function SchoolWorkspace() {
     enabled: Boolean(session),
     retry: false,
   });
+  const fetchStudents = useServerFn(listMySchoolStudents);
+  const { data: backendStudents } = useQuery({
+    queryKey: ["school-students"],
+    queryFn: () => fetchStudents(),
+    enabled: Boolean(session),
+    retry: false,
+  });
   const backendSchool = backendData?.schools[0];
   const username = (user?.user_metadata as { username?: string } | undefined)?.username
     ?? user?.email?.split("@")[0]
@@ -209,15 +217,30 @@ function SchoolWorkspace() {
       return true;
     });
   }, [accounts, backendTeachers, schoolCode]);
-  const students = useMemo(
-    () =>
-      accounts.filter(
-        (a) =>
-          a.role === "student" &&
-          (a.schoolCode?.toUpperCase() ?? "").trim() === schoolCode
-      ),
-    [accounts, schoolCode]
-  );
+  const students = useMemo(() => {
+    const mock = accounts.filter(
+      (a) =>
+        a.role === "student" &&
+        (a.schoolCode?.toUpperCase() ?? "").trim() === schoolCode
+    );
+    const backend: MockAccount[] = (backendStudents?.students ?? []).map((s) => ({
+      username: s.username,
+      password: "",
+      role: "student",
+      fullName: s.fullName,
+      email: s.email,
+      phone: s.phone,
+      schoolCode,
+      classSection: [s.className, s.section].filter(Boolean).join("-") || undefined,
+    } as MockAccount));
+    const seen = new Set<string>();
+    return [...backend, ...mock].filter((s) => {
+      const k = s.username.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [accounts, backendStudents, schoolCode]);
 
   const totalSections = classes.reduce((n, c) => n + c.sections.length, 0);
   const assignedTeacherCount = useMemo(() => {
