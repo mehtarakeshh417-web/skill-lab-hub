@@ -76,11 +76,52 @@ async function loadSections(schoolId: string): Promise<ClassSectionRecord[]> {
   });
 }
 
+/**
+ * Students imported in bulk can sit in class/section pairs that were never
+ * registered as sections. Materialise those pairs so they become allocatable
+ * (and therefore visible to a teacher once mapped).
+ */
+async function ensureRosterSections(schoolId: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const [studentRows, sectionRows] = await Promise.all([
+    supabaseAdmin
+      .from("students")
+      .select("class_name, section")
+      .eq("school_id", schoolId),
+    supabaseAdmin.from("class_sections").select("class_name, section_name").eq("school_id", schoolId),
+  ]);
+  if (studentRows.error) throw new Error(studentRows.error.message);
+  if (sectionRows.error) throw new Error(sectionRows.error.message);
+
+  const existing = new Set(
+    (sectionRows.data ?? []).map((r) => `${classKey(r.class_name)}::${sectionKey(r.section_name)}`),
+  );
+  const toCreate = new Map<string, { class_name: string; section_name: string }>();
+  (studentRows.data ?? []).forEach((s) => {
+    const className = (s.class_name ?? "").trim();
+    const sectionName = (s.section ?? "").trim();
+    if (!className || !sectionName) return;
+    const key = `${classKey(className)}::${sectionKey(sectionName)}`;
+    if (existing.has(key) || toCreate.has(key)) return;
+    toCreate.set(key, {
+      class_name: /^\d+$/.test(className) ? `Class ${className}` : className,
+      section_name: /^section\s/i.test(sectionName) ? sectionName : `Section ${sectionName}`,
+    });
+  });
+
+  if (!toCreate.size) return;
+  const insert = await supabaseAdmin
+    .from("class_sections")
+    .insert(Array.from(toCreate.values()).map((row) => ({ ...row, school_id: schoolId, teacher_id: null })));
+  if (insert.error) throw new Error(insert.error.message);
+}
+
 export async function listClassSectionsForSchoolActor(
   _actorSupabase: AuthedClient,
   actorUserId: string,
 ) {
   const school = await getSchoolForActor(actorUserId);
+  await ensureRosterSections(school.id);
   return { schoolId: school.id, sections: await loadSections(school.id) };
 }
 
@@ -189,32 +230,73 @@ export async function saveClassSectionsForSchoolActor(
     (teacherRows.data ?? []).map((t) => [t.username.toLowerCase(), t.id]),
   );
 
-  const seen = new Set<string>();
-  const rows = sections
-    .map((s) => ({
+  const incoming = new Map<
+    string,
+    { school_id: string; class_name: string; section_name: string; teacher_id: string | null }
+  >();
+  sections.forEach((s) => {
+    const class_name = s.className.trim();
+    const section_name = s.sectionName.trim();
+    if (!class_name || !section_name) return;
+    const key = `${classKey(class_name)}::${sectionKey(section_name)}`;
+    if (incoming.has(key)) return;
+    incoming.set(key, {
       school_id: school.id,
-      class_name: s.className.trim(),
-      section_name: s.sectionName.trim(),
+      class_name,
+      section_name,
       teacher_id: s.teacherUsername
         ? teacherIdByUsername.get(s.teacherUsername.trim().toLowerCase()) ?? null
         : null,
-    }))
-    .filter((r) => {
-      if (!r.class_name || !r.section_name) return false;
-      const k = `${r.class_name.toLowerCase()}::${r.section_name.toLowerCase()}`;
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
     });
+  });
 
-  const del = await supabaseAdmin.from("class_sections").delete().eq("school_id", school.id);
-  if (del.error) throw new Error(del.error.message);
+  const existingRows = await supabaseAdmin
+    .from("class_sections")
+    .select("id, class_name, section_name, teacher_id")
+    .eq("school_id", school.id);
+  if (existingRows.error) throw new Error(existingRows.error.message);
 
-  if (rows.length) {
-    const ins = await supabaseAdmin.from("class_sections").insert(rows);
+  // Class/section pairs that still hold students must never be dropped.
+  const rosterRows = await supabaseAdmin
+    .from("students")
+    .select("class_name, section")
+    .eq("school_id", school.id);
+  if (rosterRows.error) throw new Error(rosterRows.error.message);
+  const rosterKeys = new Set(
+    (rosterRows.data ?? [])
+      .filter((s) => (s.class_name ?? "").trim() && (s.section ?? "").trim())
+      .map((s) => `${classKey(s.class_name)}::${sectionKey(s.section)}`),
+  );
+
+  const removableIds: string[] = [];
+  for (const row of existingRows.data ?? []) {
+    const key = `${classKey(row.class_name)}::${sectionKey(row.section_name)}`;
+    const match = incoming.get(key);
+    if (match) {
+      incoming.delete(key);
+      if (row.teacher_id !== match.teacher_id) {
+        const upd = await supabaseAdmin
+          .from("class_sections")
+          .update({ teacher_id: match.teacher_id })
+          .eq("id", row.id);
+        if (upd.error) throw new Error(upd.error.message);
+      }
+    } else if (!rosterKeys.has(key)) {
+      removableIds.push(row.id);
+    }
+  }
+
+  if (removableIds.length) {
+    const del = await supabaseAdmin.from("class_sections").delete().in("id", removableIds);
+    if (del.error) throw new Error(del.error.message);
+  }
+
+  if (incoming.size) {
+    const ins = await supabaseAdmin.from("class_sections").insert(Array.from(incoming.values()));
     if (ins.error) throw new Error(ins.error.message);
   }
 
+  await ensureRosterSections(school.id);
   return { schoolId: school.id, sections: await loadSections(school.id) };
 }
 

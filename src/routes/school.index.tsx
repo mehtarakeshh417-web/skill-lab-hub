@@ -106,6 +106,27 @@ function classesKey(schoolCode: string) {
   return `avartan.school.classes.${schoolCode.toLowerCase()}.v1`;
 }
 
+/** Normalised keys so "Class 3"/"3" and "Section Lily"/"Lily" line up. */
+function normClass(value: string | null | undefined) {
+  const raw = (value ?? "").trim().toLowerCase();
+  const digits = raw.match(/\d+/);
+  return digits ? digits[0] : raw.replace(/[^a-z0-9]/g, "");
+}
+
+function normSection(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/^section\s+/, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function rosterKeyOf(student: { classSection?: string }) {
+  const raw = student.classSection ?? "";
+  const [cls, ...rest] = raw.split("-");
+  return `${normClass(cls)}::${normSection(rest.join("-"))}`;
+}
+
 function loadClasses(schoolCode: string): ClassEntry[] {
   if (typeof window === "undefined") return DEFAULT_CLASSES;
   try {
@@ -685,6 +706,16 @@ function AllocationWorkspace({
   const [studentQuery, setStudentQuery] = useState("");
   const pairs = classes.flatMap((c) => c.sections.map((s) => ({ c, s })));
   const mine = pairs.filter(({ s }) => s.teacherUsername === teacher.username).length;
+  const rosterCounts = new Map<string, number>();
+  students.forEach((student) => {
+    const key = rosterKeyOf(student);
+    if (!key || key === "::") return;
+    rosterCounts.set(key, (rosterCounts.get(key) ?? 0) + 1);
+  });
+  const unmapped = pairs.filter(
+    ({ c, s }) =>
+      !s.teacherUsername && (rosterCounts.get(`${normClass(c.grade)}::${normSection(s.name)}`) ?? 0) > 0,
+  );
   const filteredStudents = students.filter((student) =>
     `${student.fullName} ${student.username} ${student.classSection ?? ""}`
       .toLowerCase()
@@ -709,6 +740,20 @@ function AllocationWorkspace({
         <div className="mb-4 text-sm font-medium text-muted-foreground">
           Tap any Class · Section card below to allocate it to this teacher.
         </div>
+        {unmapped.length > 0 && (
+          <div className="mb-5 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-5">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-600">Students waiting for a teacher</div>
+            <p className="mt-1 text-sm text-foreground/80">
+              {unmapped
+                .map(
+                  ({ c, s }) =>
+                    `${c.grade} · ${s.name} (${rosterCounts.get(`${normClass(c.grade)}::${normSection(s.name)}`)} students)`,
+                )
+                .join(", ")}
+              {" "}have enrolled students but no teacher. Tap the matching card below to allocate them to {teacher.fullName}.
+            </p>
+          </div>
+        )}
         {pairs.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border/70 p-10 text-center text-sm text-muted-foreground">
             No classes or sections created yet. Add them in the structure panel first.
@@ -717,6 +762,7 @@ function AllocationWorkspace({
           <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {pairs.map(({ c, s }) => {
               const owned = s.teacherUsername === teacher.username;
+              const count = rosterCounts.get(`${normClass(c.grade)}::${normSection(s.name)}`) ?? 0;
               return (
                 <li key={`${c.id}-${s.id}`}>
                   <button
@@ -730,7 +776,8 @@ function AllocationWorkspace({
                     <div className="min-w-0">
                       <div className="truncate font-display text-base font-bold">{c.grade} · {s.name}</div>
                       <div className="truncate text-xs text-muted-foreground">
-                        {s.teacherUsername ? `Currently led by @${s.teacherUsername}` : "Unassigned"}
+                        {count} student{count === 1 ? "" : "s"} ·{" "}
+                        {s.teacherUsername ? `led by @${s.teacherUsername}` : "Unassigned"}
                       </div>
                     </div>
                     {savingSectionId === s.id ? (
