@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, useCallback, useRef, type DragEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/app-shell";
 import { ProjectsWidget } from "@/components/projects-widget";
 import { AssignmentsWidget } from "@/components/assignments-widget";
@@ -16,10 +18,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth";
 import { listMockAccounts, registerMockAccount, subscribeMockAccounts, type MockAccount } from "@/lib/mock-auth";
+import { getMyTeacherWorkspace } from "@/lib/classes.functions";
 import { toast } from "sonner";
 import {
   KeyRound, CheckCircle2, AlertTriangle, Plus, Upload, Download, GraduationCap,
-  ClipboardList, Inbox, Settings2, Users, Trash2, Send, BookOpen,
+  ClipboardList, Inbox, Settings2, Users, Trash2, Send, BookOpen, Layers,
 } from "lucide-react";
 
 export const Route = createFileRoute("/teacher/")({
@@ -78,7 +81,7 @@ const writeLS = (k: string, v: unknown) => {
 // Main component
 // ─────────────────────────────────────────────────────────────────────────────
 function TeacherWorkspace() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const teacherUsername = (user?.user_metadata as { username?: string } | undefined)?.username || "teacher";
 
   const [accounts, setAccounts] = useState<MockAccount[]>(() => listMockAccounts());
@@ -87,11 +90,42 @@ function TeacherWorkspace() {
   const me = accounts.find((a) => a.username === teacherUsername);
   const schoolCode = me?.schoolCode || "SCHOOL";
 
-  // Students mapped to this teacher
-  const myStudents = useMemo(
-    () => accounts.filter((a) => a.role === "student" && a.schoolCode === schoolCode && (a.teacherId === me?.teacherId || a.teacherId === teacherUsername.toUpperCase())),
-    [accounts, schoolCode, me?.teacherId, teacherUsername]
-  );
+  // Real allocations from the backend: sections assigned to me + their students.
+  const fetchWorkspace = useServerFn(getMyTeacherWorkspace);
+  const { data: workspace } = useQuery({
+    queryKey: ["teacher-workspace"],
+    queryFn: () => fetchWorkspace(),
+    enabled: Boolean(session),
+    retry: false,
+  });
+  const mySections = workspace?.sections ?? [];
+
+  // Students mapped to this teacher (backend allocations first, local mocks after)
+  const myStudents = useMemo(() => {
+    const backend: MockAccount[] = (workspace?.students ?? []).map((s) => ({
+      username: s.username,
+      password: "",
+      role: "student",
+      fullName: s.fullName,
+      email: "",
+      schoolCode,
+      classSection: [s.className, s.section].filter(Boolean).join(" - "),
+      meta: { admissionId: s.rollNumber },
+    } as MockAccount));
+    const mock = accounts.filter(
+      (a) =>
+        a.role === "student" &&
+        a.schoolCode === schoolCode &&
+        (a.teacherId === me?.teacherId || a.teacherId === teacherUsername.toUpperCase()),
+    );
+    const seen = new Set<string>();
+    return [...backend, ...mock].filter((s) => {
+      const k = s.username.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [accounts, workspace, schoolCode, me?.teacherId, teacherUsername]);
 
   const [tasks, setTasks] = useState<Task[]>(() => readLS<Task[]>(K_TASKS, []));
   const [subs, setSubs] = useState<Submission[]>(() => readLS<Submission[]>(K_SUBS, []));
@@ -124,7 +158,13 @@ function TeacherWorkspace() {
   return (
     <AppShell requireRole="teacher" title="Teacher Workspace">
       <div className="space-y-6">
-        <HeaderStats tasks={tasks} subs={subs} studentCount={myStudents.length} onOpen={setTab} />
+        <HeaderStats
+          tasks={tasks}
+          subs={subs}
+          students={myStudents}
+          sections={mySections}
+          onOpen={setTab}
+        />
         <ProjectsWidget role="teacher" />
         <AssignmentsWidget role="teacher" />
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
