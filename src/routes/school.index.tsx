@@ -214,6 +214,10 @@ function SchoolWorkspace() {
   const saveSections = useMutation({
     mutationFn: (sections: Array<{ className: string; sectionName: string; teacherUsername: string | null }>) =>
       persistSections({ data: { sections } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["school-class-sections"] });
+      await queryClient.invalidateQueries({ queryKey: ["teacher-workspace"] });
+    },
   });
   const assignSectionFn = useServerFn(assignTeacherToSection);
   const assignSection = useMutation({
@@ -531,6 +535,28 @@ function SchoolWorkspace() {
           classes={classes}
           setClasses={setClasses}
           teachers={teachers}
+          isSaving={saveSections.isPending}
+          onSave={async () => {
+            try {
+              const result = await saveSections.mutateAsync(toSectionPayload(classes));
+              const grouped = new Map<string, ClassEntry>();
+              result.sections.forEach((row) => {
+                const entry = grouped.get(row.className) ?? {
+                  id: `cl-${row.className.toLowerCase().replace(/\s+/g, "-")}`,
+                  grade: row.className,
+                  sections: [],
+                };
+                entry.sections.push({ id: row.id, name: row.sectionName, teacherUsername: row.teacherUsername ?? undefined });
+                grouped.set(row.className, entry);
+              });
+              setClasses(Array.from(grouped.values()));
+              toast.success("Class structure saved", { description: "Teachers will see the latest section allocations after login." });
+            } catch (error) {
+              toast.error("Class structure could not be saved", {
+                description: error instanceof Error ? error.message : "Please try again.",
+              });
+            }
+          }}
         />
       )}
       {tab === "monitor" && (
@@ -768,10 +794,14 @@ function StructurePanel({
   classes,
   setClasses,
   teachers,
+  isSaving,
+  onSave,
 }: {
   classes: ClassEntry[];
   setClasses: React.Dispatch<React.SetStateAction<ClassEntry[]>>;
   teachers: MockAccount[];
+  isSaving: boolean;
+  onSave: () => Promise<void>;
 }) {
   const [newClass, setNewClass] = useState("");
   const [classToRemove, setClassToRemove] = useState<string | null>(null);
@@ -890,6 +920,14 @@ function StructurePanel({
             className="h-14 shrink-0 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 px-8 text-base font-semibold text-white shadow-lg shadow-emerald-500/40 transition-all hover:shadow-2xl hover:shadow-emerald-500/60 hover:-translate-y-0.5 active:scale-95"
           >
             <Plus className="h-5 w-5" /> Class
+          </Button>
+          <Button
+            variant="hero"
+            onClick={() => void onSave()}
+            disabled={isSaving}
+            className="h-14 shrink-0 rounded-xl px-8 text-base font-semibold"
+          >
+            {isSaving ? "Saving…" : "Save structure"}
           </Button>
         </div>
 
