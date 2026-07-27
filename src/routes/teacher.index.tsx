@@ -197,6 +197,24 @@ function TeacherWorkspace() {
           </TabsContent>
 
           <TabsContent value="students">
+            <Card className="mb-4 backdrop-blur bg-card/60 border-border/60">
+              <CardHeader><CardTitle className="text-base">My allocated sections</CardTitle></CardHeader>
+              <CardContent>
+                {mySections.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-border/70 p-6 text-center text-sm text-muted-foreground">
+                    No sections allocated yet. Your school admin allocates you to class sections.
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {mySections.map((s) => (
+                      <Badge key={s.id} variant="secondary" className="rounded-xl px-3 py-1.5 text-xs">
+                        {s.className} · {s.sectionName} · {s.studentCount} student{s.studentCount === 1 ? "" : "s"}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
             <StudentRoster
               schoolCode={schoolCode}
               teacherUsername={teacherUsername}
