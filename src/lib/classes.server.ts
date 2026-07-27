@@ -76,11 +76,52 @@ async function loadSections(schoolId: string): Promise<ClassSectionRecord[]> {
   });
 }
 
+/**
+ * Students imported in bulk can sit in class/section pairs that were never
+ * registered as sections. Materialise those pairs so they become allocatable
+ * (and therefore visible to a teacher once mapped).
+ */
+async function ensureRosterSections(schoolId: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const [studentRows, sectionRows] = await Promise.all([
+    supabaseAdmin
+      .from("students")
+      .select("class_name, section")
+      .eq("school_id", schoolId),
+    supabaseAdmin.from("class_sections").select("class_name, section_name").eq("school_id", schoolId),
+  ]);
+  if (studentRows.error) throw new Error(studentRows.error.message);
+  if (sectionRows.error) throw new Error(sectionRows.error.message);
+
+  const existing = new Set(
+    (sectionRows.data ?? []).map((r) => `${classKey(r.class_name)}::${sectionKey(r.section_name)}`),
+  );
+  const toCreate = new Map<string, { class_name: string; section_name: string }>();
+  (studentRows.data ?? []).forEach((s) => {
+    const className = (s.class_name ?? "").trim();
+    const sectionName = (s.section ?? "").trim();
+    if (!className || !sectionName) return;
+    const key = `${classKey(className)}::${sectionKey(sectionName)}`;
+    if (existing.has(key) || toCreate.has(key)) return;
+    toCreate.set(key, {
+      class_name: /^\d+$/.test(className) ? `Class ${className}` : className,
+      section_name: /^section\s/i.test(sectionName) ? sectionName : `Section ${sectionName}`,
+    });
+  });
+
+  if (!toCreate.size) return;
+  const insert = await supabaseAdmin
+    .from("class_sections")
+    .insert(Array.from(toCreate.values()).map((row) => ({ ...row, school_id: schoolId, teacher_id: null })));
+  if (insert.error) throw new Error(insert.error.message);
+}
+
 export async function listClassSectionsForSchoolActor(
   _actorSupabase: AuthedClient,
   actorUserId: string,
 ) {
   const school = await getSchoolForActor(actorUserId);
+  await ensureRosterSections(school.id);
   return { schoolId: school.id, sections: await loadSections(school.id) };
 }
 
