@@ -231,27 +231,41 @@ function TeacherWorkspace() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Header analytics
 // ─────────────────────────────────────────────────────────────────────────────
-function HeaderStats({ tasks, subs, studentCount, onOpen }: { tasks: Task[]; subs: Submission[]; studentCount: number; onOpen: (tab: string) => void }) {
+type SectionSummary = { id: string; className: string; sectionName: string; studentCount: number };
+type DetailKind = "tasks" | "pending" | "evaluated" | "overdue" | "students" | "sections" | "subs";
+
+function HeaderStats({
+  tasks, subs, students, sections, onOpen,
+}: {
+  tasks: Task[];
+  subs: Submission[];
+  students: MockAccount[];
+  sections: SectionSummary[];
+  onOpen: (tab: string) => void;
+}) {
   const now = Date.now();
+  const [detail, setDetail] = useState<DetailKind | null>(null);
   const total = subs.length;
   const pending = subs.filter((s) => s.status === "submitted").length;
   const evaluated = subs.filter((s) => s.status === "evaluated").length;
   const overdue = tasks.filter((t) => new Date(t.due).getTime() < now).length;
-  const stats = [
-    { label: "Active Tasks", value: tasks.length, icon: ClipboardList, tone: "from-emerald-500/20 to-emerald-500/5 text-emerald-300", tab: "tasks", hint: "Open tasks" },
-    { label: "Pending Review", value: pending, icon: Inbox, tone: "from-amber-500/20 to-amber-500/5 text-amber-300", tab: "inbox", hint: "Open evaluation inbox" },
-    { label: "Evaluated", value: evaluated, icon: CheckCircle2, tone: "from-emerald-500/20 to-emerald-500/5 text-emerald-300", tab: "inbox", hint: "Open evaluation inbox" },
-    { label: "Overdue", value: overdue, icon: AlertTriangle, tone: "from-rose-500/20 to-rose-500/5 text-rose-300", tab: "tasks", hint: "Open tasks" },
-    { label: "My Students", value: studentCount, icon: Users, tone: "from-sky-500/20 to-sky-500/5 text-sky-300", tab: "students", hint: "Open student roster" },
-    { label: "Total Subs", value: total, icon: BookOpen, tone: "from-slate-500/20 to-slate-500/5 text-slate-300", tab: "inbox", hint: "Open evaluation inbox" },
+  const stats: Array<{ label: string; value: number; icon: typeof Users; tone: string; tab: string; hint: string; kind: DetailKind }> = [
+    { label: "Active Tasks", value: tasks.length, icon: ClipboardList, tone: "from-emerald-500/20 to-emerald-500/5 text-emerald-300", tab: "tasks", hint: "View task details", kind: "tasks" },
+    { label: "Pending Review", value: pending, icon: Inbox, tone: "from-amber-500/20 to-amber-500/5 text-amber-300", tab: "inbox", hint: "View pending submissions", kind: "pending" },
+    { label: "Evaluated", value: evaluated, icon: CheckCircle2, tone: "from-emerald-500/20 to-emerald-500/5 text-emerald-300", tab: "inbox", hint: "View evaluated work", kind: "evaluated" },
+    { label: "My Sections", value: sections.length, icon: Layers, tone: "from-violet-500/20 to-violet-500/5 text-violet-300", tab: "students", hint: "View allocated sections", kind: "sections" },
+    { label: "My Students", value: students.length, icon: Users, tone: "from-sky-500/20 to-sky-500/5 text-sky-300", tab: "students", hint: "View student roster", kind: "students" },
+    { label: "Overdue", value: overdue, icon: AlertTriangle, tone: "from-rose-500/20 to-rose-500/5 text-rose-300", tab: "tasks", hint: "View overdue tasks", kind: "overdue" },
+    { label: "Total Subs", value: total, icon: BookOpen, tone: "from-slate-500/20 to-slate-500/5 text-slate-300", tab: "inbox", hint: "View all submissions", kind: "subs" },
   ];
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+    <>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
       {stats.map((s) => (
         <button
           key={s.label}
           type="button"
-          onClick={() => onOpen(s.tab)}
+          onClick={() => setDetail(s.kind)}
           title={s.hint}
           aria-label={`${s.label}: ${s.value}. ${s.hint}`}
           className={`group rounded-xl border border-border/60 bg-gradient-to-br ${s.tone} p-4 text-left backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
@@ -265,6 +279,150 @@ function HeaderStats({ tasks, subs, studentCount, onOpen }: { tasks: Task[]; sub
         </button>
       ))}
     </div>
+    <StatDetailDialog
+      kind={detail}
+      onClose={() => setDetail(null)}
+      onOpenTab={(tab) => { setDetail(null); onOpen(tab); }}
+      tasks={tasks}
+      subs={subs}
+      students={students}
+      sections={sections}
+    />
+    </>
+  );
+}
+
+function StatDetailDialog({
+  kind, onClose, onOpenTab, tasks, subs, students, sections,
+}: {
+  kind: DetailKind | null;
+  onClose: () => void;
+  onOpenTab: (tab: string) => void;
+  tasks: Task[];
+  subs: Submission[];
+  students: MockAccount[];
+  sections: SectionSummary[];
+}) {
+  const now = Date.now();
+  const titles: Record<DetailKind, string> = {
+    tasks: "Active tasks",
+    pending: "Submissions awaiting review",
+    evaluated: "Evaluated submissions",
+    overdue: "Overdue tasks",
+    students: "My students",
+    sections: "Sections allocated to me",
+    subs: "All submissions",
+  };
+  const tabFor: Record<DetailKind, string> = {
+    tasks: "tasks", pending: "inbox", evaluated: "inbox", overdue: "tasks",
+    students: "students", sections: "students", subs: "inbox",
+  };
+  const taskTitle = (id: string) => tasks.find((t) => t.id === id)?.title ?? "Task";
+
+  function body() {
+    if (!kind) return null;
+    if (kind === "sections") {
+      if (sections.length === 0) {
+        return <Empty text="No sections allocated yet. Ask your school admin to allocate you to a class section." />;
+      }
+      return (
+        <List>
+          {sections.map((s) => (
+            <Row
+              key={s.id}
+              primary={`${s.className} · ${s.sectionName}`}
+              secondary={`${s.studentCount} student${s.studentCount === 1 ? "" : "s"} in this section`}
+            />
+          ))}
+        </List>
+      );
+    }
+    if (kind === "students") {
+      if (students.length === 0) return <Empty text="No students in your allocated sections yet." />;
+      return (
+        <List>
+          {students.map((s) => (
+            <Row
+              key={s.username}
+              primary={s.fullName}
+              secondary={`${s.classSection || "—"} · Roll ${s.meta?.admissionId || "—"}`}
+              trailing={`login: ${s.username}`}
+            />
+          ))}
+        </List>
+      );
+    }
+    const list =
+      kind === "tasks" ? tasks
+      : kind === "overdue" ? tasks.filter((t) => new Date(t.due).getTime() < now)
+      : [];
+    if (kind === "tasks" || kind === "overdue") {
+      if (list.length === 0) return <Empty text={kind === "overdue" ? "Nothing is overdue. Nice work." : "No tasks published yet."} />;
+      return (
+        <List>
+          {list.map((t) => (
+            <Row
+              key={t.id}
+              primary={t.title}
+              secondary={`${t.type} · ${t.tech} · Due ${new Date(t.due).toLocaleDateString()}`}
+              trailing={`${t.maxMarks} marks`}
+            />
+          ))}
+        </List>
+      );
+    }
+    const rows =
+      kind === "pending" ? subs.filter((s) => s.status === "submitted")
+      : kind === "evaluated" ? subs.filter((s) => s.status === "evaluated")
+      : subs;
+    if (rows.length === 0) return <Empty text="No submissions yet." />;
+    return (
+      <List>
+        {rows.map((s) => (
+          <Row
+            key={s.id}
+            primary={s.studentName}
+            secondary={`${taskTitle(s.taskId)} · ${s.classSection}`}
+            trailing={s.status === "evaluated" ? `${s.marks ?? 0} marks` : "Awaiting review"}
+          />
+        ))}
+      </List>
+    );
+  }
+
+  return (
+    <Dialog open={kind !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader><DialogTitle>{kind ? titles[kind] : ""}</DialogTitle></DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto pr-1">{body()}</div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Close</Button>
+          {kind ? <Button variant="hero" onClick={() => onOpenTab(tabFor[kind])}>Open full workspace</Button> : null}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function List({ children }: { children: React.ReactNode }) {
+  return <div className="divide-y divide-border/60">{children}</div>;
+}
+
+function Row({ primary, secondary, trailing }: { primary: string; secondary?: string; trailing?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3 text-sm">
+      <div className="min-w-0">
+        <div className="truncate font-medium">{primary}</div>
+        {secondary ? <div className="truncate text-xs text-muted-foreground">{secondary}</div> : null}
+      </div>
+      {trailing ? <div className="shrink-0 text-xs text-muted-foreground">{trailing}</div> : null}
+    </div>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return <div className="rounded-xl border border-dashed border-border/70 p-6 text-center text-sm text-muted-foreground">{text}</div>;
+}
   );
 }
 
