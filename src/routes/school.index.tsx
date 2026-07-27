@@ -446,7 +446,13 @@ function TeacherPanel({
   onAssign: (username: string, classId: string, sectionId: string) => void;
 }) {
   const [q, setQ] = useState("");
-  const [drawer, setDrawer] = useState<MockAccount | null>(null);
+  const [selected, setSelected] = useState<MockAccount | null>(null);
+  const allocRef = useRef<HTMLDivElement | null>(null);
+
+  const openAllocation = (t: MockAccount) => {
+    setSelected(t);
+    window.setTimeout(() => allocRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+  };
 
   const filtered = teachers.filter((t) => {
     const blob = `${t.fullName} ${t.username} ${t.teacherId ?? ""}`.toLowerCase();
@@ -454,6 +460,7 @@ function TeacherPanel({
   });
 
   return (
+    <div className="space-y-6">
     <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-emerald-950/10 backdrop-blur-xl">
       <div className="relative overflow-hidden border-b border-border/60">
         <img
@@ -512,33 +519,48 @@ function TeacherPanel({
                   </div>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setDrawer(t)} className="shrink-0">
+              <Button
+                variant={selected?.username === t.username ? "hero" : "outline"}
+                size="sm"
+                onClick={() => openAllocation(t)}
+                className="shrink-0"
+              >
                 <Edit3 className="h-3.5 w-3.5" /> Map
               </Button>
             </li>
           ))}
         </ul>
       )}
-
-      {drawer && (
-        <AssignDrawer
-          teacher={drawer}
-          classes={classes}
-          onClose={() => setDrawer(null)}
-          onAssign={(classId, sectionId) => {
-            onAssign(drawer.username, classId, sectionId);
-            toast.success("Teacher allocated", {
-              description: `${drawer.fullName} now leads this section.`,
-            });
-            setDrawer(null);
-          }}
-        />
-      )}
     </section>
+
+      <div ref={allocRef} className="scroll-mt-24">
+        {selected ? (
+          <AllocationWorkspace
+            teacher={selected}
+            classes={classes}
+            onClose={() => setSelected(null)}
+            onAssign={(classId, sectionId) => {
+              onAssign(selected.username, classId, sectionId);
+              toast.success("Teacher allocated", {
+                description: `${selected.fullName} now leads this section.`,
+              });
+            }}
+          />
+        ) : (
+          <section className="rounded-3xl border border-dashed border-border/70 bg-card/40 p-10 text-center backdrop-blur-xl">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Allocation workspace</div>
+            <h3 className="mt-2 font-display text-xl font-bold">Pick a teacher to allocate sections</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Use the <span className="font-semibold text-foreground">Map</span> button on any teacher above and the full-width allocation board opens right here.
+            </p>
+          </section>
+        )}
+      </div>
+    </div>
   );
 }
 
-function AssignDrawer({
+function AllocationWorkspace({
   teacher,
   classes,
   onClose,
@@ -549,55 +571,59 @@ function AssignDrawer({
   onClose: () => void;
   onAssign: (classId: string, sectionId: string) => void;
 }) {
+  const pairs = classes.flatMap((c) => c.sections.map((s) => ({ c, s })));
+  const mine = pairs.filter(({ s }) => s.teacherUsername === teacher.username).length;
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <button aria-label="Close" onClick={onClose} className="flex-1 bg-slate-950/60 backdrop-blur-sm" />
-      <aside className="flex h-full w-full max-w-md flex-col border-l border-border bg-card shadow-2xl">
-        <header className="flex items-center justify-between border-b border-border p-4">
-          <div className="min-w-0">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Allocation wizard</div>
-            <h3 className="truncate font-display text-base font-semibold">{teacher.fullName}</h3>
-          </div>
-          <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-accent">
-            <X className="h-4 w-4" />
-          </button>
-        </header>
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="mb-3 text-xs font-medium text-muted-foreground">
-            Pick the Class · Section this teacher should lead.
-          </div>
-          <ul className="space-y-2">
-            {classes.flatMap((c) =>
-              c.sections.map((s) => {
-                const owned = s.teacherUsername === teacher.username;
-                return (
-                  <li key={`${c.id}-${s.id}`}>
-                    <button
-                      onClick={() => onAssign(c.id, s.id)}
-                      className={cn(
-                        "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-background p-3 text-left transition-all hover:-translate-y-0.5 hover:border-emerald-500/40 hover:bg-emerald-500/5",
-                        owned && "border-emerald-500/50 bg-emerald-500/10"
-                      )}
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold">{c.grade} · {s.name}</div>
-                        <div className="truncate text-[11px] text-muted-foreground">
-                          {s.teacherUsername ? `Currently led by @${s.teacherUsername}` : "Unassigned"}
-                        </div>
-                      </div>
-                      {owned && <Sparkles className="h-4 w-4 shrink-0 text-emerald-500" />}
-                    </button>
-                  </li>
-                );
-              })
-            )}
-          </ul>
+    <section className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-emerald-950/10 ring-1 ring-white/5 backdrop-blur-xl">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-border/60 bg-gradient-to-r from-emerald-500/10 via-card to-sky-500/5 p-6 sm:flex sm:justify-between sm:p-8">
+        <div className="min-w-0">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Allocation workspace</div>
+          <h3 className="truncate font-display text-xl font-bold sm:text-2xl">{teacher.fullName}</h3>
+          <p className="truncate text-xs text-muted-foreground">
+            @{teacher.username} · leading {mine} section{mine === 1 ? "" : "s"} · Expertise: {inferExpertise(teacher.username).join(" · ")}
+          </p>
         </div>
-        <footer className="border-t border-border p-4 text-[11px] text-muted-foreground">
-          Expertise: {inferExpertise(teacher.username).join(" · ")}
-        </footer>
-      </aside>
-    </div>
+        <Button variant="outline" size="sm" onClick={onClose} className="shrink-0">
+          <X className="h-4 w-4" /> Close
+        </Button>
+      </header>
+
+      <div className="p-6 sm:p-8">
+        <div className="mb-4 text-sm font-medium text-muted-foreground">
+          Tap any Class · Section card below to allocate it to this teacher.
+        </div>
+        {pairs.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border/70 p-10 text-center text-sm text-muted-foreground">
+            No classes or sections created yet. Add them in the structure panel first.
+          </div>
+        ) : (
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {pairs.map(({ c, s }) => {
+              const owned = s.teacherUsername === teacher.username;
+              return (
+                <li key={`${c.id}-${s.id}`}>
+                  <button
+                    onClick={() => onAssign(c.id, s.id)}
+                    className={cn(
+                      "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border bg-background/70 p-5 text-left transition-all hover:-translate-y-0.5 hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:shadow-lg active:scale-[0.99]",
+                      owned && "border-emerald-500/50 bg-emerald-500/10 shadow-lg"
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-display text-base font-bold">{c.grade} · {s.name}</div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {s.teacherUsername ? `Currently led by @${s.teacherUsername}` : "Unassigned"}
+                      </div>
+                    </div>
+                    {owned && <Sparkles className="h-5 w-5 shrink-0 text-emerald-500" />}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </section>
   );
 }
 
