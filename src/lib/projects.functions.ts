@@ -121,7 +121,7 @@ export const listTeacherProjects = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
-    const roster = await studentDirectory(context.supabase, teacher.school_id);
+    const roster = await studentDirectory(teacher.school_id);
 
     const projects: any[] = [];
     for (const p of data ?? []) {
