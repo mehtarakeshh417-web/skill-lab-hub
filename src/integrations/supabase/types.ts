@@ -188,6 +188,51 @@ export type Database = {
         }
         Relationships: []
       }
+      class_sections: {
+        Row: {
+          class_name: string
+          created_at: string
+          id: string
+          school_id: string
+          section_name: string
+          teacher_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          class_name: string
+          created_at?: string
+          id?: string
+          school_id: string
+          section_name: string
+          teacher_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          class_name?: string
+          created_at?: string
+          id?: string
+          school_id?: string
+          section_name?: string
+          teacher_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_sections_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_sections_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       code_snippets: {
         Row: {
           code: string
