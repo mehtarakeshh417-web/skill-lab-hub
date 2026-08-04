@@ -116,26 +116,11 @@ async function assertUsernameAvailable(username: string, excludingRegistrationId
 export async function submitPublicRegistration(input: SubmitRegistrationInput) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const username = normUsername(input.username);
-  const schoolCode = normCode(input.schoolCode);
+  // The school code is assigned by an admin / portal manager at approval time.
+  const schoolCode = `PENDING-${randomBytes(4).toString("hex").toUpperCase()}`;
   const email = input.email.trim().toLowerCase();
 
   await assertUsernameAvailable(username);
-
-  // Also block duplicate active school code
-  const codeCheck = await supabaseAdmin
-    .from("schools")
-    .select("id")
-    .ilike("school_code", schoolCode)
-    .maybeSingle();
-  if (codeCheck.data) throw new Error("[schoolCode] That school code is already active. Please choose another.");
-
-  const pendingCode = await supabaseAdmin
-    .from("school_registrations")
-    .select("id")
-    .ilike("school_code", schoolCode)
-    .eq("status", "pending")
-    .maybeSingle();
-  if (pendingCode.data) throw new Error("[schoolCode] A pending registration is already using this school code.");
 
   const encrypted = encryptSecret(input.password);
   const insert = await supabaseAdmin
@@ -212,7 +197,7 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
 
   // Merge edits (fall back to original values)
   const schoolName = (input.schoolName ?? reg.school_name).trim();
-  const schoolCode = normCode(input.schoolCode ?? reg.school_code);
+  const schoolCode = normCode(input.schoolCode);
   const principalName = (input.principalName ?? reg.principal_name ?? "").trim();
   const region = (input.region ?? reg.region ?? "").trim();
   const state = (input.state ?? (reg as { state?: string | null }).state ?? "").trim();
@@ -233,7 +218,15 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
     .select("id")
     .ilike("school_code", schoolCode)
     .maybeSingle();
-  if (codeCheck.data) throw new Error("That school code is already active. Edit the code before approving.");
+  if (codeCheck.data) throw new Error("[schoolCode] That school code is already active. Enter a different code.");
+
+  const pendingCode = await supabaseAdmin
+    .from("school_registrations")
+    .select("id")
+    .ilike("school_code", schoolCode)
+    .neq("id", reg.id)
+    .maybeSingle();
+  if (pendingCode.data) throw new Error("[schoolCode] Another registration already uses this school code.");
 
   const password = decryptSecret(reg.encrypted_password);
   const loginEmail = `${username}@avartan.app`;
