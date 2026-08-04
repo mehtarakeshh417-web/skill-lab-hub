@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const submitRegistrationSchema = z.object({
   schoolName: z.string().trim().min(1, "School name is required"),
-  schoolCode: z.string().trim().min(1, "School code is required"),
   principalName: z.string().trim().min(1, "Principal name is required"),
   designation: z.string().trim().min(1, "Designation is required"),
   state: z.string().trim().min(1, "State is required"),
@@ -24,7 +23,7 @@ export const approveRegistrationSchema = z.object({
   salesRepId: z.string().uuid("Assign a sales representative"),
   // Optional overrides at approval time
   schoolName: z.string().trim().optional(),
-  schoolCode: z.string().trim().optional(),
+  schoolCode: z.string().trim().min(1, "Enter a school code before approving"),
   principalName: z.string().trim().optional(),
   region: z.string().trim().optional(),
   state: z.string().trim().optional(),
