@@ -225,7 +225,7 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
   const email = (input.email ?? reg.email).trim().toLowerCase();
   const phone = (input.phone ?? reg.phone ?? "").trim();
   const address = (input.address ?? reg.address ?? "").trim();
-  const username = normUsername(reg.username);
+  const username = normUsername(input.username);
 
   await assertUsernameAvailable(username, reg.id);
 
@@ -245,7 +245,7 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
     .maybeSingle();
   if (pendingCode.data) throw new Error("[schoolCode] Another registration already uses this school code.");
 
-  const password = decryptSecret(reg.encrypted_password);
+  const password = input.password;
   const loginEmail = `${username}@avartan.app`;
 
   const created = await supabaseAdmin.auth.admin.createUser({
@@ -300,6 +300,7 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
         reviewed_at: new Date().toISOString(),
         created_school_id: schoolInsert.data.id,
         encrypted_password: "v1::purged::",
+        username,
         // sync any edits back into the registration for auditability
         school_name: schoolName,
         school_code: schoolCode,
