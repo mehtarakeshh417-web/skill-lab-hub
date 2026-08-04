@@ -380,43 +380,19 @@ function RegisterSchool() {
                   onFocus={() => setFocused((f) => ({ ...f, area: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, area: false }))}
                 />
-                <div>
-                  <BaseField
-                    name="salesRepId"
-                    label="Sales Representative"
-                    icon={UserCheck}
-                    value={repQuery}
-                    listId="sales-rep-options"
-                    onChange={(v) => {
-                      setRepQuery(v);
-                      const needle = v.trim().toLowerCase();
-                      const match = reps.find(
-                        (r) =>
-                          r.fullName.toLowerCase() === needle ||
-                          (r.designation ? `${r.fullName} — ${r.designation}` : r.fullName).toLowerCase() === needle,
-                      );
-                      update("salesRepId", match?.id ?? "");
-                    }}
-                    placeholder={repsLoading ? "Loading representatives…" : "Type your representative's name"}
-                    error={errors.salesRepId}
-                    focused={focused.salesRepId}
-                    onFocus={() => setFocused((f) => ({ ...f, salesRepId: true }))}
-                    onBlur={() => setFocused((f) => ({ ...f, salesRepId: false }))}
-                    hint={
-                      form.salesRepId
-                        ? "Representative matched."
-                        : "Start typing and pick a name from the suggestions."
-                    }
-                  />
-                  <datalist id="sales-rep-options">
-                    {reps.map((r) => (
-                      <option
-                        key={r.id}
-                        value={r.designation ? `${r.fullName} — ${r.designation}` : r.fullName}
-                      />
-                    ))}
-                  </datalist>
-                </div>
+                <Field
+                  name="salesRepName"
+                  label="Sales Representative"
+                  icon={UserCheck}
+                  value={form.salesRepName}
+                  onChange={(v) => update("salesRepName", v)}
+                  placeholder="Full name of your Avartan representative"
+                  error={errors.salesRepName}
+                  focused={focused.salesRepName}
+                  onFocus={() => setFocused((f) => ({ ...f, salesRepName: true }))}
+                  onBlur={() => setFocused((f) => ({ ...f, salesRepName: false }))}
+                  hint="Enter the exact name provided by your Avartan representative."
+                />
               </div>
 
               <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
