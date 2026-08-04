@@ -369,19 +369,19 @@ function RegisterSchool() {
                 />
                 <SelectField
                   name="city"
-                  label="City"
+                  label="District"
                   icon={MapPin}
                   value={form.city}
                   onChange={(v) => update("city", v)}
-                  placeholder={form.state ? "Select a city" : "Select a state first"}
+                  placeholder={form.state ? "Select a district" : "Select a state first"}
                   options={citiesForState(form.state)}
                   disabled={!form.state}
                   error={errors.city}
-                  hint={form.state ? undefined : "Choose a state to load its cities."}
+                  hint={form.state ? undefined : "Choose a state to load its districts."}
                 />
                 <Field
                   name="area"
-                  label="Area"
+                  label="City"
                   icon={MapPin}
                   value={form.area}
                   onChange={(v) => update("area", v)}
