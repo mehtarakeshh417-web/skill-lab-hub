@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { School2, Users, UserCog, Plus, CheckCircle2, Clock, ClipboardList } from "lucide-react";
 
 export const Route = createFileRoute("/manager/")({
-  head: () => ({ meta: [{ title: "Portal Manager · Avartan Skill Lab" }] }),
+  head: () => ({ meta: [{ title: "Manager overview · Avartan Skill Lab" }] }),
   component: ManagerDashboard,
 });
 

@@ -384,7 +384,7 @@ function StatDetailDialog({
       : kind === "overdue" ? tasks.filter((t) => new Date(t.due).getTime() < now)
       : [];
     if (kind === "tasks" || kind === "overdue") {
-      if (list.length === 0) return <Empty text={kind === "overdue" ? "Nothing is overdue. Nice work." : "No tasks published yet."} />;
+      if (list.length === 0) return <Empty text={kind === "overdue" ? "No tasks are overdue." : "No tasks published yet."} />;
       return (
         <List>
           {list.map((t) => (

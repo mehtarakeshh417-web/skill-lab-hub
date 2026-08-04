@@ -11,26 +11,26 @@ type Step = {
 
 const STEPS: Step[] = [
   {
-    title: "Switch Role Views",
-    body: "Use the Dev Role Selector in the left sidebar to instantly jump between Admin, Portal Manager, School, Teacher and Student perspectives — every panel reacts to your role.",
+    title: "Switch role views",
+    body: "Use the role selector in the left sidebar to switch between Admin, Portal Manager, School, Teacher and Student views. Each panel updates to match the selected role.",
     icon: Layers,
     accent: "from-emerald-500/40 to-teal-500/30",
   },
   {
-    title: "Explore 10 Technology Labs",
-    body: "Open the Student view and launch any of the 10 executable labs — HTML/CSS, SQL, Java, Scratch, Scratch Jr, Word, Excel, PowerPoint, Paint and more. Every lab is real, not a placeholder.",
+    title: "Explore the technology labs",
+    body: "Open the Student view to access the full set of labs, including HTML/CSS, SQL, Java, Scratch, Scratch Jr, Word, Excel, PowerPoint and Paint. Each lab is fully functional.",
     icon: Code2,
     accent: "from-emerald-500/40 to-teal-500/30",
   },
   {
-    title: "Generate Quizzes with Gemini AI",
-    body: "Inside the Teacher console, the Assignment Creator can structure MCQ, True/False, Fill, or Hybrid quizzes and call Gemini AI to auto-generate questions. Edit, approve, and publish in one flow.",
+    title: "Generate quizzes with AI",
+    body: "In the Teacher console, the assignment creator can structure MCQ, true/false, fill-in-the-blank or mixed quizzes, and generate questions automatically. Review, edit and publish from a single flow.",
     icon: BrainCircuit,
     accent: "from-amber-500/40 to-rose-500/30",
   },
   {
-    title: "Admin Analytics Control Center",
-    body: "Back in the Admin role, the Super-Admin Control Center surfaces platform-wide analytics, system health, the global user directory, the audit stream and one-click data exports.",
+    title: "Admin analytics and controls",
+    body: "In the Admin role, the control center shows platform-wide analytics, system health, the user directory, the audit trail and data export tools.",
     icon: BarChart3,
     accent: "from-sky-500/40 to-emerald-500/30",
   },
@@ -97,7 +97,7 @@ export function QuickTourTrigger() {
 
             <div className="relative">
               <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-200">
-                <Sparkles className="h-3 w-3" /> Quick Tour · {step + 1} / {STEPS.length}
+                <Sparkles className="h-3 w-3" /> Quick tour · {step + 1} of {STEPS.length}
               </div>
               <div className="mb-4 flex items-start gap-3">
                 <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.7)]", s.accent)}>
@@ -144,7 +144,7 @@ export function QuickTourTrigger() {
                     onClick={close}
                     className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(16,185,129,0.7)] transition-transform hover:scale-[1.03]"
                   >
-                    <Sparkles className="h-3.5 w-3.5" /> Start Exploring
+                    <Sparkles className="h-3.5 w-3.5" /> Get started
                   </button>
                 )}
               </div>

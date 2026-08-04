@@ -9,7 +9,7 @@ import { getSalesRepDashboard } from "@/lib/sales-reps.functions";
 import { School2, CheckCircle2, XCircle, CalendarClock } from "lucide-react";
 
 export const Route = createFileRoute("/sales-rep")({
-  head: () => ({ meta: [{ title: "Sales Rep · Avartan Skill Lab" }] }),
+  head: () => ({ meta: [{ title: "Sales representative · Avartan Skill Lab" }] }),
   component: SalesRepDashboard,
 });
 

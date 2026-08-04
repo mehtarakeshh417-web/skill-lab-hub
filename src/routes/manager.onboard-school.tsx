@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { ArrowLeft, School2, KeyRound, UserPlus2 } from "lucide-react";
 
 export const Route = createFileRoute("/manager/onboard-school")({
-  head: () => ({ meta: [{ title: "Onboard School · Avartan Skill Lab" }] }),
+  head: () => ({ meta: [{ title: "Onboard school · Avartan Skill Lab" }] }),
   component: OnboardSchool,
 });
 
@@ -106,10 +106,10 @@ function OnboardSchool() {
   };
 
   return (
-    <AppShell requireRole="portal_manager" title="Onboard School">
+    <AppShell requireRole="portal_manager" title="Onboard school">
       <div className="mx-auto max-w-4xl">
         <Link to="/manager" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to Operations
+          <ArrowLeft className="h-4 w-4" /> Back to operations
         </Link>
 
         <form

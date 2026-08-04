@@ -43,10 +43,10 @@ const UNSPLASH = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Avartan Skill Lab — Learn. Code. Create." },
-      { name: "description", content: "Modern coding & digital-skills platform for schools, teachers, and students. Practice 10+ technologies in your browser." },
-      { property: "og:title", content: "Avartan Skill Lab — Learn. Code. Create." },
-      { property: "og:description", content: "Modern coding & digital-skills platform for schools, teachers, and students. Practice 10+ technologies in your browser." },
+      { title: "Avartan Skill Lab — Coding and digital skills for schools" },
+      { name: "description", content: "A coding and digital-skills platform for schools, teachers, and students. Practice ten technologies directly in the browser." },
+      { property: "og:title", content: "Avartan Skill Lab — Coding and digital skills for schools" },
+      { property: "og:description", content: "A coding and digital-skills platform for schools, teachers, and students. Practice ten technologies directly in the browser." },
     ],
   }),
   component: Landing,
@@ -153,20 +153,20 @@ function Hero() {
                 <span className="absolute inset-0 animate-ping rounded-full bg-success/70" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
               </span>
-              Now live for early schools
+              Now available to early schools
             </div>
             <h1 className="mt-6 font-display text-5xl font-bold leading-[1.02] tracking-tight md:text-7xl">
-              The modern lab where
-              <span className="block text-gradient">students learn to code.</span>
+              The coding lab where
+              <span className="block text-gradient">students learn to code</span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0">
               Ten technologies, one browser. Avartan Skill Lab gives schools a measurable,
-              hands-on coding and digital-literacy program — without installing a single thing.
+              hands-on coding and digital-literacy program with nothing to install.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Button variant="hero" size="xl" asChild className="animate-pulse-glow">
                 <Link to="/auth">
-                  Open the portal <ArrowRight className="h-5 w-5" />
+                  Sign in to the portal <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
             </div>
@@ -311,7 +311,7 @@ function Technologies() {
             Ten technologies, <span className="text-gradient">one ecosystem</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            From Scratch Jr to MySQL — students practice inside the portal, save their work, and
+            From Scratch Jr to MySQL, students practice inside the portal, save their work, and
             move at their own pace.
           </p>
         </div>
@@ -360,11 +360,11 @@ function FeatureBento() {
                 <Users className="h-3.5 w-3.5" /> Built for schools
               </div>
               <h3 className="mt-4 font-display text-3xl font-bold leading-tight md:text-4xl">
-                A complete lab — without the lab.
+                A complete lab, without the equipment
               </h3>
               <p className="mt-3 max-w-md text-muted-foreground">
                 Run a full digital-literacy program from a browser. Onboard classes, assign
-                projects, evaluate work — all in one place.
+                projects, and evaluate work in one place.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {["Live preview", "Auto-save", "Role dashboards", "Auth & RLS"].map((c) => (
@@ -379,7 +379,7 @@ function FeatureBento() {
             <div className="relative">
               <Zap className="h-7 w-7" />
               <div className="mt-6 font-display text-2xl font-bold leading-tight">Instant live preview</div>
-              <p className="mt-2 text-sm text-primary-foreground/80">HTML & CSS render in real time as students type.</p>
+              <p className="mt-2 text-sm text-primary-foreground/80">HTML and CSS render in real time as students type.</p>
               <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium backdrop-blur">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" /> &lt; 16ms render
               </div>
@@ -415,10 +415,10 @@ function Testimonials() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-            <Star className="h-3.5 w-3.5" /> Loved by educators
+            <Star className="h-3.5 w-3.5" /> Feedback from educators
           </div>
           <h2 className="mt-4 font-display text-4xl font-bold tracking-tight md:text-5xl">
-            Trusted by <span className="text-gradient">forward-thinking schools</span>
+            Trusted by <span className="text-gradient">schools nationwide</span>
           </h2>
         </div>
         <div className="mt-14 grid gap-5 md:grid-cols-3">
@@ -494,15 +494,15 @@ function CTA() {
             <BarChart3 className="h-7 w-7 text-primary-foreground" />
           </div>
           <h2 className="mt-6 font-display text-4xl font-bold tracking-tight text-primary-foreground md:text-6xl">
-            Measure what your students <span className="block">actually learn.</span>
+            Measure what your students <span className="block">actually learn</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-primary-foreground/85">
             Real-time dashboards for admins, schools, and teachers. Drill into every technology,
-            every class, every student.
+            class, and student.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Button variant="accent" size="xl" asChild>
-              <Link to="/auth">Enter the portal <ArrowRight className="h-5 w-5" /></Link>
+              <Link to="/auth">Sign in to the portal <ArrowRight className="h-5 w-5" /></Link>
             </Button>
             <Button variant="outline" size="xl" asChild className="border-white/30 bg-white/10 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
               <a href="#technologies">Explore features</a>
@@ -527,7 +527,7 @@ function Footer() {
               </div>
             </div>
             <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-              The modern coding & digital-skills portal built for schools, teachers and students.
+              A coding and digital-skills portal built for schools, teachers and students.
             </p>
           </div>
           <div>
@@ -549,7 +549,7 @@ function Footer() {
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row">
           <div>© {new Date().getFullYear()} Avartan Skill Lab. All rights reserved.</div>
-          <div>Crafted for modern classrooms.</div>
+          <div>Built for modern classrooms.</div>
         </div>
       </div>
     </footer>

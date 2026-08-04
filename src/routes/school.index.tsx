@@ -364,7 +364,7 @@ function SchoolWorkspace() {
                 {schoolName}
               </h2>
               <p className="mt-1 hidden text-xs text-emerald-100/80 sm:block">
-                Steer every classroom, teacher, and lab from one elite command surface.
+                Manage every classroom, teacher, and lab from a single console.
               </p>
             </div>
           </div>

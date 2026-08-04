@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { LiveEditor, isLiveEditor, EDITOR_REGISTRY } from "@/components/coding-lab/editors";
 
 export const Route = createFileRoute("/learn/$slug")({
-  head: () => ({ meta: [{ title: "Practice · Avartan Skill Lab" }] }),
+  head: () => ({ meta: [{ title: "Practice — Avartan Skill Lab" }] }),
   component: LearnPage,
 });
 
@@ -33,13 +33,13 @@ const TECH_INFO: Record<string, { name: string; desc: string; sample: string; la
   },
   python: {
     name: "Python",
-    desc: "Write Python code. Run it to see output in the console.",
+    desc: "Write Python code and run it to see output in the console.",
     sample: `# Welcome to Python!\nname = "Avartan"\nfor i in range(3):\n    print(f"Hello {name} {i+1}")`,
     lang: "python",
   },
   java: {
     name: "Java",
-    desc: "Write Java code. Compile and view output.",
+    desc: "Write Java code, compile it, and view the output.",
     sample: `public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello, Avartan!");\n  }\n}`,
     lang: "java",
   },
@@ -52,7 +52,7 @@ const TECH_INFO: Record<string, { name: string; desc: string; sample: string; la
   "scratch-jr": { name: "Scratch Junior", desc: "Block-based coding for early learners.", sample: "", lang: "other" },
   scratch: { name: "Scratch", desc: "Drag-and-drop block programming.", sample: "", lang: "other" },
   paint: { name: "Paint", desc: "Digital drawing canvas.", sample: "", lang: "other" },
-  editor: { name: "Word Editor", desc: "Word-processor practice.", sample: "", lang: "other" },
+  editor: { name: "Word Editor", desc: "Word processor practice.", sample: "", lang: "other" },
   spreadsheet: { name: "Spreadsheet", desc: "Tables, formulas, and charts.", sample: "", lang: "other" },
   presentation: { name: "Presentation", desc: "Build slide decks.", sample: "", lang: "other" },
 };
@@ -71,7 +71,7 @@ function LearnPage() {
       setPreview(code);
       toast.success("Preview updated");
     } else {
-      setOutput(`▶ Ran ${info.name}\n--------------------\n(Simulated runtime — full ${info.name} execution lands soon)\n\nYour code:\n${code}`);
+      setOutput(`Ran ${info.name}\n--------------------\n(Simulated runtime — full ${info.name} execution is coming soon)\n\nYour code:\n${code}`);
       toast.success(`${info.name} executed`);
     }
   }
@@ -107,7 +107,7 @@ function LearnPage() {
         <div className="rounded-2xl border border-dashed border-border bg-card p-16 text-center">
           <div className="font-display text-2xl font-semibold">{info.name} workspace</div>
           <p className="mt-2 text-sm text-muted-foreground">{info.desc}</p>
-          <p className="mt-6 text-sm text-muted-foreground">Interactive {info.name} module launches in the next release.</p>
+          <p className="mt-6 text-sm text-muted-foreground">The interactive {info.name} module launches in the next release.</p>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">

@@ -14,9 +14,9 @@ export const Route = createFileRoute("/admin/directory")({
   }),
   head: () => ({
     meta: [
-      { title: "Directory — Avartan Admin Console" },
+      { title: "Directory · Avartan Skill Lab" },
       { name: "description", content: "Browse every school, teacher, student and sales representative on the Avartan Skill Lab portal with region, state and school filters." },
-      { property: "og:title", content: "Directory — Avartan Admin Console" },
+      { property: "og:title", content: "Directory · Avartan Skill Lab" },
       { property: "og:description", content: "Full portal directory with filters, exports and account controls." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -45,7 +45,7 @@ function DirectoryPage() {
   const data = useMemo(() => query.data, [query.data]);
 
   return (
-    <AppShell requireRole="admin" title="Portal Directory">
+    <AppShell requireRole="admin" title="Portal directory">
       <DirectoryWorkspace
         data={data}
         key={`${initialTab}-${initialStatus}`}
