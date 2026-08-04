@@ -237,13 +237,30 @@ function RegisterSchool() {
               <CheckCircle2 className="h-10 w-10 text-emerald-500" />
             </div>
             <h3 className="mt-6 font-display text-2xl font-bold tracking-tight sm:text-3xl">
-              Submitted for approval
+              Registration request received
             </h3>
-            <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-              Thank you — <span className="font-semibold text-foreground">{submitted.schoolName}</span> has been
-              submitted and is now <span className="font-semibold text-amber-500">Pending Approval</span>. Our portal
-              team will review your application, assign your school code, and once approved you can sign in with the
-              credentials you created.
+            {submitted.requestRef ? (
+              <div className="mx-auto mt-6 inline-flex flex-col items-center gap-1 rounded-2xl border border-border/70 bg-background/60 px-6 py-4">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Request ID
+                </span>
+                <span className="font-mono text-xl font-bold tracking-widest text-foreground">
+                  {submitted.requestRef}
+                </span>
+              </div>
+            ) : null}
+            <p className="mt-5 text-sm text-muted-foreground sm:text-base">
+              Thank you for registering <span className="font-semibold text-foreground">{submitted.schoolName}</span>.
+              Your request is now <span className="font-semibold text-amber-500">Pending Approval</span> and will be
+              reviewed within 2 working days. Once approved, our team will assign your school code and you can sign in
+              with the credentials you created.
+            </p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Please quote your Request ID in any correspondence. For assistance, contact Avartan at{" "}
+              <a href="tel:+911143158350" className="font-semibold text-foreground underline-offset-4 hover:underline">
+                +91 11 43158350
+              </a>
+              .
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
