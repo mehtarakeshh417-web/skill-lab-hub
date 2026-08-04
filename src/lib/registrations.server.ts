@@ -115,12 +115,11 @@ async function assertUsernameAvailable(username: string, excludingRegistrationId
 
 export async function submitPublicRegistration(input: SubmitRegistrationInput) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const username = normUsername(input.username);
+  // Login credentials are assigned by an admin / portal manager at approval time.
+  const username = `pending-${randomBytes(4).toString("hex")}`;
   // The school code is assigned by an admin / portal manager at approval time.
   const schoolCode = `PENDING-${randomBytes(4).toString("hex").toUpperCase()}`;
   const email = input.email.trim().toLowerCase();
-
-  await assertUsernameAvailable(username);
 
   // Resolve the typed sales representative name to an active rep record.
   const repName = input.salesRepName.trim();
@@ -139,7 +138,7 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
   }
   const salesRepId = matches[0].id;
 
-  const encrypted = encryptSecret(input.password);
+  const encrypted = "v1::pending::";
   const insert = await supabaseAdmin
     .from("school_registrations")
     .insert({
@@ -226,7 +225,7 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
   const email = (input.email ?? reg.email).trim().toLowerCase();
   const phone = (input.phone ?? reg.phone ?? "").trim();
   const address = (input.address ?? reg.address ?? "").trim();
-  const username = normUsername(reg.username);
+  const username = normUsername(input.username);
 
   await assertUsernameAvailable(username, reg.id);
 
@@ -246,7 +245,7 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
     .maybeSingle();
   if (pendingCode.data) throw new Error("[schoolCode] Another registration already uses this school code.");
 
-  const password = decryptSecret(reg.encrypted_password);
+  const password = input.password;
   const loginEmail = `${username}@avartan.app`;
 
   const created = await supabaseAdmin.auth.admin.createUser({
@@ -301,6 +300,7 @@ export async function approveRegistration(input: ApproveRegistrationInput, actor
         reviewed_at: new Date().toISOString(),
         created_school_id: schoolInsert.data.id,
         encrypted_password: "v1::purged::",
+        username,
         // sync any edits back into the registration for auditability
         school_name: schoolName,
         school_code: schoolCode,

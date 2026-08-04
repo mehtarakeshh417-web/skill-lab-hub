@@ -73,8 +73,6 @@ function RegisterSchool() {
     area: "",
     salesRepName: "",
     notes: "",
-    username: "",
-    password: "",
     email: "",
     phone: "",
     address: "",
@@ -101,12 +99,10 @@ function RegisterSchool() {
     principalName: "Principal Name",
     designation: "Contact Designation",
     state: "State",
-    city: "City",
-    area: "Area",
+    city: "District",
+    area: "City",
     salesRepName: "Sales Representative",
     notes: "Submission Notes",
-    username: "Login Username",
-    password: "Login Password",
     email: "Contact Email",
     phone: "Phone Number",
     address: "Address",
@@ -185,8 +181,6 @@ function RegisterSchool() {
           region: [form.city.trim(), form.state.trim()].filter(Boolean).join(" / "),
           designation: form.designation.trim(),
           notes: form.notes.trim(),
-          username: form.username.trim().toLowerCase(),
-          password: form.password,
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(),
           address: form.address.trim(),
@@ -252,8 +246,8 @@ function RegisterSchool() {
             <p className="mt-5 text-sm text-muted-foreground sm:text-base">
               Thank you for registering <span className="font-semibold text-foreground">{submitted.schoolName}</span>.
               Your request is now <span className="font-semibold text-amber-500">Pending Approval</span> and will be
-              reviewed within 2 working days. Once approved, our team will assign your school code and you can sign in
-              with the credentials you created.
+              reviewed within 2 working days. Once approved, our team will assign your school code along with your
+              portal username and password, and share them with your registered contact.
             </p>
             <p className="mt-3 text-sm text-muted-foreground">
               Please quote your Request ID in any correspondence. For assistance, contact Avartan at{" "}
@@ -375,19 +369,19 @@ function RegisterSchool() {
                 />
                 <SelectField
                   name="city"
-                  label="City"
+                  label="District"
                   icon={MapPin}
                   value={form.city}
                   onChange={(v) => update("city", v)}
-                  placeholder={form.state ? "Select a city" : "Select a state first"}
+                  placeholder={form.state ? "Select a district" : "Select a state first"}
                   options={citiesForState(form.state)}
                   disabled={!form.state}
                   error={errors.city}
-                  hint={form.state ? undefined : "Choose a state to load its cities."}
+                  hint={form.state ? undefined : "Choose a state to load its districts."}
                 />
                 <Field
                   name="area"
-                  label="Area"
+                  label="City"
                   icon={MapPin}
                   value={form.area}
                   onChange={(v) => update("area", v)}
@@ -412,37 +406,15 @@ function RegisterSchool() {
                 />
               </div>
 
-              <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
-              <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
-                <Field
-                  name="username"
-                  label="Login Username"
-                  icon={UserSquare2}
-                  value={form.username}
-                  onChange={(v) => update("username", v)}
-                  placeholder="dps-delhi"
-                  error={errors.username}
-                  hint="You will use this to sign in after approval."
-                  focused={focused.username}
-                  onFocus={() => setFocused((f) => ({ ...f, username: true }))}
-                  onBlur={() => setFocused((f) => ({ ...f, username: false }))}
-                />
-                <Field
-                  name="password"
-                  label="Login Password"
-                  icon={ShieldCheck}
-                  value={form.password}
-                  onChange={(v) => update("password", v)}
-                  placeholder="Create a secure password"
-                  error={errors.password}
-                  type="password"
-                  focused={focused.password}
-                  onFocus={() => setFocused((f) => ({ ...f, password: true }))}
-                  onBlur={() => setFocused((f) => ({ ...f, password: false }))}
-                />
+              <div className="mt-8 flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-5 py-4 text-xs text-muted-foreground">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>
+                  Portal login credentials are not selected here. Your username and password will be assigned by the
+                  Avartan portal team when your registration is approved, and shared with your registered contact.
+                </span>
               </div>
 
-              <SectionHeading step="03" title="Contact & location" caption="How our onboarding team reaches your institution." />
+              <SectionHeading step="02" title="Contact & location" caption="How our onboarding team reaches your institution." />
               <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
                   name="email"
