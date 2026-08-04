@@ -45,8 +45,11 @@ export const Route = createFileRoute("/api/public/school-registrations")({
 
         try {
           const { submitPublicRegistration } = await import("@/lib/registrations.server");
-          await submitPublicRegistration(parsed.data);
-          return Response.json({ ok: true, status: "pending" }, { status: 201, headers: { ...CORS_HEADERS } });
+          const record = await submitPublicRegistration(parsed.data);
+          return Response.json(
+            { ok: true, status: "pending", requestRef: record.requestRef },
+            { status: 201, headers: { ...CORS_HEADERS } },
+          );
         } catch (error) {
           const message = error instanceof Error ? error.message : "Registration could not be submitted.";
           const tagged = /^\[([a-zA-Z]+)\]\s*(.*)$/.exec(message.trim());
