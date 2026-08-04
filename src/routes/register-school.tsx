@@ -706,7 +706,7 @@ function SelectField({
 }
 
 function BaseField({
-  name, label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type,
+  name, label, icon: Icon, value, onChange, placeholder, error, hint, maxLength, type, listId,
   focused, onFocus, onBlur,
 }: {
   name: string;
@@ -719,6 +719,7 @@ function BaseField({
   hint?: string;
   maxLength?: number;
   type?: string;
+  listId?: string;
   focused?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -751,6 +752,8 @@ function BaseField({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           maxLength={maxLength}
+          list={listId}
+          autoComplete={listId ? "off" : undefined}
           onFocus={onFocus}
           onBlur={onBlur}
           className="relative h-14 w-full bg-transparent px-1 py-4 text-base outline-none placeholder:text-muted-foreground/60"
