@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { parseFieldError } from "@/lib/registrations";
 import { INDIA_STATES, citiesForState } from "@/lib/india-locations";
