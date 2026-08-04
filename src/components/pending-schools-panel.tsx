@@ -184,7 +184,12 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                 <>
                   {isEditing && (
                     <div className="mt-4 grid gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 md:grid-cols-2">
-                      <LabeledInput label="School name" value={val("schoolName", r.schoolName)} onChange={(v) => setDraft("schoolName", v)} />
+                      <div className="md:col-span-2">
+                        <span className="inline-block rounded-lg border-2 border-foreground px-4 py-2 text-sm font-bold uppercase tracking-wide text-foreground">
+                          Edit details as per MCM
+                        </span>
+                      </div>
+                      <LabeledInput label="School name (exactly as per MCM)" value={val("schoolName", r.schoolName)} onChange={(v) => setDraft("schoolName", v)} />
                       <LabeledInput label="Principal" value={val("principalName", r.principalName)} onChange={(v) => setDraft("principalName", v)} />
                       <LabeledInput label="Designation" value={val("designation", r.designation)} onChange={(v) => setDraft("designation", v)} />
                       <LabeledInput label="State" value={val("state", r.state)} onChange={(v) => setDraft("state", v)} />
