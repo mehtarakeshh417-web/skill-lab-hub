@@ -30,6 +30,7 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
   const [tab, setTab] = useState<Tab>("pending");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [salesRepId, setSalesRepId] = useState<Record<string, string>>({});
+  const [schoolCode, setSchoolCode] = useState<Record<string, string>>({});
   const [edits, setEdits] = useState<Record<string, Record<string, string>>>({});
   const [rejectReason, setRejectReason] = useState<Record<string, string>>({});
 
@@ -122,6 +123,8 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
           const setDraft = (k: string, v: string) =>
             setEdits((e) => ({ ...e, [r.id]: { ...(e[r.id] ?? {}), [k]: v } }));
           const chosenRep = salesRepId[r.id] ?? r.salesRepId ?? "";
+          const isPlaceholderCode = /^PENDING-/i.test(r.schoolCode);
+          const assignedCode = schoolCode[r.id] ?? (isPlaceholderCode ? "" : r.schoolCode);
           const activeReps = (reps ?? []).filter((x) => x.status === "active");
           return (
             <div
@@ -138,7 +141,7 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Code <span className="font-mono">{r.schoolCode}</span> · {r.region || "—"} ·
+                    Code <span className="font-mono">{isPlaceholderCode ? "Not assigned" : r.schoolCode}</span> · {r.region || "—"} ·
                     {" "}Principal: {r.principalName || "—"} ({r.designation || "—"})
                   </p>
                 </div>
@@ -171,7 +174,6 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                   {isEditing && (
                     <div className="mt-4 grid gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 md:grid-cols-2">
                       <LabeledInput label="School name" value={val("schoolName", r.schoolName)} onChange={(v) => setDraft("schoolName", v)} />
-                      <LabeledInput label="School code" value={val("schoolCode", r.schoolCode)} onChange={(v) => setDraft("schoolCode", v)} />
                       <LabeledInput label="Principal" value={val("principalName", r.principalName)} onChange={(v) => setDraft("principalName", v)} />
                       <LabeledInput label="Designation" value={val("designation", r.designation)} onChange={(v) => setDraft("designation", v)} />
                       <LabeledInput label="State" value={val("state", r.state)} onChange={(v) => setDraft("state", v)} />
@@ -188,6 +190,19 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                   )}
 
                   <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border/60 pt-4">
+                    <div className="flex-1 min-w-[240px]">
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        School code *
+                      </label>
+                      <Input
+                        placeholder="e.g. SCH-DEL-208"
+                        value={assignedCode}
+                        onChange={(e) =>
+                          setSchoolCode((s) => ({ ...s, [r.id]: e.target.value.toUpperCase() }))
+                        }
+                        className="font-mono"
+                      />
+                    </div>
                     <div className="flex-1 min-w-[240px]">
                       <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Assign sales rep *
@@ -211,15 +226,15 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                     <Button
                       variant="hero"
                       size="sm"
-                      disabled={!chosenRep || approve.isPending}
+                      disabled={!chosenRep || !assignedCode.trim() || approve.isPending}
                       onClick={() =>
                         approve.mutate({
                           id: r.id,
                           salesRepId: chosenRep,
+                          schoolCode: assignedCode.trim(),
                           ...(isEditing
                             ? {
                                 schoolName: val("schoolName", r.schoolName),
-                                schoolCode: val("schoolCode", r.schoolCode),
                                 principalName: val("principalName", r.principalName),
                                 designation: val("designation", r.designation),
                                 state: val("state", r.state),
