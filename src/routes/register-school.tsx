@@ -246,8 +246,8 @@ function RegisterSchool() {
             <p className="mt-5 text-sm text-muted-foreground sm:text-base">
               Thank you for registering <span className="font-semibold text-foreground">{submitted.schoolName}</span>.
               Your request is now <span className="font-semibold text-amber-500">Pending Approval</span> and will be
-              reviewed within 2 working days. Once approved, our team will assign your school code and you can sign in
-              with the credentials you created.
+              reviewed within 2 working days. Once approved, our team will assign your school code along with your
+              portal username and password, and share them with your registered contact.
             </p>
             <p className="mt-3 text-sm text-muted-foreground">
               Please quote your Request ID in any correspondence. For assistance, contact Avartan at{" "}
