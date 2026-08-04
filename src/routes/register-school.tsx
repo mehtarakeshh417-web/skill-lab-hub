@@ -71,7 +71,7 @@ function RegisterSchool() {
     state: "",
     city: "",
     area: "",
-    salesRepId: "",
+    salesRepName: "",
     notes: "",
     username: "",
     password: "",
@@ -83,37 +83,8 @@ function RegisterSchool() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [focused, setFocused] = useState<Record<string, boolean>>({});
-  const [submitted, setSubmitted] = useState<{ schoolName: string } | null>(null);
-  const [repQuery, setRepQuery] = useState("");
+  const [submitted, setSubmitted] = useState<{ schoolName: string; requestRef: string } | null>(null);
   const [formError, setFormError] = useState<string>("");
-  const [reps, setReps] = useState<{ id: string; fullName: string; designation: string }[]>([]);
-  const [repsLoading, setRepsLoading] = useState(true);
-
-  const loadReps = useCallback(async () => {
-    try {
-      const res = await fetch("/api/public/sales-reps", { headers: { accept: "application/json" } });
-      const json = (await res.json().catch(() => null)) as
-        | { ok?: boolean; reps?: { id: string; fullName: string; designation: string }[] }
-        | null;
-      if (json?.ok && Array.isArray(json.reps)) setReps(json.reps);
-    } catch {
-      /* keep the previously loaded list */
-    } finally {
-      setRepsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadReps();
-    if (typeof window === "undefined") return;
-    const onFocus = () => void loadReps();
-    window.addEventListener("focus", onFocus);
-    const interval = window.setInterval(() => void loadReps(), 60_000);
-    return () => {
-      window.removeEventListener("focus", onFocus);
-      window.clearInterval(interval);
-    };
-  }, [loadReps]);
 
   const update = (k: keyof typeof empty, v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -132,7 +103,7 @@ function RegisterSchool() {
     state: "State",
     city: "City",
     area: "Area",
-    salesRepId: "Sales Representative",
+    salesRepName: "Sales Representative",
     notes: "Submission Notes",
     username: "Login Username",
     password: "Login Password",
@@ -219,22 +190,22 @@ function RegisterSchool() {
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(),
           address: form.address.trim(),
-          salesRepId: form.salesRepId,
+          salesRepName: form.salesRepName.trim(),
         }),
       });
       const result = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string; field?: string }
+        | { ok?: boolean; error?: string; field?: string; requestRef?: string }
         | null;
       if (!response.ok || !result?.ok) {
         const message = result?.error ?? "Registration could not be submitted. Please try again.";
         throw new Error(result?.field ? `[${result.field}] ${message}` : message);
       }
+      const requestRef = result?.requestRef ?? "";
       toast.success("Registration submitted", {
-        description: `${form.schoolName.trim()} · status: Pending Approval`,
+        description: `${form.schoolName.trim()} · Request ID ${requestRef}`,
       });
-      setSubmitted({ schoolName: form.schoolName.trim() });
+      setSubmitted({ schoolName: form.schoolName.trim(), requestRef });
       setForm(empty);
-      setRepQuery("");
       setErrors({});
       setFormError("");
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
