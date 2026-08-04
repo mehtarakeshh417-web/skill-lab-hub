@@ -406,37 +406,15 @@ function RegisterSchool() {
                 />
               </div>
 
-              <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
-              <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
-                <Field
-                  name="username"
-                  label="Login Username"
-                  icon={UserSquare2}
-                  value={form.username}
-                  onChange={(v) => update("username", v)}
-                  placeholder="dps-delhi"
-                  error={errors.username}
-                  hint="You will use this to sign in after approval."
-                  focused={focused.username}
-                  onFocus={() => setFocused((f) => ({ ...f, username: true }))}
-                  onBlur={() => setFocused((f) => ({ ...f, username: false }))}
-                />
-                <Field
-                  name="password"
-                  label="Login Password"
-                  icon={ShieldCheck}
-                  value={form.password}
-                  onChange={(v) => update("password", v)}
-                  placeholder="Create a secure password"
-                  error={errors.password}
-                  type="password"
-                  focused={focused.password}
-                  onFocus={() => setFocused((f) => ({ ...f, password: true }))}
-                  onBlur={() => setFocused((f) => ({ ...f, password: false }))}
-                />
+              <div className="mt-8 flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-5 py-4 text-xs text-muted-foreground">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>
+                  Portal login credentials are not selected here. Your username and password will be assigned by the
+                  Avartan portal team when your registration is approved, and shared with your registered contact.
+                </span>
               </div>
 
-              <SectionHeading step="03" title="Contact & location" caption="How our onboarding team reaches your institution." />
+              <SectionHeading step="02" title="Contact & location" caption="How our onboarding team reaches your institution." />
               <div className="mt-6 grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <Field
                   name="email"
