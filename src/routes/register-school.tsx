@@ -6,7 +6,6 @@ import { INDIA_STATES, citiesForState } from "@/lib/india-locations";
 import avartanLogo from "@/assets/avartan-logo.jpg.asset.json";
 import {
   ShieldCheck,
-  Layers,
   ArrowLeft,
   Building2,
   UserSquare2,
