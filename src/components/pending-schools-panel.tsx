@@ -31,6 +31,8 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
   const [editingId, setEditingId] = useState<string | null>(null);
   const [salesRepId, setSalesRepId] = useState<Record<string, string>>({});
   const [schoolCode, setSchoolCode] = useState<Record<string, string>>({});
+  const [loginUsername, setLoginUsername] = useState<Record<string, string>>({});
+  const [loginPassword, setLoginPassword] = useState<Record<string, string>>({});
   const [edits, setEdits] = useState<Record<string, Record<string, string>>>({});
   const [rejectReason, setRejectReason] = useState<Record<string, string>>({});
 
@@ -126,6 +128,11 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
           const isPlaceholderCode = /^PENDING-/i.test(r.schoolCode);
           const assignedCode = schoolCode[r.id] ?? (isPlaceholderCode ? "" : r.schoolCode);
           const activeReps = (reps ?? []).filter((x) => x.status === "active");
+          const isPlaceholderUser = /^pending-/i.test(r.username);
+          const assignedUsername = loginUsername[r.id] ?? (isPlaceholderUser ? "" : r.username);
+          const assignedPassword = loginPassword[r.id] ?? "";
+          const credentialsReady =
+            assignedUsername.trim().length >= 3 && assignedPassword.length >= 8;
           return (
             <div
               key={r.id}
@@ -153,7 +160,11 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
               </div>
 
               <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <FieldPair label="Login username" value={r.username} mono />
+                <FieldPair
+                  label="Login username"
+                  value={isPlaceholderUser ? "Assigned at approval" : r.username}
+                  mono
+                />
                 <FieldPair
                   label="Contact email"
                   value={audience === "manager" ? maskEmail(r.email) : r.email}
@@ -164,8 +175,8 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                 />
                 <FieldPair label="Address" value={r.address || "—"} />
                 <FieldPair label="State" value={r.state || "—"} />
-                <FieldPair label="City" value={r.city || "—"} />
-                <FieldPair label="Area" value={r.area || "—"} />
+                <FieldPair label="District" value={r.city || "—"} />
+                <FieldPair label="City" value={r.area || "—"} />
                 <FieldPair label="Submission notes" value={r.notes || "— none provided —"} full />
               </div>
 
@@ -177,8 +188,8 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                       <LabeledInput label="Principal" value={val("principalName", r.principalName)} onChange={(v) => setDraft("principalName", v)} />
                       <LabeledInput label="Designation" value={val("designation", r.designation)} onChange={(v) => setDraft("designation", v)} />
                       <LabeledInput label="State" value={val("state", r.state)} onChange={(v) => setDraft("state", v)} />
-                      <LabeledInput label="City" value={val("city", r.city)} onChange={(v) => setDraft("city", v)} />
-                      <LabeledInput label="Area" value={val("area", r.area)} onChange={(v) => setDraft("area", v)} />
+                      <LabeledInput label="District" value={val("city", r.city)} onChange={(v) => setDraft("city", v)} />
+                      <LabeledInput label="City" value={val("area", r.area)} onChange={(v) => setDraft("area", v)} />
                       <LabeledInput label="Email" value={val("email", r.email)} onChange={(v) => setDraft("email", v)} />
                       <LabeledInput label="Phone" value={val("phone", r.phone)} onChange={(v) => setDraft("phone", v)} />
                       <LabeledInput label="Address" value={val("address", r.address)} onChange={(v) => setDraft("address", v)} />
@@ -205,6 +216,30 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                     </div>
                     <div className="flex-1 min-w-[240px]">
                       <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Login username *
+                      </label>
+                      <Input
+                        placeholder="e.g. dps-delhi"
+                        value={assignedUsername}
+                        onChange={(e) =>
+                          setLoginUsername((s) => ({ ...s, [r.id]: e.target.value.toLowerCase().trim() }))
+                        }
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[240px]">
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Login password *
+                      </label>
+                      <Input
+                        type="text"
+                        placeholder="Minimum 8 characters"
+                        value={assignedPassword}
+                        onChange={(e) => setLoginPassword((s) => ({ ...s, [r.id]: e.target.value }))}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[240px]">
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Assign sales rep *
                       </label>
                       <select
@@ -226,12 +261,14 @@ export function PendingSchoolsPanel({ audience }: { audience: "admin" | "manager
                     <Button
                       variant="hero"
                       size="sm"
-                      disabled={!chosenRep || !assignedCode.trim() || approve.isPending}
+                      disabled={!chosenRep || !assignedCode.trim() || !credentialsReady || approve.isPending}
                       onClick={() =>
                         approve.mutate({
                           id: r.id,
                           salesRepId: chosenRep,
                           schoolCode: assignedCode.trim(),
+                          username: assignedUsername.trim(),
+                          password: assignedPassword,
                           ...(isEditing
                             ? {
                                 schoolName: val("schoolName", r.schoolName),
