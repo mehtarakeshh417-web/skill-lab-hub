@@ -12,9 +12,9 @@ import { toast } from "sonner";
 import { KeyRound, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/settings/change-password")({
-  head: () => ({ meta: [{ title: "Change Password" }] }),
+  head: () => ({ meta: [{ title: "Change password" }] }),
   component: () => (
-    <AppShell title="Change Password">
+    <AppShell title="Change password">
       <Page />
     </AppShell>
   ),

@@ -77,7 +77,7 @@ function AuthPage() {
       if (!res.error) {
         mockSignOut();
         setSubmitting(false);
-        toast.success("Welcome back!");
+        toast.success("Signed in successfully");
         void recordAuthEvent({ data: { event: "login", identifier } }).catch(() => null);
         return;
       }
@@ -91,7 +91,7 @@ function AuthPage() {
       if (!res.error) {
         mockSignOut();
         setSubmitting(false);
-        toast.success("Welcome back!");
+        toast.success("Signed in successfully");
         void recordAuthEvent({ data: { event: "login", identifier } }).catch(() => null);
         return;
       }
@@ -138,7 +138,7 @@ function AuthPage() {
             <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Welcome back
           </div>
           <h2 className="font-display text-5xl font-bold leading-[1.05]">
-            Where curiosity <span className="block text-accent">meets code.</span>
+            Where curiosity <span className="block text-accent">meets code</span>
           </h2>
           <p className="max-w-md text-primary-foreground/80">
             Sign in to access role-based dashboards, interactive technology modules, and
@@ -186,15 +186,15 @@ function AuthPage() {
               <img src={avartanLogo.url} alt="Avartan" className="h-11 w-11 rounded-2xl object-contain bg-white p-1 shadow-lg shadow-emerald-500/30" />
               <div>
                 <div className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-500">
-                  Portal login
+                  Portal sign-in
                 </div>
                 <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-                  Welcome back
+                  Sign in
                 </h1>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              Sign in with the credentials issued for your role — School, Teacher, Student, Manager or Admin.
+              Sign in with the credentials issued for your role: School, Teacher, Student, Manager or Admin.
             </p>
 
             <form onSubmit={onSubmit} className="mt-8 space-y-5" noValidate>

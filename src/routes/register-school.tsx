@@ -24,9 +24,9 @@ import {
 export const Route = createFileRoute("/register-school")({
   head: () => ({
     meta: [
-      { title: "Register Your School — Avartan Skill Lab" },
+      { title: "Register your school — Avartan Skill Lab" },
       { name: "description", content: "Apply to bring Avartan Skill Lab to your institution. Submit your school details and our portal team will provision your accounts." },
-      { property: "og:title", content: "Register Your School — Avartan Skill Lab" },
+      { property: "og:title", content: "Register your school — Avartan Skill Lab" },
       { property: "og:description", content: "Apply to bring Avartan Skill Lab to your institution. Submit your school details and our portal team will provision your accounts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -272,7 +272,7 @@ function RegisterSchool() {
             </h3>
             <p className="mt-3 text-sm text-muted-foreground sm:text-base">
               Thank you — <span className="font-semibold text-foreground">{submitted.schoolName}</span> ({submitted.schoolCode}) has been
-              submitted successfully and is now <span className="font-semibold text-amber-500">Pending Approval</span>. Our portal
+              submitted and is now <span className="font-semibold text-amber-500">Pending Approval</span>. Our portal
               team will review your application, and once approved you can sign in with the credentials you created.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
@@ -309,7 +309,7 @@ function RegisterSchool() {
             <Building2 className="h-3.5 w-3.5" /> Institutional Onboarding
           </div>
           <h2 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Apply for your school's Avartan portal.
+            Apply for your school's Avartan portal
           </h2>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             Complete the onboarding application below. Once approved, our deployment team will provision your dedicated school directory, educator workspaces, and student licenses.
@@ -330,7 +330,7 @@ function RegisterSchool() {
             <div className="relative">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="font-display text-xl font-bold tracking-tight">Institutional Registration</h3>
+                  <h3 className="font-display text-xl font-bold tracking-tight">Institutional registration</h3>
                   <p className="mt-1 max-w-md text-xs text-muted-foreground">All fields are mandatory unless marked optional. Your data is encrypted and visible only to authorized portal administrators.</p>
                 </div>
                 <span className="inline-flex shrink-0 items-center gap-1.5 self-start whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-500/10 px-3.5 py-2 text-[11px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400">
@@ -534,7 +534,7 @@ function RegisterSchool() {
                         value={form.notes}
                         onChange={(e) => update("notes", e.target.value)}
                         rows={4}
-                        placeholder="Tell us about your school size, requested tracks, timelines, or any special requirements…"
+                        placeholder="Tell us about your school size, requested tracks, timelines, or any special requirements"
                         className="relative w-full resize-none bg-transparent px-5 py-4 text-base outline-none placeholder:text-muted-foreground/60"
                       />
                     </div>
@@ -543,7 +543,7 @@ function RegisterSchool() {
                     {errors.notes ? (
                       <span className="inline-flex items-center gap-1 text-rose-400"><AlertCircle className="h-3.5 w-3.5" /> {errors.notes}</span>
                     ) : (
-                      <span>Plain text only · no HTML.</span>
+                      <span>Plain text only, no HTML.</span>
                     )}
                     <span className="tabular-nums">{form.notes.length} characters</span>
                   </div>
@@ -565,7 +565,7 @@ function RegisterSchool() {
               <div className="mt-6 flex flex-col gap-5 border-t border-border/60 pt-7 sm:flex-row sm:items-center sm:justify-between">
                 <p className="max-w-md text-xs text-muted-foreground leading-relaxed">
                   By submitting, you authorize Avartan to contact your institution regarding onboarding. Your application enters the
-                  review queue as <span className="font-semibold text-amber-500 dark:text-amber-400">Pending Approval</span> and will typically be processed within one business day.
+                  review queue as <span className="font-semibold text-amber-500 dark:text-amber-400">Pending Approval</span> and is typically processed within one business day.
                 </p>
                 <button
                   type="submit"
@@ -574,7 +574,7 @@ function RegisterSchool() {
                   className="inline-flex h-16 w-full shrink-0 items-center justify-center gap-2.5 rounded-2xl px-10 text-base font-bold tracking-tight text-primary-foreground shadow-[0_16px_40px_-12px_var(--primary)] ring-1 ring-inset ring-white/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-14px_var(--primary)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                  {submitting ? "Submitting Application…" : "Submit Registration"}
+                  {submitting ? "Submitting application…" : "Submit registration"}
                 </button>
               </div>
             </div>

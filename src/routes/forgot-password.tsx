@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { ArrowLeft, KeyRound, MessageCircleQuestion, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/forgot-password")({
-  head: () => ({ meta: [{ title: "Forgot Password — Avartan" }] }),
+  head: () => ({ meta: [{ title: "Forgot password — Avartan" }] }),
   component: ForgotPage,
 });
 
@@ -61,10 +61,10 @@ function ForgotPage() {
       <Card className="w-full max-w-lg border-white/10 bg-white/[0.04] backdrop-blur-xl">
         <CardHeader>
           <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-300/80">
-            <KeyRound className="h-3.5 w-3.5" /> Account Recovery
+            <KeyRound className="h-3.5 w-3.5" /> Account recovery
           </div>
-          <CardTitle className="font-display text-2xl text-white">Forgot Password</CardTitle>
-          <p className="text-sm text-slate-300/70">Recover access using your Security PIN or Security Question.</p>
+          <CardTitle className="font-display text-2xl text-white">Forgot password</CardTitle>
+          <p className="text-sm text-slate-300/70">Recover access using your security PIN or security question.</p>
         </CardHeader>
         <CardContent className="space-y-5">
           {step === "identifier" && (
@@ -90,8 +90,8 @@ function ForgotPage() {
                 >
                   <KeyRound className="h-5 w-5 text-emerald-300" />
                   <div>
-                    <div className="text-white font-medium">Use Security PIN</div>
-                    <div className="text-xs text-slate-400">4–8 digit PIN you set during first login.</div>
+                    <div className="text-white font-medium">Use security PIN</div>
+                    <div className="text-xs text-slate-400">A 4-8 digit PIN you set during first login.</div>
                   </div>
                 </button>
                 <button
@@ -102,7 +102,7 @@ function ForgotPage() {
                 >
                   <MessageCircleQuestion className="h-5 w-5 text-emerald-300" />
                   <div>
-                    <div className="text-white font-medium">Use Security Question</div>
+                    <div className="text-white font-medium">Use security question</div>
                     <div className="text-xs text-slate-400">{question ?? "Not set for this account."}</div>
                   </div>
                 </button>
