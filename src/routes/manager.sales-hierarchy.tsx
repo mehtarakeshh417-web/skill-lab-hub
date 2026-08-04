@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { UserPlus2 } from "lucide-react";
 
 export const Route = createFileRoute("/manager/sales-hierarchy")({
-  head: () => ({ meta: [{ title: "Sales Hierarchy · Manager" }] }),
+  head: () => ({ meta: [{ title: "Sales hierarchy · Avartan Skill Lab" }] }),
   component: () => (
-    <AppShell requireRole="portal_manager" title="Sales Hierarchy">
+    <AppShell requireRole="portal_manager" title="Sales hierarchy">
       <div className="mb-4 flex justify-end">
         <Button variant="hero" asChild>
           <Link to="/manager/create-sales-rep"><UserPlus2 className="h-4 w-4" /> New sales rep</Link>

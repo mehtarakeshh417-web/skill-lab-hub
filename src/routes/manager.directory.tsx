@@ -14,9 +14,9 @@ export const Route = createFileRoute("/manager/directory")({
   }),
   head: () => ({
     meta: [
-      { title: "Directory — Avartan Manager Console" },
+      { title: "Directory · Avartan Skill Lab" },
       { name: "description", content: "Browse the schools, teachers, students and sales representatives you manage on the Avartan Skill Lab portal." },
-      { property: "og:title", content: "Directory — Avartan Manager Console" },
+      { property: "og:title", content: "Directory · Avartan Skill Lab" },
       { property: "og:description", content: "Schools, teachers, students and sales representatives with search, filters and exports." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

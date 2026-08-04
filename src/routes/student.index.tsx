@@ -49,13 +49,13 @@ function StudentDashboard() {
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5" /> Ready to build something today?
+              <Sparkles className="h-3.5 w-3.5" /> Your learning space
             </div>
             <h2 className="mt-4 font-display text-3xl font-bold tracking-tight md:text-4xl">
-              Welcome back to your lab.
+              Welcome back.
             </h2>
             <p className="mt-2 max-w-xl text-primary-foreground/80">
-              Pick a technology, write some code, and watch it come to life instantly.
+              Choose a technology, write code, and see the results instantly.
             </p>
           </div>
           <div className="flex shrink-0 gap-3">

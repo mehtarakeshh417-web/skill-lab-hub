@@ -16,9 +16,9 @@ import {
 export const Route = createFileRoute("/admin/")({
   head: () => ({
     meta: [
-      { title: "Admin Console — Avartan Skill Lab" },
+      { title: "Admin overview · Avartan Skill Lab" },
       { name: "description", content: "Owner console for the Avartan Skill Lab portal: live school, teacher and student counts, approvals, account controls and downloadable reports." },
-      { property: "og:title", content: "Admin Console — Avartan Skill Lab" },
+      { property: "og:title", content: "Admin overview · Avartan Skill Lab" },
       { property: "og:description", content: "Live portal metrics, school approvals, directory and reports." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -65,7 +65,7 @@ function AdminDashboard() {
   }
 
   return (
-    <AppShell requireRole="admin" title="Platform Overview">
+    <AppShell requireRole="admin" title="Platform overview">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         <StatCard label="Schools" value={totals?.schools ?? 0} icon={School2} trend="Live" to="/admin/directory" search={{ tab: "schools" }} hint="Open school directory" />
         <StatCard label="Teachers" value={totals?.teachers ?? 0} icon={GraduationCap} to="/admin/directory" search={{ tab: "teachers" }} hint="Open teacher directory" />

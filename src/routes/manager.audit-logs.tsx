@@ -5,9 +5,9 @@ import { AuditTrailWorkspace } from "@/components/audit-trail-workspace";
 export const Route = createFileRoute("/manager/audit-logs")({
   head: () => ({
     meta: [
-      { title: "Audit Trail — Avartan Manager Console" },
+      { title: "Audit trail · Avartan Skill Lab" },
       { name: "description", content: "Complete, searchable activity history of portal actions available to Avartan portal managers." },
-      { property: "og:title", content: "Audit Trail — Avartan Manager Console" },
+      { property: "og:title", content: "Audit trail · Avartan Skill Lab" },
       { property: "og:description", content: "Portal activity history for managers." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

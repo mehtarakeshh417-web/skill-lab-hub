@@ -3,9 +3,9 @@ import { AppShell } from "@/components/app-shell";
 import { PendingSchoolsPanel } from "@/components/pending-schools-panel";
 
 export const Route = createFileRoute("/manager/pending-schools")({
-  head: () => ({ meta: [{ title: "Pending School Approvals · Manager" }] }),
+  head: () => ({ meta: [{ title: "Pending school approvals · Avartan Skill Lab" }] }),
   component: () => (
-    <AppShell requireRole="portal_manager" title="Pending School Approvals">
+    <AppShell requireRole="portal_manager" title="Pending school approvals">
       <PendingSchoolsPanel audience="manager" />
     </AppShell>
   ),
