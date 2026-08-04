@@ -122,6 +122,23 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
 
   await assertUsernameAvailable(username);
 
+  // Resolve the typed sales representative name to an active rep record.
+  const repName = input.salesRepName.trim();
+  const repLookup = await supabaseAdmin
+    .from("sales_reps")
+    .select("id, full_name, status")
+    .ilike("full_name", repName)
+    .eq("status", "active");
+  if (repLookup.error) throw new Error(repLookup.error.message);
+  const matches = repLookup.data ?? [];
+  if (matches.length === 0) {
+    throw new Error("[salesRepName] This sales representative does not exist. Please check the name with your representative.");
+  }
+  if (matches.length > 1) {
+    throw new Error("[salesRepName] Multiple representatives share this name. Please contact Avartan support to continue.");
+  }
+  const salesRepId = matches[0].id;
+
   const encrypted = encryptSecret(input.password);
   const insert = await supabaseAdmin
     .from("school_registrations")
@@ -141,11 +158,12 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
       address: input.address?.trim() || null,
       encrypted_password: encrypted,
       status: "pending",
-      sales_rep_id: input.salesRepId,
+      sales_rep_id: salesRepId,
     })
     .select("*")
     .single();
   if (insert.error) throw new Error(insert.error.message);
+  const requestRef = `AVR-${insert.data.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
   const { writeAudit } = await import("./security.server");
   await writeAudit({
     actorUserId: null,
@@ -156,10 +174,10 @@ export async function submitPublicRegistration(input: SubmitRegistrationInput) {
     entityType: "school_registration",
     entityId: insert.data.id,
     entityLabel: input.schoolName.trim(),
-    newValue: { schoolCode, username, email, city: input.city, state: input.state, salesRepId: input.salesRepId },
+    newValue: { requestRef, schoolCode, username, email, city: input.city, state: input.state, salesRepId },
     remarks: "Public school registration submitted for approval",
   });
-  return toRecord(insert.data);
+  return { ...toRecord(insert.data), requestRef };
 }
 
 export async function listRegistrationsForActor(actorUserId: string) {
