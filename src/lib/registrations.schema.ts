@@ -9,8 +9,6 @@ export const submitRegistrationSchema = z.object({
   area: z.string().trim().min(1, "Area is required"),
   region: z.string().trim().optional().default(""),
   notes: z.string().trim().min(1, "Submission notes are required"),
-  username: z.string().trim().toLowerCase().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
   email: z.string().trim().toLowerCase().min(1, "Email is required").email("Enter a valid email address"),
   phone: z.string().trim().min(1, "Phone is required"),
   address: z.string().trim().min(1, "Address is required"),
@@ -21,6 +19,13 @@ export type SubmitRegistrationInput = z.infer<typeof submitRegistrationSchema>;
 export const approveRegistrationSchema = z.object({
   id: z.string().uuid(),
   salesRepId: z.string().uuid("Assign a sales representative"),
+  username: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(3, "Assign a login username (min 3 characters)")
+    .regex(/^[a-z0-9._-]+$/, "Username can use letters, numbers, dot, dash and underscore only"),
+  password: z.string().min(8, "Assign a login password (min 8 characters)"),
   // Optional overrides at approval time
   schoolName: z.string().trim().optional(),
   schoolCode: z.string().trim().min(1, "Enter a school code before approving"),
