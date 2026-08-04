@@ -67,7 +67,6 @@ function RegisterSchoolPage() {
 function RegisterSchool() {
   const empty = {
     schoolName: "",
-    schoolCode: "",
     principalName: "",
     designation: "",
     state: "",
@@ -85,7 +84,8 @@ function RegisterSchool() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [focused, setFocused] = useState<Record<string, boolean>>({});
-  const [submitted, setSubmitted] = useState<{ schoolName: string; schoolCode: string } | null>(null);
+  const [submitted, setSubmitted] = useState<{ schoolName: string } | null>(null);
+  const [repQuery, setRepQuery] = useState("");
   const [formError, setFormError] = useState<string>("");
   const [reps, setReps] = useState<{ id: string; fullName: string; designation: string }[]>([]);
   const [repsLoading, setRepsLoading] = useState(true);
@@ -128,7 +128,6 @@ function RegisterSchool() {
 
   const LABELS: Record<keyof typeof empty, string> = {
     schoolName: "School Name",
-    schoolCode: "School Code",
     principalName: "Principal Name",
     designation: "Contact Designation",
     state: "State",
@@ -209,7 +208,6 @@ function RegisterSchool() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           schoolName: form.schoolName.trim(),
-          schoolCode: form.schoolCode.trim().toUpperCase(),
           principalName: form.principalName.trim(),
           state: form.state.trim(),
           city: form.city.trim(),
@@ -235,8 +233,9 @@ function RegisterSchool() {
       toast.success("Registration submitted", {
         description: `${form.schoolName.trim()} · status: Pending Approval`,
       });
-      setSubmitted({ schoolName: form.schoolName.trim(), schoolCode: form.schoolCode.trim().toUpperCase() });
+      setSubmitted({ schoolName: form.schoolName.trim() });
       setForm(empty);
+      setRepQuery("");
       setErrors({});
       setFormError("");
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -271,9 +270,10 @@ function RegisterSchool() {
               Submitted for approval
             </h3>
             <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-              Thank you — <span className="font-semibold text-foreground">{submitted.schoolName}</span> ({submitted.schoolCode}) has been
+              Thank you — <span className="font-semibold text-foreground">{submitted.schoolName}</span> has been
               submitted and is now <span className="font-semibold text-amber-500">Pending Approval</span>. Our portal
-              team will review your application, and once approved you can sign in with the credentials you created.
+              team will review your application, assign your school code, and once approved you can sign in with the
+              credentials you created.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
@@ -353,18 +353,6 @@ function RegisterSchool() {
                   onBlur={() => setFocused((f) => ({ ...f, schoolName: false }))}
                 />
                 <Field
-                  name="schoolCode"
-                  label="Requested Unique School Code"
-                  icon={Layers}
-                  value={form.schoolCode}
-                  onChange={(v) => update("schoolCode", v.toUpperCase())}
-                  placeholder="SCH-DEL-208"
-                  error={errors.schoolCode}
-                  focused={focused.schoolCode}
-                  onFocus={() => setFocused((f) => ({ ...f, schoolCode: true }))}
-                  onBlur={() => setFocused((f) => ({ ...f, schoolCode: false }))}
-                />
-                <Field
                   name="principalName"
                   label="Principal Name"
                   icon={UserSquare2}
@@ -422,27 +410,43 @@ function RegisterSchool() {
                   onFocus={() => setFocused((f) => ({ ...f, area: true }))}
                   onBlur={() => setFocused((f) => ({ ...f, area: false }))}
                 />
-                <SelectField
-                  name="salesRepId"
-                  label="Sales Representative"
-                  icon={UserCheck}
-                  value={form.salesRepId}
-                  onChange={(v) => update("salesRepId", v)}
-                  placeholder={repsLoading ? "Loading representatives…" : reps.length ? "Select your sales representative" : "No representatives available yet"}
-                  options={reps.map((r) => ({
-                    value: r.id,
-                    label: r.designation ? `${r.fullName} — ${r.designation}` : r.fullName,
-                  }))}
-                  disabled={repsLoading || reps.length === 0}
-                  error={errors.salesRepId}
-                  hint={
-                    repsLoading
-                      ? "Fetching the latest representative list."
-                      : reps.length === 0
-                      ? "No active sales representatives yet — please contact the portal team."
-                      : "Choose the representative who introduced Avartan to your school."
-                  }
-                />
+                <div>
+                  <BaseField
+                    name="salesRepId"
+                    label="Sales Representative"
+                    icon={UserCheck}
+                    value={repQuery}
+                    listId="sales-rep-options"
+                    onChange={(v) => {
+                      setRepQuery(v);
+                      const needle = v.trim().toLowerCase();
+                      const match = reps.find(
+                        (r) =>
+                          r.fullName.toLowerCase() === needle ||
+                          (r.designation ? `${r.fullName} — ${r.designation}` : r.fullName).toLowerCase() === needle,
+                      );
+                      update("salesRepId", match?.id ?? "");
+                    }}
+                    placeholder={repsLoading ? "Loading representatives…" : "Type your representative's name"}
+                    error={errors.salesRepId}
+                    focused={focused.salesRepId}
+                    onFocus={() => setFocused((f) => ({ ...f, salesRepId: true }))}
+                    onBlur={() => setFocused((f) => ({ ...f, salesRepId: false }))}
+                    hint={
+                      form.salesRepId
+                        ? "Representative matched."
+                        : "Start typing and pick a name from the suggestions."
+                    }
+                  />
+                  <datalist id="sales-rep-options">
+                    {reps.map((r) => (
+                      <option
+                        key={r.id}
+                        value={r.designation ? `${r.fullName} — ${r.designation}` : r.fullName}
+                      />
+                    ))}
+                  </datalist>
+                </div>
               </div>
 
               <SectionHeading step="02" title="Portal credentials" caption="Used to sign in once your application is approved." />
