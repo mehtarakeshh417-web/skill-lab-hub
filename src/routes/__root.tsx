@@ -14,7 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemePicker } from "@/lib/theme";
-import { ResourceLimitOverlay } from "@/components/resource-limit-overlay";
+
 
 function NotFoundComponent() {
   return (
@@ -136,7 +136,7 @@ function RootComponent() {
         <Outlet />
         <ThemePicker side="top" className="fixed bottom-5 right-5 z-[60]" />
         <Toaster richColors position="top-right" />
-        <ResourceLimitOverlay />
+        
       </AuthProvider>
     </QueryClientProvider>
   );
