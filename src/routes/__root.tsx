@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemePicker } from "@/lib/theme";
+import { BillingHoldOverlay } from "@/components/billing-hold-overlay";
 
 
 function NotFoundComponent() {
@@ -136,7 +137,7 @@ function RootComponent() {
         <Outlet />
         <ThemePicker side="top" className="fixed bottom-5 right-5 z-[60]" />
         <Toaster richColors position="top-right" />
-        
+        <BillingHoldOverlay />
       </AuthProvider>
     </QueryClientProvider>
   );
