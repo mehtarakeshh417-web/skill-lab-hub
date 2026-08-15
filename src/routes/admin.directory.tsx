@@ -31,8 +31,8 @@ function DirectoryPage() {
   const load = useServerFn(getDirectory);
   const queryClient = useQueryClient();
   const validTabs = ["schools", "teachers", "students", "salesReps"] as const;
-  const initialTab = (validTabs as readonly string[]).includes(tab) ? (tab as (typeof validTabs)[number]) : "schools";
-  const initialStatus = ["all", "active", "inactive"].includes(status) ? status : "all";
+  const initialTab = (validTabs as readonly string[]).includes(tab ?? "") ? (tab as (typeof validTabs)[number]) : "schools";
+  const initialStatus = ["all", "active", "inactive"].includes(status ?? "") ? (status as string) : "all";
   const [filters, setFilters] = useState({ search: "", state: "all", city: "all", region: "all", schoolId: "all", status: initialStatus });
 
   const query = useQuery({
