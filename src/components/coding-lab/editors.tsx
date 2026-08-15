@@ -405,9 +405,9 @@ export const EDITOR_REGISTRY: Record<EditorSlug, EditorConfig> = {
     title: "Scratch Junior",
     subtitle: "Visual coding for early learners",
     badge: "Live",
-    src: "https://codejr.org/scratchjr/index.html",
+    src: "https://codejr.org/",
     caption:
-      "Powered by CodeJr.org — a free browser version of Scratch Jr.",
+      "Powered by CodeJr — a free browser-based Scratch Jr editor with sprites, blocks, and stage playback.",
   },
   python: {
     title: "Python",
