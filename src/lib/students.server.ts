@@ -70,19 +70,54 @@ async function usernameTaken(username: string): Promise<boolean> {
   return Boolean(a.data || b.data || c.data || d.data || e.data);
 }
 
+/** jane.doe3417 — readable, name-derived, unique across every portal account. */
+function usernameSeed(fullName: string): string {
+  const slug = fullName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s.]/g, "")
+    .replace(/\s+/g, ".")
+    .replace(/\.+/g, ".")
+    .replace(/^\.|\.$/g, "")
+    .slice(0, 24);
+  return slug || "student";
+}
+
+async function generateUniqueUsername(fullName: string): Promise<string> {
+  const seed = usernameSeed(fullName);
+  for (let attempt = 0; attempt < 25; attempt++) {
+    const suffix = String(1000 + Math.floor(Math.random() * 9000));
+    const candidate = `${seed}${suffix}`;
+    if (!(await usernameTaken(candidate))) return candidate;
+  }
+  throw new Error("Could not generate a unique username. Please try again.");
+}
+
+/** 10 characters, ambiguous glyphs (0/O/1/l/I) excluded so it can be read out loud. */
+function generatePassword(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  let out = "";
+  for (let i = 0; i < 10; i++) {
+    out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return out;
+}
+
 async function provisionStudent(
   input: StudentCreateInput,
   schoolId: string,
   actorUserId: string,
-) {
+): Promise<{ record: StudentRecord; password: string }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const username = input.username.trim().toLowerCase();
+  const { encryptSecret } = await import("./registrations.server");
+  const username = await generateUniqueUsername(input.fullName);
+  const password = generatePassword();
   const loginEmail = `${username}@avartan.app`;
   const contactEmail = input.email.trim().toLowerCase();
 
   const created = await supabaseAdmin.auth.admin.createUser({
     email: loginEmail,
-    password: input.password,
+    password,
     email_confirm: true,
     user_metadata: {
       username,
