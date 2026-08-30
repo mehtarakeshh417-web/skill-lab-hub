@@ -722,13 +722,19 @@ function StudentRoster({
 }) {
   const [open, setOpen] = useState(false);
 
-  const addStudent = (s: { name: string; cls: string; section: string; roll: string; loginId: string }) => {
+  const generateLoginId = (name: string) => {
+    const seed = name.trim().toLowerCase().replace(/[^a-z0-9\s.]/g, "").replace(/\s+/g, ".").replace(/\.+/g, ".").replace(/^\.|\.$/g, "").slice(0, 24) || "student";
+    return `${seed}${1000 + Math.floor(Math.random() * 9000)}`;
+  };
+
+  const addStudent = (s: { name: string; cls: string; section: string; roll: string }) => {
+    const loginId = generateLoginId(s.name);
     const res = registerMockAccount({
-      username: s.loginId.toLowerCase(),
-      password: `${s.loginId.toLowerCase()}123`,
+      username: loginId,
+      password: `${loginId}123`,
       role: "student",
       fullName: s.name,
-      email: `${s.loginId.toLowerCase()}@avartan.app`,
+      email: `${loginId}@avartan.app`,
       schoolCode,
       schoolName: undefined,
       teacherId,
@@ -737,7 +743,7 @@ function StudentRoster({
       meta: { admissionId: s.roll, grade: s.cls, section: s.section, createdBy: teacherUsername },
     });
     if (!res.ok) { toast.error("We couldn't add this student", { description: res.reason || "Please check the details and try again." }); return false; }
-    toast.success(`Added ${s.name} · login: ${s.loginId.toLowerCase()} / ${s.loginId.toLowerCase()}123`);
+    toast.success(`Added ${s.name} · login: ${loginId} / ${loginId}123`);
     return true;
   };
 
@@ -757,9 +763,9 @@ function StudentRoster({
       // Skip header if non-numeric in roll column
       const startIdx = lines[0]?.toLowerCase().includes("name") ? 1 : 0;
       for (let i = startIdx; i < lines.length; i++) {
-        const [name, cls, section, roll, loginId] = lines[i].split(",").map((x) => x?.trim());
-        if (!name || !loginId) continue;
-        const ok = addStudent({ name, cls: cls || "Class 6", section: section || "A", roll: roll || `R${i}`, loginId });
+        const [name, cls, section, roll] = lines[i].split(",").map((x) => x?.trim());
+        if (!name) continue;
+        const ok = addStudent({ name, cls: cls || "Class 6", section: section || "A", roll: roll || `R${i}` });
         if (ok) added++;
       }
       toast.success(`Bulk upload complete · ${added} student(s) added`);
@@ -769,9 +775,9 @@ function StudentRoster({
 
   const downloadTemplate = () => {
     const csv = [
-      "name,class,section,roll,loginId",
-      "Aarav Sharma,Class 6,A,R001,aarav.sharma",
-      "Isha Patel,Class 6,A,R002,isha.patel",
+      "name,class,section,roll",
+      "Aarav Sharma,Class 6,A,R001",
+      "Isha Patel,Class 6,A,R002",
     ].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
