@@ -1200,6 +1200,7 @@ export type Database = {
           guardian_name: string | null
           guardian_phone: string | null
           id: string
+          initial_password_enc: string | null
           phone: string | null
           roll_number: string | null
           school_id: string
@@ -1221,6 +1222,7 @@ export type Database = {
           guardian_name?: string | null
           guardian_phone?: string | null
           id?: string
+          initial_password_enc?: string | null
           phone?: string | null
           roll_number?: string | null
           school_id: string
@@ -1242,6 +1244,7 @@ export type Database = {
           guardian_name?: string | null
           guardian_phone?: string | null
           id?: string
+          initial_password_enc?: string | null
           phone?: string | null
           roll_number?: string | null
           school_id?: string

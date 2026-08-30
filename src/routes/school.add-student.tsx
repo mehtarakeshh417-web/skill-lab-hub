@@ -31,8 +31,6 @@ export const Route = createFileRoute("/school/add-student")({
 
 type FormState = {
   fullName: string;
-  username: string;
-  password: string;
   email: string;
   phone: string;
   rollNumber: string;
@@ -48,8 +46,6 @@ type FormState = {
 
 const EMPTY: FormState = {
   fullName: "",
-  username: "",
-  password: "",
   email: "",
   phone: "",
   rollNumber: "",
@@ -79,6 +75,7 @@ function AddStudentWorkspace() {
 
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [created, setCreated] = useState<{ fullName: string; username: string; password: string } | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -122,6 +119,7 @@ function AddStudentWorkspace() {
     mutationFn: (data: StudentCreateInput) => create({ data }),
     onSuccess: async (rec) => {
       await queryClient.invalidateQueries({ queryKey: ["school-students"] });
+      setCreated({ fullName: rec.fullName, username: rec.username, password: rec.generatedPassword });
       toast.success(`${rec.fullName} has been added`, {
         description: `Login username: ${rec.username}`,
       });
@@ -163,6 +161,48 @@ function AddStudentWorkspace() {
         </Button>
       </div>
 
+      {created ? (
+        <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6 shadow-lg">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                Login details generated
+              </div>
+              <h3 className="mt-1 font-display text-lg font-bold">{created.fullName}</h3>
+              <p className="text-sm text-muted-foreground">
+                Share these credentials with the student. They can also be viewed later from the roster.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="soft"
+                size="sm"
+                onClick={() => {
+                  void navigator.clipboard.writeText(`Username: ${created.username}\nPassword: ${created.password}`);
+                  toast.success("Login details copied");
+                }}
+              >
+                Copy details
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setCreated(null)}>
+                Dismiss
+              </Button>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-border/50 bg-card/70 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Username</div>
+              <div className="font-mono text-base font-semibold">{created.username}</div>
+            </div>
+            <div className="rounded-2xl border border-border/50 bg-card/70 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Password</div>
+              <div className="font-mono text-base font-semibold">{created.password}</div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <form
         onSubmit={submit}
         className="rounded-3xl border border-border/60 bg-card/70 p-6 shadow-2xl shadow-primary/5 backdrop-blur-xl sm:p-8"
@@ -174,7 +214,7 @@ function AddStudentWorkspace() {
           <div>
             <h2 className="font-display text-lg font-bold tracking-tight">Create a student account</h2>
             <p className="text-sm text-muted-foreground">
-              Same fields as the bulk upload template. Fields marked * are required.
+              The username and password are generated automatically. Fields marked * are required.
             </p>
           </div>
         </header>
@@ -182,12 +222,6 @@ function AddStudentWorkspace() {
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Full Name *" error={errors.fullName}>
             <Input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} placeholder="Jane Doe" />
-          </Field>
-          <Field label="Username *" error={errors.username}>
-            <Input value={form.username} onChange={(e) => set("username", e.target.value)} placeholder="jane.doe" autoComplete="off" />
-          </Field>
-          <Field label="Password *" error={errors.password}>
-            <Input value={form.password} onChange={(e) => set("password", e.target.value)} placeholder="welcome123" autoComplete="new-password" />
           </Field>
           <Field label="Email *" error={errors.email}>
             <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="jane@school.com" />

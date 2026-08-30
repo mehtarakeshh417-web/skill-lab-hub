@@ -2,8 +2,6 @@ import { z } from "zod";
 
 export const studentCreateSchema = z.object({
   fullName: z.string().trim().min(2, "Full name is required").max(140),
-  username: z.string().trim().toLowerCase().min(1, "Username is required").max(120),
-  password: z.string().min(1, "Password is required").max(256),
   email: z.string().trim().toLowerCase().email("Enter a valid email address").max(180),
   phone: z.string().trim().max(40).optional().default(""),
   rollNumber: z.string().trim().max(60).optional().default(""),
@@ -21,8 +19,6 @@ export type StudentCreateInput = z.infer<typeof studentCreateSchema>;
 
 export const STUDENT_TEMPLATE_COLUMNS = [
   { key: "fullName", header: "Full Name *", required: true, example: "Jane Doe" },
-  { key: "username", header: "Username *", required: true, example: "jane.doe" },
-  { key: "password", header: "Password *", required: true, example: "welcome123" },
   { key: "email", header: "Email *", required: true, example: "jane@school.com" },
   { key: "phone", header: "Phone", required: false, example: "9876543210" },
   { key: "rollNumber", header: "Roll Number", required: false, example: "R-101" },

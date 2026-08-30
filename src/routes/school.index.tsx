@@ -26,6 +26,7 @@ import { useAuth } from "@/lib/auth";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listMySchoolTeachers } from "@/lib/teachers.functions";
 import { listMySchoolStudents } from "@/lib/students.functions";
+import { StudentLoginDetailsButton } from "@/components/student-login-details";
 import {
   listMyClassSections,
   saveMyClassSections,
@@ -1063,6 +1064,7 @@ function MonitorPanel({
                   <th className="px-3 py-2 text-left font-semibold">Teacher</th>
                   <th className="px-3 py-2 text-left font-semibold">Progress</th>
                   <th className="px-3 py-2 text-right font-semibold">Marks</th>
+                  <th className="px-3 py-2 text-right font-semibold">Login</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -1086,6 +1088,13 @@ function MonitorPanel({
                       </div>
                     </td>
                     <td className="px-3 py-2 text-right font-mono text-xs font-semibold">{r.marks}%</td>
+                    <td className="px-3 py-2 text-right">
+                      <StudentLoginDetailsButton
+                        studentId={r.account.databaseId}
+                        fullName={r.account.fullName}
+                        label="View"
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>

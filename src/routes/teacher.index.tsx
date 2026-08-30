@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { StudentLoginDetailsButton } from "@/components/student-login-details";
 import { useAuth } from "@/lib/auth";
 import { listMockAccounts, registerMockAccount, subscribeMockAccounts, type MockAccount } from "@/lib/mock-auth";
 import { getMyTeacherWorkspace } from "@/lib/classes.functions";
@@ -840,7 +841,14 @@ function StudentRoster({
                     <div className="font-medium">{s.fullName}</div>
                     <div className="text-xs text-muted-foreground">Roll {s.meta?.admissionId || "—"} · {s.classSection}</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">login: {s.username}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">login: {s.username}</span>
+                    <StudentLoginDetailsButton
+                      studentId={s.databaseId}
+                      fullName={s.fullName}
+                      label="View"
+                    />
+                  </div>
                 </div>
               ))}
             </div>

@@ -57,6 +57,9 @@ function BulkStudentsWorkspace() {
   const [parsedRows, setParsedRows] = useState<StudentCreateInput[]>([]);
   const [rowErrors, setRowErrors] = useState<RowError[]>([]);
   const [successCount, setSuccessCount] = useState<number | null>(null);
+  const [issued, setIssued] = useState<
+    Array<{ fullName: string; username: string; password: string; className: string; section: string }>
+  >([]);
 
   const { data: sectionData } = useQuery({
     queryKey: ["school-class-sections"],
@@ -147,6 +150,15 @@ function BulkStudentsWorkspace() {
         return;
       }
       setSuccessCount(result.createdCount);
+      setIssued(
+        result.created.map((s) => ({
+          fullName: s.fullName,
+          username: s.username,
+          password: s.generatedPassword,
+          className: s.className,
+          section: s.section,
+        })),
+      );
       setRowErrors([]);
       setParsedRows([]);
       setFileName(null);
@@ -171,9 +183,26 @@ function BulkStudentsWorkspace() {
     XLSX.writeFile(wb, "students-template.xlsx");
   }
 
+  function downloadCredentials() {
+    const rows = [
+      ["Full Name", "Class", "Section", "Username", "Password"],
+      ...issued.map((s) => [s.fullName, s.className, s.section, s.username, s.password]),
+    ];
+    const csv = rows
+      .map((r) => r.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "student-logins.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function onFileSelected(file: File) {
     setFileName(file.name);
     setSuccessCount(null);
+    setIssued([]);
     setRowErrors([]);
     setParsedRows([]);
 
@@ -246,9 +275,9 @@ function BulkStudentsWorkspace() {
             <h2 className="font-display text-2xl font-bold tracking-tight">Bulk upload students</h2>
             <p className="text-sm text-muted-foreground">
               Download the Excel template, fill in student details, and re-upload to create all
-              accounts in one go. Each student can immediately sign in using the username and
-              password from the file. The Class and Section columns decide which teacher sees each
-              student — no manual allocation is needed.
+              accounts in one go. A username and password are generated automatically for every
+              student — no login columns are needed in the file. The Class and Section columns decide
+              which teacher sees each student.
             </p>
           </div>
         </div>
@@ -403,14 +432,51 @@ function BulkStudentsWorkspace() {
         ) : null}
 
         {successCount != null ? (
-          <div className="mt-8 flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-emerald-600">
-            <CheckCircle2 className="mt-0.5 h-5 w-5" />
-            <div>
-              <div className="font-semibold">{successCount} students have been created successfully.</div>
-              <div className="text-sm opacity-80">
-                Each student can now sign in using the username and password from the uploaded file.
+          <div className="mt-8 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3 text-emerald-600">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5" />
+                <div>
+                  <div className="font-semibold">{successCount} students have been created successfully.</div>
+                  <div className="text-sm opacity-80">
+                    A username and password were generated for each student. They remain viewable from the
+                    roster at any time.
+                  </div>
+                </div>
               </div>
+              {issued.length ? (
+                <Button type="button" variant="soft" size="sm" onClick={downloadCredentials}>
+                  <Download className="h-4 w-4" /> Download credentials (CSV)
+                </Button>
+              ) : null}
             </div>
+
+            {issued.length ? (
+              <div className="mt-4 max-h-80 overflow-y-auto rounded-xl border border-border/50 bg-card/70">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-card/95 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-3">Student</th>
+                      <th className="px-4 py-3">Class</th>
+                      <th className="px-4 py-3">Username</th>
+                      <th className="px-4 py-3">Password</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {issued.map((s) => (
+                      <tr key={s.username} className="border-t border-border/40">
+                        <td className="px-4 py-3 font-medium">{s.fullName}</td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {s.className || "—"}{s.section ? ` · ${s.section}` : ""}
+                        </td>
+                        <td className="px-4 py-3 font-mono">{s.username}</td>
+                        <td className="px-4 py-3 font-mono">{s.password}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

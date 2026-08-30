@@ -70,19 +70,54 @@ async function usernameTaken(username: string): Promise<boolean> {
   return Boolean(a.data || b.data || c.data || d.data || e.data);
 }
 
+/** jane.doe3417 — readable, name-derived, unique across every portal account. */
+function usernameSeed(fullName: string): string {
+  const slug = fullName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s.]/g, "")
+    .replace(/\s+/g, ".")
+    .replace(/\.+/g, ".")
+    .replace(/^\.|\.$/g, "")
+    .slice(0, 24);
+  return slug || "student";
+}
+
+async function generateUniqueUsername(fullName: string): Promise<string> {
+  const seed = usernameSeed(fullName);
+  for (let attempt = 0; attempt < 25; attempt++) {
+    const suffix = String(1000 + Math.floor(Math.random() * 9000));
+    const candidate = `${seed}${suffix}`;
+    if (!(await usernameTaken(candidate))) return candidate;
+  }
+  throw new Error("Could not generate a unique username. Please try again.");
+}
+
+/** 10 characters, ambiguous glyphs (0/O/1/l/I) excluded so it can be read out loud. */
+function generatePassword(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  let out = "";
+  for (let i = 0; i < 10; i++) {
+    out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return out;
+}
+
 async function provisionStudent(
   input: StudentCreateInput,
   schoolId: string,
   actorUserId: string,
-) {
+): Promise<{ record: StudentRecord; password: string }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const username = input.username.trim().toLowerCase();
+  const { encryptSecret } = await import("./registrations.server");
+  const username = await generateUniqueUsername(input.fullName);
+  const password = generatePassword();
   const loginEmail = `${username}@avartan.app`;
   const contactEmail = input.email.trim().toLowerCase();
 
   const created = await supabaseAdmin.auth.admin.createUser({
     email: loginEmail,
-    password: input.password,
+    password,
     email_confirm: true,
     user_metadata: {
       username,
@@ -120,26 +155,27 @@ async function provisionStudent(
         address: input.address?.trim() || null,
         status: input.status,
         created_by: actorUserId,
+        initial_password_enc: encryptSecret(password),
       })
       .select("*")
       .single();
     if (insert.error) throw new Error(insert.error.message);
-    return toRecord(insert.data);
+    return { record: toRecord(insert.data), password };
   } catch (error) {
     await supabaseAdmin.auth.admin.deleteUser(userId);
     throw error;
   }
 }
 
+export type CreatedStudent = StudentRecord & { generatedPassword: string };
+
 export async function createStudentForSchool(
   input: StudentCreateInput,
   _actorSupabase: AuthedClient,
   actorUserId: string,
-) {
+): Promise<CreatedStudent> {
   const school = await getSchoolForActor(actorUserId);
-  const username = input.username.trim().toLowerCase();
-  if (await usernameTaken(username)) throw new Error("Username already exists.");
-  const rec = await provisionStudent(input, school.id, actorUserId);
+  const { record: rec, password } = await provisionStudent(input, school.id, actorUserId);
   const { writeAudit } = await import("./security.server");
   await writeAudit({
     actorUserId,
@@ -150,15 +186,15 @@ export async function createStudentForSchool(
     entityLabel: rec.fullName,
     targetUserId: rec.userId,
     targetRole: "student",
-    newValue: { username, fullName: rec.fullName, schoolId: school.id },
-    remarks: "Student account created",
+    newValue: { username: rec.username, fullName: rec.fullName, schoolId: school.id },
+    remarks: "Student account created with a system-generated login",
   });
-  return rec;
+  return { ...rec, generatedPassword: password };
 }
 
 export type BulkResult = {
   createdCount: number;
-  created: StudentRecord[];
+  created: CreatedStudent[];
   errors: Array<{ row: number; field?: string; message: string }>;
 };
 
@@ -168,55 +204,13 @@ export async function bulkCreateStudentsForSchool(
   actorUserId: string,
 ): Promise<BulkResult> {
   const school = await getSchoolForActor(actorUserId);
-
-  // Pre-validate: duplicate usernames within the file
-  const errors: Array<{ row: number; field?: string; message: string }> = [];
-  const seen = new Map<string, number>();
-  inputs.forEach((s, i) => {
-    const uname = s.username.trim().toLowerCase();
-    if (seen.has(uname)) {
-      errors.push({
-        row: i + 2,
-        field: "username",
-        message: `Duplicate username "${uname}" also on row ${seen.get(uname)}`,
-      });
-    } else {
-      seen.set(uname, i + 2);
-    }
-  });
-
-  // Pre-validate: username already taken in DB
-  const uniqueNames = Array.from(seen.keys());
-  const taken = await Promise.all(uniqueNames.map((u) => usernameTaken(u).then((t) => ({ u, t }))));
-  const takenSet = new Set(taken.filter((t) => t.t).map((t) => t.u));
-  inputs.forEach((s, i) => {
-    const uname = s.username.trim().toLowerCase();
-    if (takenSet.has(uname)) {
-      errors.push({ row: i + 2, field: "username", message: `Username "${uname}" is already taken` });
-    }
-  });
-
   const { writeAudit } = await import("./security.server");
 
-  if (errors.length) {
-    await writeAudit({
-      actorUserId,
-      action: "student.bulk_upload",
-      module: "Students",
-      entityType: "student_batch",
-      entityLabel: `${inputs.length} rows`,
-      status: "failure",
-      newValue: { attempted: inputs.length, errors: errors.slice(0, 20) },
-      remarks: "Bulk student upload rejected during validation",
-    });
-    return { createdCount: 0, created: [], errors };
-  }
-
-  const created: StudentRecord[] = [];
+  const created: CreatedStudent[] = [];
   for (let i = 0; i < inputs.length; i++) {
     try {
-      const rec = await provisionStudent(inputs[i], school.id, actorUserId);
-      created.push(rec);
+      const { record, password } = await provisionStudent(inputs[i], school.id, actorUserId);
+      created.push({ ...record, generatedPassword: password });
     } catch (e) {
       // Roll back everything created in this batch
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -272,5 +266,81 @@ export async function listStudentsForSchoolActor(
     schoolId: school.id,
     schoolName: school.name,
     students: (data ?? []).map(toRecord),
+  };
+}
+export type StudentCredentials = {
+  studentId: string;
+  fullName: string;
+  username: string;
+  password: string | null;
+  note: string | null;
+};
+
+/**
+ * Reveals a student's login for the owning school or the teacher the student is
+ * mapped to (by class/section or a direct assignment). Everyone else is refused.
+ */
+export async function getStudentCredentialsForActor(
+  studentId: string,
+  actorSupabase: AuthedClient,
+  actorUserId: string,
+): Promise<StudentCredentials> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: student, error } = await supabaseAdmin
+    .from("students")
+    .select("id, school_id, full_name, username, initial_password_enc")
+    .eq("id", studentId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!student) throw new Error("Student not found.");
+
+  const school = await supabaseAdmin
+    .from("schools")
+    .select("id")
+    .eq("user_id", actorUserId)
+    .maybeSingle();
+  let allowed = Boolean(school.data && school.data.id === student.school_id);
+
+  if (!allowed) {
+    const { getTeacherWorkspaceForActor } = await import("./classes.server");
+    try {
+      const workspace = await getTeacherWorkspaceForActor(actorSupabase, actorUserId);
+      allowed = workspace.students.some((s) => s.id === student.id);
+    } catch {
+      allowed = false;
+    }
+  }
+  if (!allowed) throw new Error("You are not allowed to view this student's login details.");
+
+  let password: string | null = null;
+  let note: string | null = null;
+  if (student.initial_password_enc) {
+    try {
+      const { decryptSecret } = await import("./registrations.server");
+      password = decryptSecret(student.initial_password_enc);
+    } catch {
+      note = "The stored password could not be read.";
+    }
+  } else {
+    note = "This account was created before automatic logins, so its password is not recoverable.";
+  }
+
+  const { writeAudit } = await import("./security.server");
+  await writeAudit({
+    actorUserId,
+    action: "student.credentials_view",
+    module: "Students",
+    entityType: "student",
+    entityId: student.id,
+    entityLabel: student.full_name,
+    remarks: "Student login details revealed",
+  });
+
+  return {
+    studentId: student.id,
+    fullName: student.full_name,
+    username: student.username,
+    password,
+    note,
   };
 }
