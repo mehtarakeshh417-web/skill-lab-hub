@@ -24,3 +24,9 @@ export const bulkCreateStudents = createServerFn({ method: "POST" })
 export const listMySchoolStudents = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => listStudentsForSchoolActor(context.supabase, context.userId));
+export const getStudentCredentials = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ studentId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) =>
+    getStudentCredentialsForActor(data.studentId, context.supabase, context.userId),
+  );
