@@ -840,7 +840,14 @@ function StudentRoster({
                     <div className="font-medium">{s.fullName}</div>
                     <div className="text-xs text-muted-foreground">Roll {s.meta?.admissionId || "—"} · {s.classSection}</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">login: {s.username}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">login: {s.username}</span>
+                    <StudentLoginDetailsButton
+                      studentId={s.databaseId}
+                      fullName={s.fullName}
+                      label="View"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
