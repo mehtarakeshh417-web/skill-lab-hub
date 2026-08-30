@@ -46,8 +46,6 @@ type FormState = {
 
 const EMPTY: FormState = {
   fullName: "",
-  username: "",
-  password: "",
   email: "",
   phone: "",
   rollNumber: "",
