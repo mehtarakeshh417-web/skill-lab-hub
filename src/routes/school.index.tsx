@@ -26,6 +26,7 @@ import { useAuth } from "@/lib/auth";
 import { getSchoolDashboardData } from "@/lib/schools.functions";
 import { listMySchoolTeachers } from "@/lib/teachers.functions";
 import { listMySchoolStudents } from "@/lib/students.functions";
+import { StudentLoginDetailsButton } from "@/components/student-login-details";
 import {
   listMyClassSections,
   saveMyClassSections,
