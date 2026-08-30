@@ -118,6 +118,7 @@ function AddStudentWorkspace() {
     mutationFn: (data: StudentCreateInput) => create({ data }),
     onSuccess: async (rec) => {
       await queryClient.invalidateQueries({ queryKey: ["school-students"] });
+      setCreated({ fullName: rec.fullName, username: rec.username, password: rec.generatedPassword });
       toast.success(`${rec.fullName} has been added`, {
         description: `Login username: ${rec.username}`,
       });
