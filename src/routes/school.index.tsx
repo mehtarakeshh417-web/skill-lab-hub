@@ -1087,6 +1087,13 @@ function MonitorPanel({
                       </div>
                     </td>
                     <td className="px-3 py-2 text-right font-mono text-xs font-semibold">{r.marks}%</td>
+                    <td className="px-3 py-2 text-right">
+                      <StudentLoginDetailsButton
+                        studentId={r.account.databaseId}
+                        fullName={r.account.fullName}
+                        label="View"
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>
