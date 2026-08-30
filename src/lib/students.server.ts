@@ -155,26 +155,27 @@ async function provisionStudent(
         address: input.address?.trim() || null,
         status: input.status,
         created_by: actorUserId,
+        initial_password_enc: encryptSecret(password),
       })
       .select("*")
       .single();
     if (insert.error) throw new Error(insert.error.message);
-    return toRecord(insert.data);
+    return { record: toRecord(insert.data), password };
   } catch (error) {
     await supabaseAdmin.auth.admin.deleteUser(userId);
     throw error;
   }
 }
 
+export type CreatedStudent = StudentRecord & { generatedPassword: string };
+
 export async function createStudentForSchool(
   input: StudentCreateInput,
   _actorSupabase: AuthedClient,
   actorUserId: string,
-) {
+): Promise<CreatedStudent> {
   const school = await getSchoolForActor(actorUserId);
-  const username = input.username.trim().toLowerCase();
-  if (await usernameTaken(username)) throw new Error("Username already exists.");
-  const rec = await provisionStudent(input, school.id, actorUserId);
+  const { record: rec, password } = await provisionStudent(input, school.id, actorUserId);
   const { writeAudit } = await import("./security.server");
   await writeAudit({
     actorUserId,
@@ -185,15 +186,15 @@ export async function createStudentForSchool(
     entityLabel: rec.fullName,
     targetUserId: rec.userId,
     targetRole: "student",
-    newValue: { username, fullName: rec.fullName, schoolId: school.id },
-    remarks: "Student account created",
+    newValue: { username: rec.username, fullName: rec.fullName, schoolId: school.id },
+    remarks: "Student account created with a system-generated login",
   });
-  return rec;
+  return { ...rec, generatedPassword: password };
 }
 
 export type BulkResult = {
   createdCount: number;
-  created: StudentRecord[];
+  created: CreatedStudent[];
   errors: Array<{ row: number; field?: string; message: string }>;
 };
 
@@ -203,55 +204,13 @@ export async function bulkCreateStudentsForSchool(
   actorUserId: string,
 ): Promise<BulkResult> {
   const school = await getSchoolForActor(actorUserId);
-
-  // Pre-validate: duplicate usernames within the file
-  const errors: Array<{ row: number; field?: string; message: string }> = [];
-  const seen = new Map<string, number>();
-  inputs.forEach((s, i) => {
-    const uname = s.username.trim().toLowerCase();
-    if (seen.has(uname)) {
-      errors.push({
-        row: i + 2,
-        field: "username",
-        message: `Duplicate username "${uname}" also on row ${seen.get(uname)}`,
-      });
-    } else {
-      seen.set(uname, i + 2);
-    }
-  });
-
-  // Pre-validate: username already taken in DB
-  const uniqueNames = Array.from(seen.keys());
-  const taken = await Promise.all(uniqueNames.map((u) => usernameTaken(u).then((t) => ({ u, t }))));
-  const takenSet = new Set(taken.filter((t) => t.t).map((t) => t.u));
-  inputs.forEach((s, i) => {
-    const uname = s.username.trim().toLowerCase();
-    if (takenSet.has(uname)) {
-      errors.push({ row: i + 2, field: "username", message: `Username "${uname}" is already taken` });
-    }
-  });
-
   const { writeAudit } = await import("./security.server");
 
-  if (errors.length) {
-    await writeAudit({
-      actorUserId,
-      action: "student.bulk_upload",
-      module: "Students",
-      entityType: "student_batch",
-      entityLabel: `${inputs.length} rows`,
-      status: "failure",
-      newValue: { attempted: inputs.length, errors: errors.slice(0, 20) },
-      remarks: "Bulk student upload rejected during validation",
-    });
-    return { createdCount: 0, created: [], errors };
-  }
-
-  const created: StudentRecord[] = [];
+  const created: CreatedStudent[] = [];
   for (let i = 0; i < inputs.length; i++) {
     try {
-      const rec = await provisionStudent(inputs[i], school.id, actorUserId);
-      created.push(rec);
+      const { record, password } = await provisionStudent(inputs[i], school.id, actorUserId);
+      created.push({ ...record, generatedPassword: password });
     } catch (e) {
       // Roll back everything created in this batch
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
