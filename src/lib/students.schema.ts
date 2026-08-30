@@ -2,8 +2,6 @@ import { z } from "zod";
 
 export const studentCreateSchema = z.object({
   fullName: z.string().trim().min(2, "Full name is required").max(140),
-  username: z.string().trim().toLowerCase().min(1, "Username is required").max(120),
-  password: z.string().min(1, "Password is required").max(256),
   email: z.string().trim().toLowerCase().email("Enter a valid email address").max(180),
   phone: z.string().trim().max(40).optional().default(""),
   rollNumber: z.string().trim().max(60).optional().default(""),
