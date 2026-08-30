@@ -1063,6 +1063,7 @@ function MonitorPanel({
                   <th className="px-3 py-2 text-left font-semibold">Teacher</th>
                   <th className="px-3 py-2 text-left font-semibold">Progress</th>
                   <th className="px-3 py-2 text-right font-semibold">Marks</th>
+                  <th className="px-3 py-2 text-right font-semibold">Login</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
