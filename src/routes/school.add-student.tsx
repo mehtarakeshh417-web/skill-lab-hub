@@ -179,12 +179,6 @@ function AddStudentWorkspace() {
           <Field label="Full Name *" error={errors.fullName}>
             <Input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} placeholder="Jane Doe" />
           </Field>
-          <Field label="Username *" error={errors.username}>
-            <Input value={form.username} onChange={(e) => set("username", e.target.value)} placeholder="jane.doe" autoComplete="off" />
-          </Field>
-          <Field label="Password *" error={errors.password}>
-            <Input value={form.password} onChange={(e) => set("password", e.target.value)} placeholder="welcome123" autoComplete="new-password" />
-          </Field>
           <Field label="Email *" error={errors.email}>
             <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="jane@school.com" />
           </Field>
