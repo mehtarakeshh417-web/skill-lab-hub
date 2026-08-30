@@ -214,7 +214,7 @@ function AddStudentWorkspace() {
           <div>
             <h2 className="font-display text-lg font-bold tracking-tight">Create a student account</h2>
             <p className="text-sm text-muted-foreground">
-              Same fields as the bulk upload template. Fields marked * are required.
+              The username and password are generated automatically. Fields marked * are required.
             </p>
           </div>
         </header>
