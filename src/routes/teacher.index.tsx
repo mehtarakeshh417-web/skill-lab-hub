@@ -721,6 +721,7 @@ function StudentRoster({
   schoolCode: string; teacherUsername: string; teacherId: string; teacherName: string; students: MockAccount[];
 }) {
   const [open, setOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<MockAccount | null>(null);
 
   const generateLoginId = (name: string) => {
     const seed = name.trim().toLowerCase().replace(/[^a-z0-9\s.]/g, "").replace(/\s+/g, ".").replace(/\.+/g, ".").replace(/^\.|\.$/g, "").slice(0, 24) || "student";
@@ -842,9 +843,12 @@ function StudentRoster({
           ) : (
             <div className="divide-y divide-border/60">
               {students.map((s) => (
-                <div key={s.username} className="py-2.5 flex items-center justify-between text-sm">
-                  <div>
-                    <div className="font-medium">{s.fullName}</div>
+                <div key={s.username} className="py-2.5 flex items-center justify-between text-sm group">
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => setSelectedStudent(s)}
+                  >
+                    <div className="font-medium group-hover:text-primary transition-colors">{s.fullName}</div>
                     <div className="text-xs text-muted-foreground">Roll {s.meta?.admissionId || "—"} · {s.classSection}</div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -861,7 +865,69 @@ function StudentRoster({
           )}
         </CardContent>
       </Card>
+
+      <StudentDetailDialog student={selectedStudent} onClose={() => setSelectedStudent(null)} />
     </div>
+  );
+}
+
+function StudentDetailDialog({ student, onClose }: { student: MockAccount | null; onClose: () => void }) {
+  if (!student) return null;
+  const copyLogin = () => {
+    void navigator.clipboard.writeText(
+      `Name: ${student.fullName}\nUsername: ${student.username}\nPassword: ${student.password}`,
+    );
+    toast.success("Login details copied");
+  };
+  return (
+    <Dialog open={Boolean(student)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Student Details</DialogTitle>
+          <DialogDescription>
+            Complete profile and login credentials for {student.fullName}.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Full Name</div>
+            <div className="font-semibold text-base">{student.fullName}</div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Class</div>
+              <div className="font-semibold">{student.meta?.grade || "—"}</div>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Section</div>
+              <div className="font-semibold">{student.meta?.section || "—"}</div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Roll Number</div>
+            <div className="font-mono text-base font-semibold">{student.meta?.admissionId || "—"}</div>
+          </div>
+          <div className="rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Email</div>
+            <div className="font-mono text-sm font-semibold break-all">{student.email}</div>
+          </div>
+          <div className="rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Username</div>
+            <div className="font-mono text-base font-semibold">{student.username}</div>
+          </div>
+          <div className="rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Password</div>
+            <div className="font-mono text-base font-semibold">{student.password}</div>
+          </div>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2 pt-2">
+          <Button type="button" variant="outline" size="sm" onClick={copyLogin}>
+            <KeyRound className="h-3.5 w-3.5 mr-1.5" /> Copy login details
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={onClose}>Close</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
