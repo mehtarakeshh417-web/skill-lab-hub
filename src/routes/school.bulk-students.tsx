@@ -150,6 +150,15 @@ function BulkStudentsWorkspace() {
         return;
       }
       setSuccessCount(result.createdCount);
+      setIssued(
+        result.created.map((s) => ({
+          fullName: s.fullName,
+          username: s.username,
+          password: s.generatedPassword,
+          className: s.className,
+          section: s.section,
+        })),
+      );
       setRowErrors([]);
       setParsedRows([]);
       setFileName(null);
