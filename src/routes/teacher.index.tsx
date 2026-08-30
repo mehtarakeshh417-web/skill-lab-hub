@@ -831,7 +831,7 @@ function StudentRoster({
       >
         <Upload className="h-6 w-6 mx-auto text-muted-foreground" />
         <div className="mt-2 text-sm">Drag & drop a CSV here to bulk-add students</div>
-        <div className="text-xs text-muted-foreground mt-1">Header: <code>name,class,section,roll,loginId</code></div>
+        <div className="text-xs text-muted-foreground mt-1">Header: <code>name,class,section,roll</code> · a username and password are generated automatically for each student</div>
       </div>
 
       <Card className="backdrop-blur bg-card/60 border-border/60">
@@ -865,9 +865,9 @@ function StudentRoster({
   );
 }
 
-function ManualStudentDialog({ onSubmit }: { onSubmit: (s: { name: string; cls: string; section: string; roll: string; loginId: string }) => void }) {
+function ManualStudentDialog({ onSubmit }: { onSubmit: (s: { name: string; cls: string; section: string; roll: string }) => void }) {
   const [name, setName] = useState(""); const [cls, setCls] = useState("Class 6");
-  const [section, setSection] = useState("A"); const [roll, setRoll] = useState(""); const [loginId, setLoginId] = useState("");
+  const [section, setSection] = useState("A"); const [roll, setRoll] = useState("");
   return (
     <DialogContent>
       <DialogHeader><DialogTitle>Manual Student Entry</DialogTitle></DialogHeader>
@@ -885,15 +885,13 @@ function ManualStudentDialog({ onSubmit }: { onSubmit: (s: { name: string; cls: 
             </Select>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5"><Label>Roll Number</Label><Input value={roll} onChange={(e) => setRoll(e.target.value)} /></div>
-          <div className="space-y-1.5"><Label>Unique Login ID</Label><Input value={loginId} onChange={(e) => setLoginId(e.target.value)} placeholder="e.g. arya.k" /></div>
-        </div>
+        <div className="space-y-1.5"><Label>Roll Number</Label><Input value={roll} onChange={(e) => setRoll(e.target.value)} /></div>
+        <p className="text-xs text-muted-foreground">A unique username and password are generated automatically when the student is created.</p>
       </div>
       <DialogFooter>
         <Button onClick={() => {
-          if (!name || !loginId) { toast.error("Name and Login ID are required", { description: "Both fields are needed to create the account." }); return; }
-          onSubmit({ name, cls, section, roll: roll || `R${Math.floor(Math.random()*90+10)}`, loginId });
+          if (!name) { toast.error("Name is required", { description: "Enter the student's full name to create the account." }); return; }
+          onSubmit({ name, cls, section, roll: roll || `R${Math.floor(Math.random()*90+10)}` });
         }}>Create Student</Button>
       </DialogFooter>
     </DialogContent>
