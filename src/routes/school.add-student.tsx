@@ -75,6 +75,7 @@ function AddStudentWorkspace() {
 
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [created, setCreated] = useState<{ fullName: string; username: string; password: string } | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
