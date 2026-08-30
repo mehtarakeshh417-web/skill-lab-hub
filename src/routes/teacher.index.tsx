@@ -793,6 +793,31 @@ function StudentRoster({
 
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
+  const downloadCredentialsCsv = () => {
+    if (students.length === 0) {
+      toast.error("No students to export", { description: "Add students to the roster first." });
+      return;
+    }
+    const header = "Full Name,Class,Section,Roll Number,Username,Password,Email";
+    const rows = students.map((s) => {
+      const grade = s.meta?.grade || "";
+      const section = s.meta?.section || "";
+      const roll = s.meta?.admissionId || "";
+      return `"${s.fullName}","${grade}","${section}","${roll}","${s.username}","${s.password}","${s.email}"`;
+    });
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "student-login-credentials.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Credentials downloaded", { description: `${students.length} student record(s) exported.` });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -801,6 +826,9 @@ function StudentRoster({
           <div className="text-xs text-muted-foreground">{students.length} student(s) mapped to you</div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="soft" onClick={downloadCredentialsCsv}>
+            <Download className="h-4 w-4 mr-1.5" />Download Credentials
+          </Button>
           <Button variant="soft" onClick={downloadTemplate}>
             <Download className="h-4 w-4 mr-1.5" />Download Template
           </Button>
