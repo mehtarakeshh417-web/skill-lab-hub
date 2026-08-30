@@ -57,6 +57,9 @@ function BulkStudentsWorkspace() {
   const [parsedRows, setParsedRows] = useState<StudentCreateInput[]>([]);
   const [rowErrors, setRowErrors] = useState<RowError[]>([]);
   const [successCount, setSuccessCount] = useState<number | null>(null);
+  const [issued, setIssued] = useState<
+    Array<{ fullName: string; username: string; password: string; className: string; section: string }>
+  >([]);
 
   const { data: sectionData } = useQuery({
     queryKey: ["school-class-sections"],
