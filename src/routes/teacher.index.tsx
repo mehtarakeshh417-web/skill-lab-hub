@@ -722,13 +722,19 @@ function StudentRoster({
 }) {
   const [open, setOpen] = useState(false);
 
-  const addStudent = (s: { name: string; cls: string; section: string; roll: string; loginId: string }) => {
+  const generateLoginId = (name: string) => {
+    const seed = name.trim().toLowerCase().replace(/[^a-z0-9\s.]/g, "").replace(/\s+/g, ".").replace(/\.+/g, ".").replace(/^\.|\.$/g, "").slice(0, 24) || "student";
+    return `${seed}${1000 + Math.floor(Math.random() * 9000)}`;
+  };
+
+  const addStudent = (s: { name: string; cls: string; section: string; roll: string }) => {
+    const loginId = generateLoginId(s.name);
     const res = registerMockAccount({
-      username: s.loginId.toLowerCase(),
-      password: `${s.loginId.toLowerCase()}123`,
+      username: loginId,
+      password: `${loginId}123`,
       role: "student",
       fullName: s.name,
-      email: `${s.loginId.toLowerCase()}@avartan.app`,
+      email: `${loginId}@avartan.app`,
       schoolCode,
       schoolName: undefined,
       teacherId,
@@ -737,7 +743,7 @@ function StudentRoster({
       meta: { admissionId: s.roll, grade: s.cls, section: s.section, createdBy: teacherUsername },
     });
     if (!res.ok) { toast.error("We couldn't add this student", { description: res.reason || "Please check the details and try again." }); return false; }
-    toast.success(`Added ${s.name} · login: ${s.loginId.toLowerCase()} / ${s.loginId.toLowerCase()}123`);
+    toast.success(`Added ${s.name} · login: ${loginId} / ${loginId}123`);
     return true;
   };
 
@@ -757,9 +763,9 @@ function StudentRoster({
       // Skip header if non-numeric in roll column
       const startIdx = lines[0]?.toLowerCase().includes("name") ? 1 : 0;
       for (let i = startIdx; i < lines.length; i++) {
-        const [name, cls, section, roll, loginId] = lines[i].split(",").map((x) => x?.trim());
-        if (!name || !loginId) continue;
-        const ok = addStudent({ name, cls: cls || "Class 6", section: section || "A", roll: roll || `R${i}`, loginId });
+        const [name, cls, section, roll] = lines[i].split(",").map((x) => x?.trim());
+        if (!name) continue;
+        const ok = addStudent({ name, cls: cls || "Class 6", section: section || "A", roll: roll || `R${i}` });
         if (ok) added++;
       }
       toast.success(`Bulk upload complete · ${added} student(s) added`);
@@ -769,9 +775,9 @@ function StudentRoster({
 
   const downloadTemplate = () => {
     const csv = [
-      "name,class,section,roll,loginId",
-      "Aarav Sharma,Class 6,A,R001,aarav.sharma",
-      "Isha Patel,Class 6,A,R002,isha.patel",
+      "name,class,section,roll",
+      "Aarav Sharma,Class 6,A,R001",
+      "Isha Patel,Class 6,A,R002",
     ].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -825,7 +831,7 @@ function StudentRoster({
       >
         <Upload className="h-6 w-6 mx-auto text-muted-foreground" />
         <div className="mt-2 text-sm">Drag & drop a CSV here to bulk-add students</div>
-        <div className="text-xs text-muted-foreground mt-1">Header: <code>name,class,section,roll,loginId</code></div>
+        <div className="text-xs text-muted-foreground mt-1">Header: <code>name,class,section,roll</code> · a username and password are generated automatically for each student</div>
       </div>
 
       <Card className="backdrop-blur bg-card/60 border-border/60">
@@ -859,9 +865,9 @@ function StudentRoster({
   );
 }
 
-function ManualStudentDialog({ onSubmit }: { onSubmit: (s: { name: string; cls: string; section: string; roll: string; loginId: string }) => void }) {
+function ManualStudentDialog({ onSubmit }: { onSubmit: (s: { name: string; cls: string; section: string; roll: string }) => void }) {
   const [name, setName] = useState(""); const [cls, setCls] = useState("Class 6");
-  const [section, setSection] = useState("A"); const [roll, setRoll] = useState(""); const [loginId, setLoginId] = useState("");
+  const [section, setSection] = useState("A"); const [roll, setRoll] = useState("");
   return (
     <DialogContent>
       <DialogHeader><DialogTitle>Manual Student Entry</DialogTitle></DialogHeader>
@@ -879,15 +885,13 @@ function ManualStudentDialog({ onSubmit }: { onSubmit: (s: { name: string; cls: 
             </Select>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5"><Label>Roll Number</Label><Input value={roll} onChange={(e) => setRoll(e.target.value)} /></div>
-          <div className="space-y-1.5"><Label>Unique Login ID</Label><Input value={loginId} onChange={(e) => setLoginId(e.target.value)} placeholder="e.g. arya.k" /></div>
-        </div>
+        <div className="space-y-1.5"><Label>Roll Number</Label><Input value={roll} onChange={(e) => setRoll(e.target.value)} /></div>
+        <p className="text-xs text-muted-foreground">A unique username and password are generated automatically when the student is created.</p>
       </div>
       <DialogFooter>
         <Button onClick={() => {
-          if (!name || !loginId) { toast.error("Name and Login ID are required", { description: "Both fields are needed to create the account." }); return; }
-          onSubmit({ name, cls, section, roll: roll || `R${Math.floor(Math.random()*90+10)}`, loginId });
+          if (!name) { toast.error("Name is required", { description: "Enter the student's full name to create the account." }); return; }
+          onSubmit({ name, cls, section, roll: roll || `R${Math.floor(Math.random()*90+10)}` });
         }}>Create Student</Button>
       </DialogFooter>
     </DialogContent>
