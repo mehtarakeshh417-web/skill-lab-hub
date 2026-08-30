@@ -1,49 +1,42 @@
-## Goal
+# Auto-generated student logins
 
-Stop allocating students to teachers by hand. A student picks a **Class · Section** when created (manual or bulk), and the teacher who owns that section automatically sees them.
+Schools stop typing usernames and passwords. The system creates them, stores them safely, and both the school and the student's mapped teacher can look them up any time to read out verbally.
 
-## How allocation will work
+## What changes for the user
 
-```text
-School sets up sections once:   Class 3 · Lily  ->  Teacher Meena
-Student created with            Class 3 · Lily
-Teacher Meena's dashboard       student appears instantly
-```
+**Manual student creation** (`/school/add-student`)
+- The Username and Password fields are removed from the form.
+- On save, a confirmation card shows the generated credentials (username + password) with a copy button, so they can be noted immediately.
 
-No per-student allocation step exists anywhere.
+**Bulk upload** (`/school/bulk-students`)
+- The downloadable Excel template no longer has Username or Password columns; the required columns become Full Name and Email.
+- Files that still contain those columns are accepted, but the values are ignored — a small note in the preview says logins are generated automatically.
+- After import, the results panel lists every created student with their generated username and password, plus a "Download credentials (CSV)" button.
 
-## 1. Student creation gets real Class / Section pickers
+**Viewing credentials later**
+- School dashboard roster: each student row gets a "Login details" action opening a small panel with username, a masked password, and a Show/Copy control.
+- Teacher dashboard: the same action appears for students inside the teacher's own mapped class/section only.
 
-`school/add-student`: the free-text "Class" and "Section" inputs become linked dropdowns fed by the school's registered sections. Selecting a class filters the section list. Each option shows the teacher who currently owns it (or "no teacher yet") so the school sees who the student is going to. A short helper line under the pickers states plainly: "The teacher mapped to this section will see this student automatically."
+**Username format**: name-based, e.g. `jane.doe3417` — lowercase name slug plus a 4-digit suffix, retried until unique across all portal accounts.
+**Password format**: readable 10-character generated string (mixed letters/digits, ambiguous characters excluded).
 
-If the school has no sections yet, the pickers show an inline prompt with a link to the section setup board.
+No regeneration/reset button, per your choice.
 
-## 2. Bulk upload validates against the same section list
+## Access rules
 
-The Excel template keeps its Class/Section columns. During the preview step, each row's class/section is matched against the school's registered sections (case/prefix tolerant, same normalisation already used). Rows are annotated with the resolved teacher name; rows whose section does not exist are flagged in the preview as "section not registered" with an option to create those sections in one click before importing. Nothing silently lands unallocated.
+Credentials are readable only by:
+- the school account that owns the student, and
+- the teacher currently mapped to that student's class/section.
 
-## 3. Manual allocation UI is removed
-
-From the school dashboard:
-- Remove the "Direct Student Allocation" searchable student list and its Map buttons.
-- Remove the per-teacher "Map students" entry point.
-
-What stays (renamed to reflect its new job) is the **Classes & Sections** board: the grid where each Class · Section card assigns exactly one teacher. This is the only allocation control left, and it is per-section, not per-student.
-
-## 4. Existing students keep working
-
-Roster-derived sections already auto-register, so every current class/section pair is present in the dropdowns. Students already in Class 3 · Lily continue to resolve through that section's teacher — no data change needed.
-
-## 5. Verification
-
-After the change: create one student through the form, confirm the database row carries the chosen class/section, then load the mapped teacher's dashboard and confirm the count went up by one without any allocation action.
+Anyone else (other schools, other teachers, students, public) gets nothing. Every reveal is written to the audit trail.
 
 ## Technical notes
 
-- `src/lib/classes.functions.ts`: expose a light section list (class, section, teacher name) callable by the student-creation routes.
-- `src/routes/school.add-student.tsx`: replace the two `Input` fields with selects bound to that list; `className`/`section` state keys and the existing submit mutation stay unchanged.
-- `src/routes/school.bulk-students.tsx`: add section resolution to the preview table and a "register missing sections" action.
-- `src/routes/school.index.tsx`: delete the direct-allocation panel and Map buttons; keep the section→teacher board.
-- `src/lib/classes.server.ts`: no change to `getTeacherWorkspaceForActor` — section-key matching already delivers the auto-allocation. The direct-assignment server functions stay in place but become unused by the UI.
+- Migration: add `initial_password_enc text` to `public.students` (stores the generated password with the existing `encryptSecret`/`decryptSecret` helpers in `registrations.server.ts`, which is what makes later read-back possible). No grant/policy change needed — reads go through server functions using the admin client after an explicit ownership check.
+- `src/lib/students.schema.ts`: drop `username`/`password` from `studentCreateSchema`; drop those two entries from `STUDENT_TEMPLATE_COLUMNS`.
+- `src/lib/students.server.ts`: new `generateStudentUsername(fullName)` + `generatePassword()` helpers used inside `provisionStudent`, reusing the existing `usernameTaken` check in a retry loop; persist the encrypted password on insert; return the plaintext once in the creation response. `bulkCreateStudentsForSchool` loses its in-file duplicate-username pre-validation (no longer applicable) and returns generated credentials per row.
+- `src/lib/students.functions.ts`: add `getStudentCredentials` (auth middleware) that authorises the caller as the owning school or the mapped teacher via the existing section/`student_teacher_assignments` logic in `classes.server.ts`, then decrypts and returns the pair.
+- UI: `school.add-student.tsx` (remove two fields, add success card), `school.bulk-students.tsx` (template columns, preview note, credentials result table + CSV), `school.index.tsx` and `teacher.index.tsx` (Login details action).
+- Existing students keep their current usernames; their stored password is empty, so their panel shows "Set before auto-generation — not recoverable".
 
-No changes to auth, roles, state hooks, event handlers, or student creation business logic.
+State hooks, routing, allocation logic, and business rules elsewhere stay untouched.
