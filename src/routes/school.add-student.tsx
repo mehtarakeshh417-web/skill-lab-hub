@@ -31,8 +31,6 @@ export const Route = createFileRoute("/school/add-student")({
 
 type FormState = {
   fullName: string;
-  username: string;
-  password: string;
   email: string;
   phone: string;
   rollNumber: string;
