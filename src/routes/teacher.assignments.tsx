@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { friendlyError } from "@/lib/messages";
 import { QuestionEditor } from "@/components/objective-question-editor";
-import { AiQuestionGenerator } from "@/components/ai-question-generator";
+
 import {
   ASSIGNMENT_TECHNOLOGIES,
   ASSIGNMENT_TYPES,
@@ -683,13 +683,6 @@ function CreateAssignmentDialog({ roster, onCreated }: { roster: StudentRow[]; o
               </div>
             </div>
 
-            <AiQuestionGenerator
-              technology={technology}
-              assignmentType={assignmentType}
-              onGenerated={(generated, mode) =>
-                setQuestions((prev) => (mode === "append" ? [...prev.filter((q) => q.questionText.trim()), ...generated] : generated))
-              }
-            />
 
             <QuestionEditor assignmentType={assignmentType} questions={questions} onChange={setQuestions} />
 

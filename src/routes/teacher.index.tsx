@@ -1107,11 +1107,9 @@ function GeminiKeyPanel() {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          AI quiz and assignment helpers are connected securely through the backend. Teachers no longer need to paste or manage API keys in browser settings.
+          Platform services are connected securely through the backend. Teachers do not need to manage any API keys in browser settings.
         </p>
-        <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-200">
-          The AI generator is ready to use from the Quiz Builder.
-        </div>
+
       </CardContent>
     </Card>
   );
