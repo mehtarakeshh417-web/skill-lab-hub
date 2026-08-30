@@ -183,9 +183,26 @@ function BulkStudentsWorkspace() {
     XLSX.writeFile(wb, "students-template.xlsx");
   }
 
+  function downloadCredentials() {
+    const rows = [
+      ["Full Name", "Class", "Section", "Username", "Password"],
+      ...issued.map((s) => [s.fullName, s.className, s.section, s.username, s.password]),
+    ];
+    const csv = rows
+      .map((r) => r.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "student-logins.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function onFileSelected(file: File) {
     setFileName(file.name);
     setSuccessCount(null);
+    setIssued([]);
     setRowErrors([]);
     setParsedRows([]);
 
