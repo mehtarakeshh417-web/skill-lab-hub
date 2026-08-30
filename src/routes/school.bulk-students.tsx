@@ -275,9 +275,9 @@ function BulkStudentsWorkspace() {
             <h2 className="font-display text-2xl font-bold tracking-tight">Bulk upload students</h2>
             <p className="text-sm text-muted-foreground">
               Download the Excel template, fill in student details, and re-upload to create all
-              accounts in one go. Each student can immediately sign in using the username and
-              password from the file. The Class and Section columns decide which teacher sees each
-              student — no manual allocation is needed.
+              accounts in one go. A username and password are generated automatically for every
+              student — no login columns are needed in the file. The Class and Section columns decide
+              which teacher sees each student.
             </p>
           </div>
         </div>
