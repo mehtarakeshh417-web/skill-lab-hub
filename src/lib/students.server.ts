@@ -268,3 +268,79 @@ export async function listStudentsForSchoolActor(
     students: (data ?? []).map(toRecord),
   };
 }
+export type StudentCredentials = {
+  studentId: string;
+  fullName: string;
+  username: string;
+  password: string | null;
+  note: string | null;
+};
+
+/**
+ * Reveals a student's login for the owning school or the teacher the student is
+ * mapped to (by class/section or a direct assignment). Everyone else is refused.
+ */
+export async function getStudentCredentialsForActor(
+  studentId: string,
+  actorSupabase: AuthedClient,
+  actorUserId: string,
+): Promise<StudentCredentials> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: student, error } = await supabaseAdmin
+    .from("students")
+    .select("id, school_id, full_name, username, initial_password_enc")
+    .eq("id", studentId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!student) throw new Error("Student not found.");
+
+  const school = await supabaseAdmin
+    .from("schools")
+    .select("id")
+    .eq("user_id", actorUserId)
+    .maybeSingle();
+  let allowed = Boolean(school.data && school.data.id === student.school_id);
+
+  if (!allowed) {
+    const { getTeacherWorkspaceForActor } = await import("./classes.server");
+    try {
+      const workspace = await getTeacherWorkspaceForActor(actorSupabase, actorUserId);
+      allowed = workspace.students.some((s) => s.id === student.id);
+    } catch {
+      allowed = false;
+    }
+  }
+  if (!allowed) throw new Error("You are not allowed to view this student's login details.");
+
+  let password: string | null = null;
+  let note: string | null = null;
+  if (student.initial_password_enc) {
+    try {
+      const { decryptSecret } = await import("./registrations.server");
+      password = decryptSecret(student.initial_password_enc);
+    } catch {
+      note = "The stored password could not be read.";
+    }
+  } else {
+    note = "This account was created before automatic logins, so its password is not recoverable.";
+  }
+
+  const { writeAudit } = await import("./security.server");
+  await writeAudit({
+    actorUserId,
+    action: "student.credentials_view",
+    module: "Students",
+    entityType: "student",
+    entityId: student.id,
+    entityLabel: student.full_name,
+    remarks: "Student login details revealed",
+  });
+
+  return {
+    studentId: student.id,
+    fullName: student.full_name,
+    username: student.username,
+    password,
+    note,
+  };
+}
