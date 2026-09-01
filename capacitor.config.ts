@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
   appName: "Avartan Skill Lab",
   webDir: "android-shell",
   server: {
-    url: "https://avartanskillshub.lovable.app",
+    url: "https://avartanskilllab.online",
     cleartext: false,
     androidScheme: "https",
     allowNavigation: [
