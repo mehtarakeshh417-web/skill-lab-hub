@@ -24,6 +24,13 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
     webContentsDebuggingEnabled: false,
   },
+  ios: {
+    // Native-feeling scrolling and a background that matches the brand shell.
+    contentInset: "always",
+    scrollEnabled: true,
+    limitsNavigationsToAppBoundDomains: false,
+    backgroundColor: "#0b0f1a",
+  },
   plugins: {
     StatusBar: {
       overlaysWebView: false,

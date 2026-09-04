@@ -1133,3 +1133,141 @@ html.light[data-accent="slate"] {
     height: 78dvh;
   }
 }
+
+/* ------------------------------------------------------------------
+   iOS APP LAYER — applies ONLY inside the Capacitor iOS WebView.
+   The class `platform-ios` is set at runtime by the native shell, so
+   nothing here can ever affect the website in a normal browser.
+   ------------------------------------------------------------------ */
+html.platform-ios {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+html.platform-ios body {
+  overflow-x: hidden;
+  /* Home indicator / Dynamic Island safe areas. */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+html.platform-ios * {
+  max-width: 100%;
+}
+
+/* Scrolling feels native and never rubber-bands the whole document. */
+html.platform-ios main,
+html.platform-ios [data-scroll],
+html.platform-ios [class*="overflow-auto"],
+html.platform-ios [class*="overflow-y-auto"],
+html.platform-ios [class*="overflow-x-auto"] {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sticky chrome respects the notch. */
+html.platform-ios header.sticky,
+html.platform-ios header[class*="sticky"],
+html.platform-ios [class*="fixed"][class*="top-0"] {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+/* Anything pinned to the bottom clears the home indicator. */
+html.platform-ios [class*="fixed"][class*="bottom-"] {
+  bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+}
+
+/* iPhone-width reflow: single column, comfortable spacing. */
+@media (max-width: 480px) {
+  html.platform-ios .container,
+  html.platform-ios main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  html.platform-ios [class*="grid-cols-2"],
+  html.platform-ios [class*="grid-cols-3"],
+  html.platform-ios [class*="grid-cols-4"],
+  html.platform-ios [class*="grid-cols-5"],
+  html.platform-ios [class*="grid-cols-6"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Cards and panels: less padding, softer radii, no clipping. */
+  html.platform-ios [class*="rounded-3xl"] {
+    border-radius: 1.25rem;
+  }
+  html.platform-ios [class*="p-10"],
+  html.platform-ios [class*="p-8"],
+  html.platform-ios [class*="p-6"] {
+    padding: 1.1rem;
+  }
+
+  /* Type scale tuned for iPhone reading distance. */
+  html.platform-ios h1,
+  html.platform-ios [class*="text-5xl"],
+  html.platform-ios [class*="text-6xl"] {
+    font-size: clamp(1.6rem, 7.5vw, 2.1rem);
+    line-height: 1.15;
+  }
+  html.platform-ios h2,
+  html.platform-ios [class*="text-4xl"],
+  html.platform-ios [class*="text-3xl"] {
+    font-size: clamp(1.3rem, 6vw, 1.7rem);
+    line-height: 1.2;
+  }
+  html.platform-ios [class*="text-lg"] {
+    font-size: 1rem;
+  }
+
+  /* Touch targets meet Apple's 44pt guidance; inputs never zoom on focus. */
+  html.platform-ios button,
+  html.platform-ios a[role="button"],
+  html.platform-ios [role="tab"],
+  html.platform-ios select {
+    min-height: 44px;
+  }
+  html.platform-ios input,
+  html.platform-ios textarea,
+  html.platform-ios select {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  /* Tables scroll inside their own card instead of pushing the page. */
+  html.platform-ios table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Action rows wrap; buttons go full width when stacked. */
+  html.platform-ios form button[type="submit"] {
+    width: 100%;
+  }
+
+  /* Sheets, dialogs and menus behave like native iOS surfaces. */
+  html.platform-ios [role="dialog"],
+  html.platform-ios [role="alertdialog"] {
+    width: calc(100vw - 1.25rem) !important;
+    max-width: calc(100vw - 1.25rem) !important;
+    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 3rem);
+    overflow-y: auto;
+  }
+  html.platform-ios [role="dialog"][data-side="left"],
+  html.platform-ios [role="dialog"][data-side="right"] {
+    width: min(86vw, 20rem) !important;
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  /* Embedded editors get a usable height inside the WebView. */
+  html.platform-ios iframe {
+    height: min(68dvh, 32rem);
+  }
+}
