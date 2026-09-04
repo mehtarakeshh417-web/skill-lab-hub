@@ -49,8 +49,10 @@
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
+	<key>UIRequiresFullScreen</key>
+	<false/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -64,6 +66,16 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allows you to attach images and project files from your photo library.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allows the app to save exported reports and files to your photo library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allows you to capture images for classroom projects and assignments.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Used to unlock your saved portal session securely.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 </dict>
