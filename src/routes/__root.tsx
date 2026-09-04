@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemePicker } from "@/lib/theme";
+import { applyNativePlatformClass } from "@/lib/native-platform";
 
 
 
