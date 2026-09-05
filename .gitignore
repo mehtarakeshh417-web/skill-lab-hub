@@ -41,3 +41,6 @@ ios/App/build
 ios/App/Pods
 ios/App/output
 ios/capacitor-cordova-ios-plugins
+
+# Windows (Electron) build output
+electron-release/
